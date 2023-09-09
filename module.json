@@ -1,0 +1,67 @@
+{
+  "id": "pf2e-action-support-engine-macros",
+  "title": "PF2e Action Support Engine Macros",
+  "description": "PF2e Action Support Engine Macros",
+  "version": "0.0.1",
+  "authors": [
+    {
+      "name": "Reyzor",
+      "url": "https://github.com/reyzor1991",
+      "discord": "reyzor1991"
+    }
+  ],
+  "languages": [],
+  "esmodules": [
+    "pf2e-action-support-engine-macros.js"
+  ],
+  "styles": [],
+  "packFolders": [
+    {
+      "name": "PF2e Action Support Engine",
+      "sorting": "m",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "packs": [
+        "action-support-engine-macros"
+      ]
+    }
+  ],
+  "packs": [
+    {
+      "label": "ASE - Macros",
+      "name": "action-support-engine-macros",
+      "path": "packs/macros.db",
+      "system": "pf2e",
+      "private": false,
+      "type": "Macro",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {}
+    }
+  ],
+  "socket": true,
+  "compatibility": {
+    "minimum": "11",
+    "verified": "11.308"
+  },
+  "manifest": "https://drive.usercontent.google.com/download?id=1377g0s3rBASIpplAtqm1PB1PY1imunT3",
+  "download": "https://drive.usercontent.google.com/download?id=1DY_6nTbgokOk54DRgu73Uh5s3jOVLX_i",
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "manifest": "https://github.com/foundryvtt/pf2e/releases/latest/download/system.json",
+        "compatibility": {
+          "minimum": "5.3.2",
+          "verified": "5.3.4"
+        }
+      }
+    ],
+    "requires": []
+  }
+}
