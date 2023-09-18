@@ -17,7 +17,7 @@ async function pairedShots(actor) {
 
     const weapons = pairedShotsWeapons(actor);
     if (weapons.length != 2) {
-        ui.notifications.warn(`${actor.name} needs only 2 one-handed melee weapons can be equipped at a time.'`);
+        ui.notifications.warn(`${actor.name} needs two weapons, each of which can be either a loaded one-handed firearm or loaded one‑handed crossbow.'`);
         return;
     }
 

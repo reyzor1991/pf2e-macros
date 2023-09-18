@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.2
+
+- Fix issues with Flurry of Blows, Double Slice
+
 ## Version 0.0.1
 
 ### New feature

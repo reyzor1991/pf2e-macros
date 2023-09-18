@@ -80,7 +80,7 @@ async function flurryOfBlows(actor) {
     const primary = weapons.find( w => w.item.id === currentWeapon[0] );
     const secondary = weapons.find( w => w.item.id === currentWeapon[1] );
 
-    const options = actorFeat(actor, "stunning-fist") ? ["stunning-fist"] : [];
+    const options = actor?.itemTypes?.feat?.find(c => "stunning-fist" === c.slug) ? ["stunning-fist"] : [];
 
     combinedDamage("Flurry Of Blows", primary, secondary, options, map, map2);
 }
