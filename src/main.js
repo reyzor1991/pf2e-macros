@@ -61,12 +61,15 @@ async function fistAttack(message) {
 async function combinedDamage(name, primary, secondary, options, map, map2) {
     let onlyOnePrecision = false;
     const damages = [];
+    const attack = [];
     function PD(cm) {
         if ( cm.user.id === game.userId && cm.isDamageRoll) {
             if (hasOption(cm, "macro:damage")) {
                 damages.push(cm);
             }
             return false;
+        } else if ( cm.user.id === game.userId && cm.isCheckRoll) {
+            attack.push(cm);
         }
     }
 
@@ -84,6 +87,13 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
 
     if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
+    }
+
+    if (attack[0] && attack[0]?.flags?.pf2e?.modifiers?.find(a=>a.slug === "aid" && a.enabled)) {
+        const eff = game.actionsupportengine.hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
+        if (eff) {
+            await game.actionsupportengine.deleteItem(eff)
+        }
     }
 
     const secondaryMessage = await secondary.variants[map2].roll({ event:ev });
