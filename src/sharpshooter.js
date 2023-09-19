@@ -14,7 +14,7 @@ async function accidentalShot(actor) {
 
     const weapons = accidentalShotWeapons(actor);
     if (weapons.length === 0) {
-        ui.notifications.warn(`${actor.name} doesn't have correct weapon'`);
+        ui.notifications.warn(`${actor.name} doesn't have correct weapon`);
         return;
     }
 
@@ -68,9 +68,9 @@ async function accidentalShot(actor) {
         ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
         : event;
 
-
-    const primaryDegreeOfSuccess = (await primary.variants[map].roll({ event:ev })).degreeOfSuccess;
-    if ( primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1 ) {
+    const primaryRoll = await primary.variants[map].roll({ event:ev });
+    const primaryDegreeOfSuccess = primaryRoll?.degreeOfSuccess;
+    if ( !primaryDegreeOfSuccess || primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1 ) {
         Hooks.off('preCreateChatMessage', PD);
         return;
     }
