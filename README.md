@@ -9,3 +9,4 @@
 - Ranger Link
 - Inspire Heroics
 - Paired Shots
+- Accidental Shot

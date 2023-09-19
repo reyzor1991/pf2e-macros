@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.3
+
+- Add Accidental Shot
+
 ## Version 0.0.2
 
 - Fix issues with Flurry of Blows, Double Slice

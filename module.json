@@ -2,7 +2,7 @@
   "id": "pf2e-action-support-engine-macros",
   "title": "PF2e Action Support Engine Macros",
   "description": "PF2e Action Support Engine Macros",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "authors": [
     {
       "name": "Reyzor",
@@ -50,6 +50,7 @@
   },
   "manifest": "https://drive.usercontent.google.com/download?id=1377g0s3rBASIpplAtqm1PB1PY1imunT3",
   "download": "https://drive.usercontent.google.com/download?id=1DY_6nTbgokOk54DRgu73Uh5s3jOVLX_i",
+  "changelog": "https://drive.google.com/file/d/1fX_cGfhLy40eiDv3aJCcQYT7G1xgi-Ya",
   "relationships": {
     "systems": [
       {
