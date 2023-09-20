@@ -1,8 +1,16 @@
 # Changelog
 
-## Version 0.0.3
+## Version 0.0.5
+
+- Fix issues with Marked for Death
+
+## Version 0.0.4
 
 - Fix issues with macros
+
+## Version 0.0.3
+
+- Fix issues with Accidental Shot
 
 ## Version 0.0.3
 
