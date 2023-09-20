@@ -2,6 +2,10 @@
 
 ## Version 0.0.3
 
+- Fix issues with macros
+
+## Version 0.0.3
+
 - Add Accidental Shot
 
 ## Version 0.0.2
