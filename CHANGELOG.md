@@ -2,6 +2,10 @@
 
 ## Version 0.0.6
 
+- Add Scare to Death Immunity
+
+## Version 0.0.6
+
 - Add Scare to Death
 
 ## Version 0.0.5
