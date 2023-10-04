@@ -1,6 +1,10 @@
 # Changelog
 
-## Version 0.0.6
+## Version 0.0.8
+
+- Add Backswing Bonus
+
+## Version 0.0.7
 
 - Add Scare to Death Immunity
 
