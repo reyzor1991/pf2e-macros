@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.6
+
+- Add Scare to Death
+
 ## Version 0.0.5
 
 - Fix issues with Marked for Death

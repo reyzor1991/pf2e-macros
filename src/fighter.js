@@ -3,7 +3,6 @@ function doubleSliceWeapons(actor) {
         .filter( h => h.item?.isMelee && h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1 && !h.item?.system?.traits?.value?.includes("unarmed") );
 };
 
-
 async function doubleSlice(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
