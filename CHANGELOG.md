@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.9
+
+- Fix Bow Staff - Flurry of Blows
+
 ## Version 0.0.8
 
 - Add Backswing Bonus
