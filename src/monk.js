@@ -1,5 +1,3 @@
-const meleeImg = `<img class="alt-usage-icon" src="systems/pf2e/icons/mdi/sword.svg" data-tooltip="Melee Usage">`
-
 function flurryOfBlowsWeapons(actor) {
     let weapons = actor.system.actions.filter( h => h.visible && h.item?.isMelee && h.item?.system?.traits?.value?.includes("unarmed") );
 
@@ -81,7 +79,7 @@ async function flurryOfBlows(actor) {
             }
         },
         default: "ok"
-    });
+    },{},{width: 500});
 
     if ( weapon1 === undefined || weapon2 === undefined || map === undefined ) { return; }
 

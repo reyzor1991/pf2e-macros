@@ -1,0 +1,19 @@
+.column-flurry, .column-hunted-shot {
+  float: left;
+  width: 50%;
+  padding: 10px;
+}
+
+.row-flurry:after, .row-hunted-shot:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.first-flurry {
+    box-shadow: 0 0 12px #0cf043;
+}
+
+.second-flurry {
+    box-shadow: 0 0 12px #0eaaf2;
+}

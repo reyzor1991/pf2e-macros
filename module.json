@@ -14,7 +14,9 @@
   "esmodules": [
     "pf2e-action-support-engine-macros.js"
   ],
-  "styles": [],
+  "styles": [
+    "pf2e-action-support-engine-macros.css"
+  ],
   "packFolders": [
     {
       "name": "PF2e Action Support Engine",
