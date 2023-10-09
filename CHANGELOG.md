@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.10
+
+- Add Root To Life
+
 ## Version 0.0.9
 
 - Fix Bow Staff - Flurry of Blows
