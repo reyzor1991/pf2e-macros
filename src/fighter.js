@@ -1,6 +1,6 @@
 function doubleSliceWeapons(actor) {
     return actor.system.actions
-        .filter( h => h.item?.isMelee && h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1 && !h.item?.system?.traits?.value?.includes("unarmed") );
+        .filter( h => h.ready && h.item?.isMelee && h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1 && !h.item?.system?.traits?.value?.includes("unarmed") );
 };
 
 async function doubleSlice(actor) {
@@ -58,7 +58,7 @@ async function doubleSlice(actor) {
 }
 
 function knockdownWeapons(actor) {
-    return actor.system.actions.filter( h => h.visible &&h.item?.isMelee && h.item?.isHeld && !h.item?.system?.traits?.value?.includes("unarmed")  );
+    return actor.system.actions.filter( h => h.ready && h.visible && h.item?.isMelee && h.item?.isHeld && !h.item?.system?.traits?.value?.includes("unarmed")  );
 };
 
 async function knockdown(actor) {
@@ -126,8 +126,18 @@ async function knockdown(actor) {
     }
 
     if (pd) {
-        let modifiers = [new game.pf2e.Modifier({ label: "PF2E.MultipleAttackPenalty", modifier: map2 > 0 ? Math.min(2, map2) * -5 : map2 })]
-        game.pf2e.actions.trip({modifiers, event: ev });
+        if (actor?.itemTypes?.feat?.find(c => "improved-knockdown" === c.slug) ) {
+            await game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "prone");
+
+            let formula = "1d6[bludgeoning]";
+            if (primary.item.hands === '2') {
+                formula = `${primary.item.system.damage.die}[bludgeoning]`
+            }
+            await game.actionsupportengine.applyDamage(game.user.targets.first().actor, game.user.targets.first(), formula);
+        } else {
+            let modifiers = [new game.pf2e.Modifier({ label: "PF2E.MultipleAttackPenalty", modifier: map > 0 ? Math.min(2, map) * -5 : map })]
+            game.pf2e.actions.trip({modifiers, event: ev });
+        }
     }
 }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.14
+
+- Add support of Improved Knockdown
+
 ## Version 0.0.13
 
 - Knockdown
