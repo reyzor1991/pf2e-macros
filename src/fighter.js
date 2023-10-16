@@ -57,8 +57,83 @@ async function doubleSlice(actor) {
     combinedDamage("Double Slice", primary, secondary, ["double-slice-second"], map, map);
 }
 
+function knockdownWeapons(actor) {
+    return actor.system.actions.filter( h => h.visible &&h.item?.isMelee && h.item?.isHeld && !h.item?.system?.traits?.value?.includes("unarmed")  );
+};
+
+async function knockdown(actor) {
+    if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
+    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+
+    if ( !actor?.itemTypes?.feat?.find(c => "knockdown" === c.slug) ) {
+        ui.notifications.warn(`${actor.name} does not have Knockdown!`);
+        return;
+    }
+
+    const weapons = knockdownWeapons(actor);
+
+    let weaponOptions = '';
+    for ( const w of weapons ) {
+        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
+    }
+
+    const { currentWeapon, map } = await Dialog.wait({
+        title:"Knockdown",
+        content: `
+            <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
+                ${weaponOptions}
+            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
+                <select id="map">
+                <option value=0>No MAP</option>
+                <option value=1>MAP -5(-4 for agile)</option>
+                <option value=2>MAP -10(-8 for agile)</option>
+            </select><hr>
+        `,
+        buttons: {
+                ok: {
+                    label: "Attack",
+                    icon: "<i class='fa-solid fa-hand-fist'></i>",
+                    callback: (html) => { return { currentWeapon: [html[0].querySelector("#fob1").value], map: parseInt(html[0].querySelector("#map").value)} }
+                },
+                cancel: {
+                    label: "Cancel",
+                    icon: "<i class='fa-solid fa-ban'></i>",
+                }
+        },
+        render: (html) => {
+            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
+        },
+        default: "ok"
+    });
+
+    if ( currentWeapon === undefined || map === undefined ) { return; }
+    const map2 = map === 2 ? map : map + 1;
+    let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
+
+    const ev = game.settings.get(moduleName, "skipRollDialogMacro")
+        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
+        : event;
+
+    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
+
+    let pd;
+    if (game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike')) {
+        pd = true;
+    } else {
+        if ( primaryDegreeOfSuccess === 2 ) { pd = await primary.damage({event}); }
+        if ( primaryDegreeOfSuccess === 3 ) { pd = await primary.critical({event}); }
+    }
+
+    if (pd) {
+        let modifiers = [new game.pf2e.Modifier({ label: "PF2E.MultipleAttackPenalty", modifier: map2 > 0 ? Math.min(2, map2) * -5 : map2 })]
+        game.pf2e.actions.trip({modifiers, event: ev });
+    }
+}
+
 Hooks.once("init", () => {
     game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
         "doubleSlice": doubleSlice,
+        "knockdown": knockdown,
     })
 });
