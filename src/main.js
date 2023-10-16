@@ -99,6 +99,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     if (primary.item.id === secondary.item.id && secondary.item.system.traits.value.includes("backswing") && (primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1)) {
         secondOpts.push("backswing-bonus")
     }
+    if (options.includes("twin-feint")) {
+        await game.actionsupportengine.setEffectToActor(secondary.item.actor, 'Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO')
+        secondOpts.push("twin-feint-second-attack")
+    }
 
     const secondaryMessage = await secondary.variants[map2].roll({ event:ev, options: secondOpts});
     const secondaryDegreeOfSuccess = secondaryMessage.degreeOfSuccess;
@@ -108,6 +112,9 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     if (game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike')) {
         fOpt.push("skip-handling-message");
         sOpt.push("skip-handling-message");
+    }
+    if (options.includes("twin-feint")) {
+        sOpt.push("twin-feint-second-attack")
     }
 
     let pd,sd;
@@ -126,6 +133,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     if ( secondaryDegreeOfSuccess === 3 ) { sd = await secondary.critical({event, options: sOpt}); }
 
     Hooks.off('preCreateChatMessage', PD);
+
+    if (options.includes("twin-feint")) {
+        await game.actionsupportengine.removeEffectFromActor(secondary.item.actor, "Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO");
+    }
 
     if (damages.length === 0) {
         ChatMessage.create({

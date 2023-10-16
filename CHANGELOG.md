@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.12
+
+- Twin Feint
+
 ## Version 0.0.11
 
 - Fix double handling damage
