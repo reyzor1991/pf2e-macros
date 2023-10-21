@@ -107,7 +107,6 @@ async function knockdown(actor) {
     });
 
     if ( currentWeapon === undefined || map === undefined ) { return; }
-    const map2 = map === 2 ? map : map + 1;
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
     const ev = game.settings.get(moduleName, "skipRollDialogMacro")

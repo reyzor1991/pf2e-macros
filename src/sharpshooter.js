@@ -1,6 +1,6 @@
 function accidentalShotWeapons(actor) {
     return actor.system.actions
-        .filter( h => h.visible && h.item?.isRanged && h.item?.ammo && h.ready);
+        .filter( h => h.ready && h.visible && h.item?.isRanged && h.item?.ammo && h.ready);
 };
 
 async function accidentalShot(actor) {
