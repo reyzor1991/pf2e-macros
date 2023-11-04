@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.16
+- Add Dazing Blow
+
 ## Version 0.0.15
 
 - Add support of Shuriken
