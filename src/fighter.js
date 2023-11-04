@@ -200,8 +200,6 @@ async function dazingBlow(actor) {
 
     if ( primaryDegreeOfSuccess === 1 || primaryDegreeOfSuccess === 0 ) {return}
 
-    console.log(ev);
-
     if (!hasWorkbench) {
         if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: ev}); }
         if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event: ev}); }
@@ -227,10 +225,81 @@ async function dazingBlow(actor) {
     await game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "stunned", 3 - cfResult.degreeOfSuccess);
 }
 
+async function snaggingStrike(actor) {
+    if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
+    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+
+    let feat = actor?.itemTypes?.feat?.find(c => "snagging-strike" === c.slug);
+    if ( !feat ) {
+        ui.notifications.warn(`${actor.name} does not have Snagging Strike!`);
+        return;
+    }
+
+    if (actor.items.contents.filter(a=>a.handsHeld > 0).filter(a=> !(a.slug === 'buckler' && a.handsHeld === 1) ).map(a=>a.handsHeld).reduce((a, b) => a + b, 0) >= 2) {
+        ui.notifications.warn(`${actor.name} does not have free hand!`);
+        return
+    }
+
+    const weapons = actor.system.actions.filter( h => h.ready && h.item?.isMelee);
+
+    let weaponOptions = '';
+    for ( const w of weapons ) {
+        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
+    }
+
+    const { currentWeapon, map } = await Dialog.wait({
+        title:"Dazing Blow",
+        content: `
+            <div><div><h3>Attack</h3><select id="fob1" autofocus>
+                ${weaponOptions}
+            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
+                <select id="map">
+                <option value=0>No MAP</option>
+                <option value=1>MAP -5(-4 for agile)</option>
+                <option value=2>MAP -10(-8 for agile)</option>
+            </select><hr>
+        `,
+        buttons: {
+                ok: {
+                    label: "Attack",
+                    icon: "<i class='fa-solid fa-hand-fist'></i>",
+                    callback: (html) => { return { currentWeapon: [html[0].querySelector("#fob1").value], map: parseInt(html[0].querySelector("#map").value)} }
+                },
+                cancel: {
+                    label: "Cancel",
+                    icon: "<i class='fa-solid fa-ban'></i>",
+                }
+        },
+        default: "ok"
+    });
+
+    if ( currentWeapon === undefined || map === undefined ) { return; }
+    let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
+
+    const ev = game.settings.get(moduleName, "skipRollDialogMacro")
+        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
+        : event;
+
+    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
+
+    if ( primaryDegreeOfSuccess === 1 || primaryDegreeOfSuccess === 0 ) {return}
+
+    let hasWorkbench = game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
+
+    if (!hasWorkbench) {
+        if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: ev}); }
+        if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event: ev}); }
+    }
+
+    await game.actionsupportengine.setEffectToActor(game.user.targets.first().actor, "Compendium.pf2e-action-support-engine.effects.Item.YsNqG4OocHoErbc9", feat.level, {origin: {actor:actor?.uuid, item: feat.uuid}} )
+}
+
 Hooks.once("init", () => {
     game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
         "doubleSlice": doubleSlice,
         "knockdown": knockdown,
         "dazingBlow": dazingBlow,
+        "snaggingStrike": snaggingStrike,
     })
 });
