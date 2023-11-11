@@ -143,7 +143,7 @@ async function knockdown(actor) {
 async function dazingBlow(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
-    if (!game.user.targets.first().actor.itemTypes.condition.find(a=>a.slug==='grabbed')) { ui.notifications.info(`Target is not grabbed`);return; }
+    if (!game.user.targets.first().actor.itemTypes.condition.find(a=>a.slug==='grabbed' || a.slug==='restrained')) { ui.notifications.info(`Target is not grabbed`);return; }
     const feat = actor?.itemTypes?.feat?.find(c => "dazing-blow" === c.slug);
     if ( !feat ) {
         ui.notifications.warn(`${actor.name} does not have Double Slice!`);

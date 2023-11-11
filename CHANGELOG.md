@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.18
+- Fix Dazing Blow
+
 ## Version 0.0.17
 - Add Snagging Strike
 
