@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.19
+- Renaming feats (remaster)
+
 ## Version 0.0.18
 - Fix Dazing Blow
 

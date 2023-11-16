@@ -65,8 +65,8 @@ async function knockdown(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
-    if ( !actor?.itemTypes?.feat?.find(c => "knockdown" === c.slug) ) {
-        ui.notifications.warn(`${actor.name} does not have Knockdown!`);
+    if ( !actor?.itemTypes?.feat?.find(c => "knockdown" === c.slug) && !actor?.itemTypes?.feat?.find(c => "slam-down" === c.slug) ) {
+        ui.notifications.warn(`${actor.name} does not have Knockdown/Slam Down!`);
         return;
     }
 
@@ -78,7 +78,7 @@ async function knockdown(actor) {
     }
 
     const { currentWeapon, map } = await Dialog.wait({
-        title:"Knockdown",
+        title:"Knockdown/Slam Down",
         content: `
             <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}
@@ -125,7 +125,7 @@ async function knockdown(actor) {
     }
 
     if (pd) {
-        if (actor?.itemTypes?.feat?.find(c => "improved-knockdown" === c.slug) ) {
+        if (actor?.itemTypes?.feat?.find(c => "improved-knockdown" === c.slug) || actor?.itemTypes?.feat?.find(c => "crashing-slam" === c.slug) ) {
             await game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "prone");
 
             let formula = "1d6[bludgeoning]";
