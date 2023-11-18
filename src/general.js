@@ -77,10 +77,68 @@ async function addImmunity(_token, target) {
         },
     };
     await game.actionsupportengine.addItemToActor(target, exampleImmunityEffect);
+};
+
+async function aid(actor) {
+    if (game.user.targets.size === 0) { ui.notifications.info(`Need to select target to apply Aid effect`); }
+
+    let defDC = game.settings.get(moduleName, "defAidDC") === 'remaster' ? 15 : 20;
+    let styles = `style="display: flex; align-items: center; justify-content: space-between;"`
+    let weapons = actor.system.actions.filter( h => h.ready);
+
+     const { id, isSkill, dc } = await Dialog.wait({
+        title:"Aid",
+        content: `
+            <p ${styles}>
+                <strong>Skill or Attack</strong>
+                <select id="actions">
+                    <option value="perception" data-skill='true'>${game.i18n.localize("PF2E.PerceptionLabel")}</option>
+                    ${Object.values(_token.actor.skills).map(s=>{
+                        return `<option value="${s.slug}" data-skill='true'>${s.label}</option>`
+                    })}
+                    ${weapons.map(s=>{
+                        return `<option value="${s.slug}" data-skill='false'>${s.label}</option>`
+                    })}
+                    {{/each}}
+            </select>
+            </p>
+            <p ${styles}>
+                <strong>DC</strong>
+                <input class='dc' type="number" value='${defDC}' min="0" style="width: 5ch;">
+            </p>
+        `,
+        buttons: {
+                ok: {
+                    label: "Aid",
+                    icon: "<i class='fa-solid fa-hand'></i>",
+                    callback: (html) => {
+                        return {
+                            id: html.find("#actions").val(),
+                            isSkill: html.find("#actions").find('option:selected').data('skill'),
+                            dc: parseInt(html.find('.dc').val()) ?? defDC
+                        }
+                    }
+                },
+                cancel: {
+                    label: "Cancel",
+                    icon: "<i class='fa-solid fa-ban'></i>",
+                }
+        },
+        default: "ok"
+    }, {}, {width: 600});
+
+    if (!id) {return}
+
+    if (isSkill) {
+        actor.getStatistic(id).roll({dc, extraRollOptions: [`action:aid:${id}`,'action:aid']})
+    } else {
+        weapons.find(w=>w.slug===id)?.roll({dc, options: [`action:aid:${id}`, 'action:aid']})
+    }
 }
 
 Hooks.once("init", () => {
     game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
         "scareToDeath": scareToDeath,
+        "aid": aid,
     })
 });

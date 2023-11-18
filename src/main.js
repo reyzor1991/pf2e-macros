@@ -13,6 +13,18 @@ Hooks.once("init", () => {
         default: true,
         type: Boolean,
     });
+
+    game.settings.register(moduleName, "defAidDC", {
+        name: "Default Aid DC (macro)",
+        scope: "world",
+        config: true,
+        default: 'remaster',
+        choices: {
+            'remaster': 'DC is 15',
+            'old': 'DC is 20',
+        },
+        type: String,
+    });
 });
 
 

@@ -1,6 +1,9 @@
 # Changelog
 
 ## Version 0.0.19
+- Aid macro
+
+## Version 0.0.19
 - Renaming feats (remaster)
 
 ## Version 0.0.18
