@@ -86,19 +86,20 @@ async function aid(actor) {
     let styles = `style="display: flex; align-items: center; justify-content: space-between;"`
     let weapons = actor.system.actions.filter( h => h.ready);
 
+    let skillsHtml = `<option value="perception" data-skill='true'>${game.i18n.localize("PF2E.PerceptionLabel")}</option>` +Object.values(_token.actor.skills).map(s=>{
+        return `<option value="${s.slug}" data-skill='true'>${s.label}</option>`
+    });
+    let weaponsHtml = weapons.map(s=>{
+        return `<option value="${s.slug}" data-skill='false'>${s.label}</option>`
+    })
+
      const { id, isSkill, dc } = await Dialog.wait({
         title:"Aid",
         content: `
             <p ${styles}>
                 <strong>Skill or Attack</strong>
                 <select id="actions">
-                    <option value="perception" data-skill='true'>${game.i18n.localize("PF2E.PerceptionLabel")}</option>
-                    ${Object.values(_token.actor.skills).map(s=>{
-                        return `<option value="${s.slug}" data-skill='true'>${s.label}</option>`
-                    })}
-                    ${weapons.map(s=>{
-                        return `<option value="${s.slug}" data-skill='false'>${s.label}</option>`
-                    })}
+                    ${game.settings.get(moduleName, "aidWeaponTop") ? weaponsHtml + skillsHtml : skillsHtml + weaponsHtml}
                     {{/each}}
             </select>
             </p>
@@ -130,9 +131,14 @@ async function aid(actor) {
     if (!id) {return}
 
     if (isSkill) {
-        actor.getStatistic(id).roll({dc, extraRollOptions: [`action:aid:${id}`,'action:aid']})
+        const skipDialog = game.settings.get(moduleName, "skipRollDialogMacro");
+        actor.getStatistic(id).roll({skipDialog, dc, extraRollOptions: [`action:aid:${id}`,'action:aid']})
     } else {
-        weapons.find(w=>w.slug===id)?.roll({dc, options: [`action:aid:${id}`, 'action:aid']})
+        const ev = game.settings.get(moduleName, "skipRollDialogMacro")
+            ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
+            : event;
+
+        weapons.find(w=>w.slug===id)?.roll({event:ev, dc, options: [`action:aid:${id}`, 'action:aid']})
     }
 }
 

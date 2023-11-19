@@ -25,6 +25,14 @@ Hooks.once("init", () => {
         },
         type: String,
     });
+
+    game.settings.register(moduleName, "aidWeaponTop", {
+        name: "Show weapon above skills",
+        scope: "world",
+        config: true,
+        default: false,
+        type: Boolean,
+    });
 });
 
 

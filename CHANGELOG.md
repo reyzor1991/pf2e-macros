@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.21
+- Aid macro - weapon on top (setting)
+
 ## Version 0.0.20
 - Aid macro
 
