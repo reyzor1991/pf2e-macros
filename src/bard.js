@@ -16,6 +16,7 @@ async function inspireHeroics(actor) {
             <hr><h3>Spell effect for aura</h3><select id="spells">
                 <option value=0>Inspire Courage/Courageous Anthem</option>
                 <option value=1>Inspire Defense/Rallying Anthem</option>
+                <option value=2>Song of Strength</option>
             </select><hr>
         `,
         buttons: {
@@ -47,13 +48,21 @@ async function inspireHeroics(actor) {
         } else {
             idOfEffect = "Compendium.pf2e.spell-effects.Item.beReeFroAx24hj83";
         }
-    } else {
+    } else if (spell === 1) {
         if (degreeOfSuccess === 3) {
             idOfEffect = "Compendium.pf2e.spell-effects.Item.BKam63zT98iWMJH7";
         } else if (degreeOfSuccess === 2) {
             idOfEffect = "Compendium.pf2e.spell-effects.Item.Chol7ExtoN2T36mP";
         } else {
             idOfEffect = "Compendium.pf2e.spell-effects.Item.DLwTvjjnqs2sNGuG";
+        }
+    } else if (spell === 2) {
+        if (degreeOfSuccess === 3) {
+            idOfEffect = "Compendium.pf2e-action-support-engine.effects.Item.Edq4AdKBHUtseItk";
+        } else if (degreeOfSuccess === 2) {
+            idOfEffect = "Compendium.pf2e-action-support-engine.effects.Item.Sc2JpGRqXir7WSx2";
+        } else {
+            idOfEffect = "Compendium.pf2e.spell-effects.Item.8adLKKzJy49USYJt";
         }
     }
 

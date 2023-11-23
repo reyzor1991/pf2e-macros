@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.22
+- Update Fortissimo Composition macro
+
 ## Version 0.0.21
 - Aid macro - weapon on top (setting)
 
