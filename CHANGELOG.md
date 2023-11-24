@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.23
+- Fix Fortissimo Composition (decrease focus points)
+
 ## Version 0.0.22
 - Update Fortissimo Composition macro
 

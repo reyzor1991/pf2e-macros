@@ -6,6 +6,8 @@ async function inspireHeroics(actor) {
         return;
     }
 
+    if (!actor.system.resources.focus.value) { return ui.notifications.warn(`${actor.name} have no focus points`); }
+
     const defDC = (dcByLevel.get(actor.level) ?? 50) + 5;
 
     const { dc, spell } = await Dialog.wait({
@@ -68,6 +70,10 @@ async function inspireHeroics(actor) {
 
     aura.system.rules[0].effects[0].uuid = idOfEffect;
     await actor.createEmbeddedDocuments("Item", [aura]);
+
+    if (degreeOfSuccess > 1) {
+        await actor.update({"system.resources.focus.value":actor.system.resources.focus.value-1});
+    }
 }
 
 Hooks.once("init", () => {
