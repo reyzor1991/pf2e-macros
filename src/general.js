@@ -1,13 +1,13 @@
 async function scareToDeath(actor) {
-    if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
+    if (!actor) { ui.notifications.info("Please select 1 token"); return; }
     const feat = actor?.itemTypes?.feat?.find(c => "scare-to-death" === c.slug);
-    if ( !feat ) {
+    if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Scare to Death!`);
         return;
     }
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
-    if (!game.actionsupportengine.distanceIsCorrect(_token, game.user.targets.first(), 30)) { ui.notifications.info(`Target should be in 30ft radius`);return; }
-    if (game.user.targets.first().actor?.itemTypes?.effect?.find(c => `scare-to-death-immunity-${actor.id}` === c.slug)) {ui.notifications.info(`Target has immunity to Scare to Death from ${actor.name}`);return}
+    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`); return; }
+    if (!game.actionsupportengine.distanceIsCorrect(_token, game.user.targets.first(), 30)) { ui.notifications.info(`Target should be in 30ft radius`); return; }
+    if (game.user.targets.first().actor?.itemTypes?.effect?.find(c => `scare-to-death-immunity-${actor.id}` === c.slug)) { ui.notifications.info(`Target has immunity to Scare to Death from ${actor.name}`); return }
 
     const extraRollOptions = ["action:scare-to-death", "emotion", "fear", "incapacitation", "general", "skill"];
     const traits = ["emotion", "fear", "incapacitation", "general", "skill"];
@@ -28,7 +28,7 @@ async function scareToDeath(actor) {
     }
 
     const skipDialog = game.settings.get(moduleName, "skipRollDialogMacro");
-    const result = await actor.skills['intimidation'].roll({skipDialog, modifiers, origin: null, dc, traits, title, item: feat, target: game.user.targets.first().actor, extraRollOptions});
+    const result = await actor.skills['intimidation'].roll({ skipDialog, modifiers, origin: null, dc, traits, title, item: feat, target: game.user.targets.first().actor, extraRollOptions });
 
     await addImmunity(_token, game.user.targets.first().actor);
 
@@ -44,7 +44,7 @@ async function scareToDeath(actor) {
             dc: {
                 label: "Scare to Death DC",
                 value: actorDC?.value ?? 0
-            }, traits:[...traits, 'death'], title, item: feat, extraRollOptions: [...extraRollOptions, 'death']
+            }, traits: [...traits, 'death'], title, item: feat, extraRollOptions: [...extraRollOptions, 'death']
         });
         if (cfResult.degreeOfSuccess === 0) {
             ChatMessage.create({
@@ -59,7 +59,7 @@ async function scareToDeath(actor) {
 }
 
 function shareLanguage(actor, target) {
-    if (target?.itemTypes?.condition?.find(c => "deafened" === c.slug)) {return false}
+    if (target?.itemTypes?.condition?.find(c => "deafened" === c.slug)) { return false }
 
     return (target.system.traits.languages.value ?? []).some(item => actor?.system.traits.languages.value.includes(item))
 }
@@ -70,8 +70,8 @@ async function addImmunity(_token, target) {
         name: `Scare to Death Immunity (${_token.actor.name})`,
         img: `${_token.document.texture.src}`,
         system: {
-            tokenIcon: {show: true},
-            duration: { value: '1', unit: 'minutes', sustained: false, expiry: 'turn-start'},
+            tokenIcon: { show: true },
+            duration: { value: '1', unit: 'minutes', sustained: false, expiry: 'turn-start' },
             rules: [],
             slug: `scare-to-death-immunity-${_token.actor.id}`
         },
@@ -84,17 +84,17 @@ async function aid(actor) {
 
     let defDC = game.settings.get(moduleName, "defAidDC") === 'remaster' ? 15 : 20;
     let styles = `style="display: flex; align-items: center; justify-content: space-between;"`
-    let weapons = actor.system.actions.filter( h => h.ready);
+    let weapons = actor.system.actions.filter(h => h.ready);
 
-    let skillsHtml = `<option value="perception" data-skill='true'>${game.i18n.localize("PF2E.PerceptionLabel")}</option>` +Object.values(_token.actor.skills).map(s=>{
+    let skillsHtml = `<option value="perception" data-skill='true'>${game.i18n.localize("PF2E.PerceptionLabel")}</option>` + Object.values(_token.actor.skills).map(s => {
         return `<option value="${s.slug}" data-skill='true'>${s.label}</option>`
     });
-    let weaponsHtml = weapons.map(s=>{
+    let weaponsHtml = weapons.map(s => {
         return `<option value="${s.slug}" data-skill='false'>${s.label}</option>`
     })
 
-     const { id, isSkill, dc } = await Dialog.wait({
-        title:"Aid",
+    const { id, isSkill, dc } = await Dialog.wait({
+        title: "Aid",
         content: `
             <p ${styles}>
                 <strong>Skill or Attack</strong>
@@ -109,42 +109,147 @@ async function aid(actor) {
             </p>
         `,
         buttons: {
-                ok: {
-                    label: "Aid",
-                    icon: "<i class='fa-solid fa-hand'></i>",
-                    callback: (html) => {
-                        return {
-                            id: html.find("#actions").val(),
-                            isSkill: html.find("#actions").find('option:selected').data('skill'),
-                            dc: parseInt(html.find('.dc').val()) ?? defDC
-                        }
+            ok: {
+                label: "Aid",
+                icon: "<i class='fa-solid fa-hand'></i>",
+                callback: (html) => {
+                    return {
+                        id: html.find("#actions").val(),
+                        isSkill: html.find("#actions").find('option:selected').data('skill'),
+                        dc: parseInt(html.find('.dc').val()) ?? defDC
                     }
-                },
-                cancel: {
-                    label: "Cancel",
-                    icon: "<i class='fa-solid fa-ban'></i>",
                 }
+            },
+            cancel: {
+                label: "Cancel",
+                icon: "<i class='fa-solid fa-ban'></i>",
+            }
         },
         default: "ok"
-    }, {}, {width: 600});
+    }, {}, { width: 600 });
 
-    if (!id) {return}
+    if (!id) { return }
 
     if (isSkill) {
         const skipDialog = game.settings.get(moduleName, "skipRollDialogMacro");
-        actor.getStatistic(id).roll({skipDialog, dc, extraRollOptions: [`action:aid:${id}`,'action:aid']})
+        actor.getStatistic(id).roll({ skipDialog, dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
     } else {
         const ev = game.settings.get(moduleName, "skipRollDialogMacro")
-            ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
+            ? new KeyboardEvent('keydown', { 'shiftKey': game.user.flags.pf2e.settings.showRollDialogs })
             : event;
 
-        weapons.find(w=>w.slug===id)?.roll({event:ev, dc, options: [`action:aid:${id}`, 'action:aid']})
+        weapons.find(w => w.slug === id)?.roll({ event: ev, dc, options: [`action:aid:${id}`, 'action:aid'] })
     }
+}
+
+async function explorationActivity(actor) {
+    if (!actor) { ui.notifications.info(`Need to select target to apply Aid effect`); }
+
+    const actions = [
+        {
+            label: 'Avoid Notice',
+            img: 'icons/magic/perception/silhouette-stealth-shadow.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.IE2nThCmoyhQA0Jn'
+        },
+        {
+            label: 'Cover Tracks',
+            img: 'icons/tools/smithing/horseshoe-steel-blue.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.SB7cMECVtE06kByk'
+        },
+        {
+            label: 'Defend',
+            img: 'icons/equipment/shield/heater-steel-boss-red.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.cYtYKa1gDEl7y2N0'
+        },
+        {
+            label: 'Detect Magic',
+            img: 'systems/pf2e/icons/spells/detect-magic.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.Yb0C1uLzeHrVLl7a'
+        },
+        {
+            label: 'Follow the Expert',
+            img: 'icons/skills/social/diplomacy-unity-alliance.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.tfa4Sh7wcxCEqL29'
+        },
+        {
+            label: 'Hustle',
+            img: 'icons/skills/movement/feet-winged-boots-brown.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.JuqmIAnkL9hVGai8'
+        },
+        {
+            label: 'Investigate',
+            img: 'icons/tools/scribal/magnifying-glass.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.EwgTZBWsc8qKaViP'
+        },
+        {
+            label: 'Repeat a Spell',
+            img: 'icons/magic/symbols/circle-ouroboros.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.OQaFzDtVEOMWizJJ'
+        },
+        {
+            label: 'Scout',
+            img: 'icons/tools/navigation/map-marked-red.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.kV3XM0YJeS2KCSOb'
+        },
+        {
+            label: 'Search',
+            img: 'icons/magic/perception/eye-ringed-green.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.TiNDYUGlMmxzxBYU'
+        },
+        {
+            label: 'Track',
+            img: 'icons/creatures/abilities/paw-print-yellow.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.EA5vuSgJfiHH7plD'
+        }
+    ];
+
+    let activeExplorationActivities = actor.system.exploration.map(a => actor.items.get(a).sourceId)
+    let buttons = actions.map((action, idx) => {
+        let active = activeExplorationActivities.includes(action.id) ? 'active' : '';
+        return `<span class="item ${active}" data-id="${action.id}"><img src="${action.img}" height="24">${action.label}</span>`
+    }).join("");
+
+    let content = `<div class="pf2e-exploration-activity-list">${buttons}</div>`
+    new Dialog({
+        title: `Exploration Activities (${actor.name})`,
+        default: "close",
+        render: (html) => {
+            const action = async (event) => {
+                let button = $(event.currentTarget);
+                let sourceId = button.data().id;
+                let exploration = actor.system.exploration ?? [];
+                if (!actor.itemTypes.action.find(a => a.sourceId === sourceId)) {//need to add
+                    await actor.createEmbeddedDocuments("Item", [(await fromUuid(sourceId)).toObject()])
+                }
+                let curId =  actor.itemTypes.action.find(a => a.sourceId === sourceId)?.id;
+                if (button.hasClass('active')) {
+                    exploration = exploration.filter(i => i !== curId);
+                    button.removeClass('active')
+                } else {
+                    exploration.push(curId)
+                    button.addClass('active')
+                }
+                await actor.update({ "system.exploration": exploration });
+                ui.notifications.info("Exploration activities were changed");
+            };
+
+            html.find(".pf2e-exploration-activity-list span").on('click', action)
+        },
+        content,
+        buttons: {
+            close: {
+                icon: `<i class="fas fa-times"></i>`,
+                label: 'Close',
+            },
+        }
+        ,
+    }, { popOut: true, resizable: true, width: 450 }).render(true);
 }
 
 Hooks.once("init", () => {
     game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
         "scareToDeath": scareToDeath,
         "aid": aid,
+        "explorationActivity": explorationActivity,
     })
 });
