@@ -132,7 +132,16 @@ async function aid(actor) {
 
     if (isSkill) {
         const skipDialog = game.settings.get(moduleName, "skipRollDialogMacro");
-        actor.getStatistic(id).roll({ skipDialog, dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
+        let roll = await actor.getStatistic(id).roll({ skipDialog, dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
+        if (
+            id === 'diplomacy'
+            && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.classfeatures.Item.4lGhbEjlEoGP4scl" === c.sourceId)
+            && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.feats-srd.Item.bCizH4ByTwbLcYA1" === c.sourceId)
+        ) {//Wit&One For All
+            if (roll.total >= (dcByLevel.get(actor.level) ?? 50)) {
+                await game.actionsupportengine.setEffectToActor(actor, 'Compendium.pf2e.feat-effects.Item.uBJsxCzNhje8m8jj')//set panache
+            }
+        }
     } else {
         const ev = game.settings.get(moduleName, "skipRollDialogMacro")
             ? new KeyboardEvent('keydown', { 'shiftKey': game.user.flags.pf2e.settings.showRollDialogs })

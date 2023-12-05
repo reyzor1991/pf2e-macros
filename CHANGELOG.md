@@ -1,6 +1,9 @@
 # Changelog
 
 ## Version 0.0.24
+- Support of One For All
+
+## Version 0.0.24
 - Add exploration activities macro
 
 ## Version 0.0.23
