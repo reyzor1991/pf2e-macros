@@ -66,6 +66,10 @@ const dcByLevel = new Map([
     [25, 50],
 ]);
 
+function veryHardDCByLvl(lvl) {
+    return (dcByLevel.get(lvl) ?? 50) + 5;
+}
+
 async function gravityWeapon(message) {
     if (message.actor.rollOptions?.["damage-roll"]?.["gravity-weapon"] && !hasOption(message, "item:category:unarmed")) {
         await message.actor.toggleRollOption("damage-roll", "gravity-weapon")

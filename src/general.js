@@ -138,7 +138,7 @@ async function aid(actor) {
             && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.classfeatures.Item.4lGhbEjlEoGP4scl" === c.sourceId)
             && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.feats-srd.Item.bCizH4ByTwbLcYA1" === c.sourceId)
         ) {//Wit&One For All
-            if (roll.total >= (dcByLevel.get(actor.level) ?? 50)) {
+            if (roll.total >= veryHardDCByLvl(actor.level)) {
                 await game.actionsupportengine.setEffectToActor(actor, 'Compendium.pf2e.feat-effects.Item.uBJsxCzNhje8m8jj')//set panache
             }
         }

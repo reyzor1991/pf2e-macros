@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.25
+- Small optimization
+
 ## Version 0.0.24
 - Support of One For All
 

@@ -8,7 +8,7 @@ async function inspireHeroics(actor) {
 
     if (!actor.system.resources.focus.value) { return ui.notifications.warn(`${actor.name} have no focus points`); }
 
-    const defDC = (dcByLevel.get(actor.level) ?? 50) + 5;
+    const defDC = veryHardDCByLvl(actor.level);
 
     const { dc, spell } = await Dialog.wait({
         title:"Use spell",
