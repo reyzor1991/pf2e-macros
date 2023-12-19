@@ -191,6 +191,11 @@ async function explorationActivity(actor) {
             id: 'Compendium.pf2e.actionspf2e.Item.EwgTZBWsc8qKaViP'
         },
         {
+            label: 'Refocus',
+            img: 'icons/magic/perception/third-eye-blue-red.webp',
+            id: 'Compendium.pf2e.actionspf2e.Item.OSefkMgojBLqmRDh'
+        },
+        {
             label: 'Repeat a Spell',
             img: 'icons/magic/symbols/circle-ouroboros.webp',
             id: 'Compendium.pf2e.actionspf2e.Item.OQaFzDtVEOMWizJJ'
