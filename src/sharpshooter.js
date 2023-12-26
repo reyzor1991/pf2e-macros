@@ -64,9 +64,7 @@ async function accidentalShot(actor) {
         }
     }
     Hooks.on('preCreateChatMessage', PD);
-    const ev = game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
-        : event;
+    const ev = eventSkipped(event);
 
     const primaryRoll = await primary.variants[map].roll({ event:ev });
     const primaryDegreeOfSuccess = primaryRoll?.degreeOfSuccess;

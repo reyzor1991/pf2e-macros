@@ -143,10 +143,7 @@ async function aid(actor) {
             }
         }
     } else {
-        const ev = game.settings.get(moduleName, "skipRollDialogMacro")
-            ? new KeyboardEvent('keydown', { 'shiftKey': game.user.flags.pf2e.settings.showRollDialogs })
-            : event;
-
+        const ev = eventSkipped(event);
         weapons.find(w => w.slug === id)?.roll({ event: ev, dc, options: [`action:aid:${id}`, 'action:aid'] })
     }
 }

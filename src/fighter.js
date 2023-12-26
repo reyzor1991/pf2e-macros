@@ -109,9 +109,7 @@ async function knockdown(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const ev = game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
-        : event;
+    const ev = eventSkipped(event);
 
     const primaryMessage = await primary.variants[map].roll({ event:ev });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
@@ -186,9 +184,7 @@ async function dazingBlow(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const ev = game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
-        : event;
+    const ev = eventSkipped(event);
 
     let hasWorkbench = game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
     if (!primary.item.actor.rollOptions?.["all"]?.["dazing-blow"]) {
@@ -276,9 +272,7 @@ async function snaggingStrike(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const ev = game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
-        : event;
+    const ev = eventSkipped(event);
 
     const primaryMessage = await primary.variants[map].roll({ event:ev });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;

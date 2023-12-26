@@ -2,6 +2,12 @@ const moduleName = "pf2e-action-support-engine-macros";
 
 let DamageRoll = undefined;
 
+function eventSkipped(event) {
+    return game.settings.get(moduleName, "skipRollDialogMacro")
+        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showCheckDialogs})
+        : event;
+}
+
 Hooks.once("init", () => {
     DamageRoll = CONFIG.Dice.rolls.find( r => r.name === "DamageRoll" );
 
@@ -99,14 +105,12 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
 
     Hooks.on('preCreateChatMessage', PD);
 
-    const ev = game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showRollDialogs})
-        : event;
+    const ev = eventSkipped(event);
 
     if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
     }
-    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryMessage = await primary.variants[map].roll({ 'event':ev });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
     if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
@@ -128,7 +132,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         secondOpts.push("twin-feint-second-attack")
     }
 
-    const secondaryMessage = await secondary.variants[map2].roll({ event:ev, options: secondOpts});
+    const secondaryMessage = await secondary.variants[map2].roll({ 'event':ev, options: secondOpts});
     const secondaryDegreeOfSuccess = secondaryMessage.degreeOfSuccess;
 
     const fOpt = [...options, "macro:damage"];

@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.27
+- Optimization
+
 ## Version 0.0.26
 - Add refocus to macro
 
