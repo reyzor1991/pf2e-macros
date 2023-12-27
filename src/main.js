@@ -28,6 +28,8 @@ Hooks.once("init", () => {
         choices: {
             'remaster': 'DC is 15',
             'old': 'DC is 20',
+            'homebrew10': 'DC is 10',
+            'homebrew13': 'DC is 13',
         },
         type: String,
     });

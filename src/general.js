@@ -79,10 +79,17 @@ async function addImmunity(_token, target) {
     await game.actionsupportengine.addItemToActor(target, exampleImmunityEffect);
 };
 
+const defDCMap = {
+    'remaster': 15,
+    'old': 20,
+    'homebrew10': 10,
+    'homebrew13': 13,
+}
+
 async function aid(actor) {
     if (game.user.targets.size === 0) { ui.notifications.info(`Need to select target to apply Aid effect`); }
 
-    let defDC = game.settings.get(moduleName, "defAidDC") === 'remaster' ? 15 : 20;
+    let defDC = defDCMap[game.settings.get(moduleName, "defAidDC")];
     let styles = `style="display: flex; align-items: center; justify-content: space-between;"`
     let weapons = actor.system.actions.filter(h => h.ready);
 
