@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.30
+- fix Certain Strike
+
 ## Version 0.0.29
 - Add Certain Strike
 

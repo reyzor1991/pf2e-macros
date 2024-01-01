@@ -347,15 +347,50 @@ async function certainStrike(actor) {
     let formula = await primary.damage({ getFormula: true });
     let damageAll = [...formula.matchAll(/\+ ([0-9]{1,})\)? ([a-z]{1,})/g)]
     let damage = damageAll.map(a=>`${a[1]}[${a[2]}]`).join(",")
+    let damageMods = damageAll.map(a=>Number(a[1]))
     if (damage) {
         let target = game.user.targets.first()
         const targetFlag = target ? { actor: target.actor.uuid, token: target.document.uuid } : null;
-        new DamageRoll(damage).toMessage({ flags: {
-            pf2e: {
-                context: {target: targetFlag,},
-                target: targetFlag
+        new DamageRoll(damage, {}, {
+                rollerId: game.userId,
+                damage: {
+                    damage: {
+                        modifiers: damageMods.map(d=> {
+                            return {type: "untyped", label: "Certain Strike", modifier: d, enabled: true, ignored: false, predicate: [], source: primary.item?.uuid, kind: "modifier"}
+                        }),
+                    },
+                },
+                degreeOfSuccess: 1,
+                critRule: null,
+                ignoredResistances: []
+            })
+            .toMessage({
+            speaker: ChatMessage.getSpeaker({
+                actor,
+            }),
+            flags: {
+                pf2e: {
+                    context: {
+                        type: 'damage-roll',
+                        actor: actor.id,
+                        target: targetFlag,
+                        sourceType: "attack",
+                        outcome: "failure",
+                        traits: ['attack']
+                    },
+                    origin: primary.item.getOriginData(),
+                    strike: {
+                        actor: actor.uuid,
+                        index: actor.system.actions.indexOf(primary),
+                        damaging: true,
+                        name: primary.item.name,
+                        altUsage: primary.item.altUsageType,
+                    },
+                    modifiers: [],
+                    target: targetFlag
+                },
             },
-        },})
+        })
     }
 }
 
