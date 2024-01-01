@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.29
+- Add Certain Strike
+
 ## Version 0.0.28
 - Add new Aid DCs
 

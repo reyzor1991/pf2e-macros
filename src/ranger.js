@@ -65,7 +65,7 @@ async function huntedShot(actor) {
     let secondary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
     combinedDamage("Hunted Shot", primary, secondary, [], map, map2);
-}
+};
 
 async function twinTakedown(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}

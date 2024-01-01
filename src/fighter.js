@@ -223,7 +223,7 @@ async function dazingBlow(actor) {
 
 async function snaggingStrike(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`); return; }
 
     let feat = actor?.itemTypes?.feat?.find(c => "snagging-strike" === c.slug);
     if ( !feat ) {
@@ -287,6 +287,76 @@ async function snaggingStrike(actor) {
     }
 
     await game.actionsupportengine.setEffectToActor(game.user.targets.first().actor, "Compendium.pf2e-action-support-engine.effects.Item.YsNqG4OocHoErbc9", feat.level, {origin: {actor:actor?.uuid, item: feat.uuid}} )
+};
+
+async function certainStrike(actor) {
+    if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
+    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`); return; }
+
+    let feat = actor?.itemTypes?.feat?.find(c => "certain-strike" === c.slug);
+    if ( !feat ) {
+        ui.notifications.warn(`${actor.name} does not have Certain Strike!`);
+        return;
+    }
+
+    const weapons = actor.system.actions.filter( h => h.ready && h.item?.isMelee);
+    if (weapons.length === 0) {
+        ui.notifications.warn(`${actor.name} doesn't have correct weapon'`);
+        return;
+    }
+
+    let weaponOptions = '';
+    for ( const w of weapons ) {
+        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
+    }
+
+    const { currentWeapon, map } = await Dialog.wait({
+        title:"Certain Strike",
+        content: `
+            <div><div><h3>Attack</h3><select id="fob1" autofocus>
+                ${weaponOptions}
+            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
+                <select id="map">
+                <option value=1>MAP -5(-4 for agile)</option>
+                <option value=2>MAP -10(-8 for agile)</option>
+            </select><hr>
+        `,
+        buttons: {
+                ok: {
+                    label: "Attack",
+                    icon: "<i class='fa-solid fa-hand-fist'></i>",
+                    callback: (html) => { return { currentWeapon: [html[0].querySelector("#fob1").value], map: parseInt(html[0].querySelector("#map").value)} }
+                },
+                cancel: {
+                    label: "Cancel",
+                    icon: "<i class='fa-solid fa-ban'></i>",
+                }
+        },
+        default: "ok"
+    });
+
+    if ( currentWeapon === undefined || map === undefined ) { return; }
+    let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
+
+    const ev = eventSkipped(event);
+
+    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
+    if ( primaryDegreeOfSuccess != 1 ) { return }
+
+    let formula = await primary.damage({ getFormula: true });
+    let damageAll = [...formula.matchAll(/\+ ([0-9]{1,})\)? ([a-z]{1,})/g)]
+    let damage = damageAll.map(a=>`${a[1]}[${a[2]}]`).join(",")
+    if (damage) {
+        let target = game.user.targets.first()
+        const targetFlag = target ? { actor: target.actor.uuid, token: target.document.uuid } : null;
+        new DamageRoll(damage).toMessage({ flags: {
+            pf2e: {
+                context: {target: targetFlag,},
+                target: targetFlag
+            },
+        },})
+    }
 }
 
 Hooks.once("init", () => {
@@ -295,5 +365,6 @@ Hooks.once("init", () => {
         "knockdown": knockdown,
         "dazingBlow": dazingBlow,
         "snaggingStrike": snaggingStrike,
+        "certainStrike": certainStrike,
     })
 });
