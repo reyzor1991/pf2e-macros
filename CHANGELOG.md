@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.31
+- Certain Strike - set correct info about MAP
+
 ## Version 0.0.30
 - fix Certain Strike
 

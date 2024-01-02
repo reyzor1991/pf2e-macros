@@ -349,22 +349,24 @@ async function certainStrike(actor) {
     let damage = damageAll.map(a=>`${a[1]}[${a[2]}]`).join(",")
     let damageMods = damageAll.map(a=>Number(a[1]))
     if (damage) {
+        let options = [`map:increases:${map}`]
+
         let target = game.user.targets.first()
         const targetFlag = target ? { actor: target.actor.uuid, token: target.document.uuid } : null;
         new DamageRoll(damage, {}, {
-                rollerId: game.userId,
+            rollerId: game.userId,
+            damage: {
                 damage: {
-                    damage: {
-                        modifiers: damageMods.map(d=> {
-                            return {type: "untyped", label: "Certain Strike", modifier: d, enabled: true, ignored: false, predicate: [], source: primary.item?.uuid, kind: "modifier"}
-                        }),
-                    },
+                    modifiers: damageMods.map(d=> {
+                        return {type: "untyped", label: "Certain Strike", modifier: d, enabled: true, ignored: false, predicate: [], source: primary.item?.uuid, kind: "modifier"}
+                    }),
                 },
-                degreeOfSuccess: 1,
-                critRule: null,
-                ignoredResistances: []
-            })
-            .toMessage({
+            },
+            degreeOfSuccess: 1,
+            critRule: null,
+            ignoredResistances: []
+        })
+        .toMessage({
             speaker: ChatMessage.getSpeaker({
                 actor,
             }),
@@ -376,7 +378,9 @@ async function certainStrike(actor) {
                         target: targetFlag,
                         sourceType: "attack",
                         outcome: "failure",
-                        traits: ['attack']
+                        traits: ['attack'],
+                        options,
+                        mapIncreases: map
                     },
                     origin: primary.item.getOriginData(),
                     strike: {
