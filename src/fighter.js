@@ -144,7 +144,7 @@ async function dazingBlow(actor) {
     if (!game.user.targets.first().actor.itemTypes.condition.find(a=>a.slug==='grabbed' || a.slug==='restrained')) { ui.notifications.info(`Target is not grabbed`);return; }
     const feat = actor?.itemTypes?.feat?.find(c => "dazing-blow" === c.slug);
     if ( !feat ) {
-        ui.notifications.warn(`${actor.name} does not have Double Slice!`);
+        ui.notifications.warn(`${actor.name} does not have Dazing Blow!`);
         return;
     }
 
