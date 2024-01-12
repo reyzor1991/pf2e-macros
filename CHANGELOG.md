@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.32
+- Fix Flurry of Blows
+
 ## Version 0.0.31
 - Certain Strike - set correct info about MAP
 
