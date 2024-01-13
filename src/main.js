@@ -2,9 +2,9 @@ const moduleName = "pf2e-action-support-engine-macros";
 
 let DamageRoll = undefined;
 
-function eventSkipped(event) {
+function eventSkipped(event, isDamage=false) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': game.user.flags.pf2e.settings.showCheckDialogs})
+        ? new KeyboardEvent('keydown', {'shiftKey': isDamage?game.user.flags.pf2e.settings.showDamageDialogs:game.user.flags.pf2e.settings.showCheckDialogs})
         : event;
 }
 
@@ -137,6 +137,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     const secondaryMessage = await secondary.variants[map2].roll({ 'event':ev, options: secondOpts});
     const secondaryDegreeOfSuccess = secondaryMessage.degreeOfSuccess;
 
+    if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
+        await primary.item.actor.toggleRollOption("all", "double-slice-second")
+    }
+
     const fOpt = [...options, "macro:damage"];
     const sOpt = [...options, "macro:damage"];
     if (game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike')) {
@@ -148,8 +152,8 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     }
 
     let pd,sd;
-    if ( primaryDegreeOfSuccess === 2 ) { pd = await primary.damage({event, options: fOpt}); }
-    if ( primaryDegreeOfSuccess === 3 ) { pd = await primary.critical({event, options: fOpt}); }
+    if ( primaryDegreeOfSuccess === 2 ) { pd = await primary.damage({event: eventSkipped(event, true), options: fOpt}); }
+    if ( primaryDegreeOfSuccess === 3 ) { pd = await primary.critical({event: eventSkipped(event, true), options: fOpt}); }
 
     if (damages.length > 0) {
         if (damages[0].flags.pf2e.modifiers.find(a=>["precision"].includes(a.slug) && a.enabled) || options.includes("double-slice-second")) {
@@ -159,8 +163,8 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         await fistAttack(damages[0])
     }
 
-    if ( secondaryDegreeOfSuccess === 2 ) { sd = await secondary.damage({event, options: sOpt}); }
-    if ( secondaryDegreeOfSuccess === 3 ) { sd = await secondary.critical({event, options: sOpt}); }
+    if ( secondaryDegreeOfSuccess === 2 ) { sd = await secondary.damage({event: eventSkipped(event, true), options: sOpt}); }
+    if ( secondaryDegreeOfSuccess === 3 ) { sd = await secondary.critical({event: eventSkipped(event, true), options: sOpt}); }
 
     Hooks.off('preCreateChatMessage', PD);
 

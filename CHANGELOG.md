@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.33
+- Fix Double Slice
+
 ## Version 0.0.32
 - Fix Flurry of Blows
 

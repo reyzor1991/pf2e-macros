@@ -17,10 +17,27 @@ async function doubleSlice(actor) {
         ui.notifications.warn(`${actor.name} needs only 2 one-handed melee weapons can be equipped at a time.'`);
         return;
     }
+    if (weapons[0].item.system.traits.value.includes("agile")) {
+        const element = weapons.splice(0, 1)[0];
+        weapons.splice(1, 0, element);
+    }
 
-    const { map } = await Dialog.wait({
+    let weaponOptions = '';
+    let weaponOptions2 = '';
+    for ( const w of weapons ) {
+        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
+        weaponOptions2 += `<option value=${w.item.id} ${weapons[1].item.id === w.item.id? 'selected':''}>${w.item.name}</option>`
+    }
+
+    const { weapon1, weapon2, map } = await Dialog.wait({
         title:"Double Slice",
         content: `
+        <div class="row-flurry"><div class="column-flurry first-flurry"><h3>First Attack</h3><select id="fob1" autofocus>
+                ${weaponOptions}
+            </select></div><div class="column-flurry second-flurry"><h3>Second Attack</h3>
+            <select id="fob2">
+                ${weaponOptions2}
+            </select></div></div><hr>
             <h3>Multiple Attack Penalty</h3>
                 <select id="map">
                 <option value=0>No MAP</option>
@@ -32,7 +49,11 @@ async function doubleSlice(actor) {
                 ok: {
                     label: "Attack",
                     icon: "<i class='fa-solid fa-hand-fist'></i>",
-                    callback: (html) => { return { map: parseInt(html[0].querySelector("#map").value)} }
+                    callback: (html) => { return {
+                        map: parseInt(html[0].querySelector("#map").value),
+                        weapon1: $(html[0]).find("#fob1").val(),
+                        weapon2: $(html[0]).find("#fob2").val(),
+                    } }
                 },
                 cancel: {
                     label: "Cancel",
@@ -44,15 +65,14 @@ async function doubleSlice(actor) {
         },
         default: "ok"
     });
-
-    if ( map === undefined ) { return; }
-
-    let primary =  actor.system.actions.find( w => w.item.id === weapons[0].item.id );
-    let secondary =  actor.system.actions.find( w => w.item.id === weapons[1].item.id );
-    if (primary.item.system.traits.value.includes("agile")) {
-        primary =  actor.system.actions.find( w => w.item.id === weapons[1].item.id );
-        secondary =  actor.system.actions.find( w => w.item.id === weapons[0].item.id );
+    if ( weapon1 === undefined || weapon2 === undefined || map === undefined ) { return; }
+    if ( weapon1 === weapon2) {
+        ui.notifications.info("Need to select different weapons");
+        return;
     }
+
+    let primary =  actor.system.actions.find( w => w.item.id === weapon1 );
+    let secondary =  actor.system.actions.find( w => w.item.id === weapon2 );
 
     combinedDamage("Double Slice", primary, secondary, ["double-slice-second"], map, map);
 }
@@ -109,17 +129,15 @@ async function knockdown(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const ev = eventSkipped(event);
-
-    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryMessage = await primary.variants[map].roll({ event:eventSkipped(event) });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
     let pd;
     if (game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike')) {
         pd = true;
     } else {
-        if ( primaryDegreeOfSuccess === 2 ) { pd = await primary.damage({event}); }
-        if ( primaryDegreeOfSuccess === 3 ) { pd = await primary.critical({event}); }
+        if ( primaryDegreeOfSuccess === 2 ) { pd = await primary.damage({event: eventSkipped(event, true)}); }
+        if ( primaryDegreeOfSuccess === 3 ) { pd = await primary.critical({event: eventSkipped(event, true)}); }
     }
 
     if (pd) {
@@ -184,8 +202,6 @@ async function dazingBlow(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const ev = eventSkipped(event);
-
     let hasWorkbench = game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
     if (!primary.item.actor.rollOptions?.["all"]?.["dazing-blow"]) {
         await primary.item.actor.toggleRollOption("all", "dazing-blow")
@@ -197,8 +213,8 @@ async function dazingBlow(actor) {
     if ( primaryDegreeOfSuccess === 1 || primaryDegreeOfSuccess === 0 ) {return}
 
     if (!hasWorkbench) {
-        if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: ev}); }
-        if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event: ev}); }
+        if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: eventSkipped(event, true)}); }
+        if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event:eventSkipped(event, true)}); }
     }
 
     if (primary.item.actor.rollOptions?.["all"]?.["dazing-blow"]) {
@@ -272,8 +288,6 @@ async function snaggingStrike(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const ev = eventSkipped(event);
-
     const primaryMessage = await primary.variants[map].roll({ event:ev });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
@@ -282,8 +296,8 @@ async function snaggingStrike(actor) {
     let hasWorkbench = game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
 
     if (!hasWorkbench) {
-        if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: ev}); }
-        if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event: ev}); }
+        if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: eventSkipped(event, true)}); }
+        if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event: eventSkipped(event, true)}); }
     }
 
     await game.actionsupportengine.setEffectToActor(game.user.targets.first().actor, "Compendium.pf2e-action-support-engine.effects.Item.YsNqG4OocHoErbc9", feat.level, {origin: {actor:actor?.uuid, item: feat.uuid}} )
