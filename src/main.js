@@ -107,12 +107,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
 
     Hooks.on('preCreateChatMessage', PD);
 
-    const ev = eventSkipped(event);
-
     if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
     }
-    const primaryMessage = await primary.variants[map].roll({ 'event':ev });
+    const primaryMessage = await primary.variants[map].roll({ 'event': eventSkipped(event) });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
     if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
@@ -134,7 +132,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         secondOpts.push("twin-feint-second-attack")
     }
 
-    const secondaryMessage = await secondary.variants[map2].roll({ 'event':ev, options: secondOpts});
+    const secondaryMessage = await secondary.variants[map2].roll({ 'event': eventSkipped(event), options: secondOpts});
     const secondaryDegreeOfSuccess = secondaryMessage.degreeOfSuccess;
 
     if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {

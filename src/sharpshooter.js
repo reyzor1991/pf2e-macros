@@ -64,9 +64,8 @@ async function accidentalShot(actor) {
         }
     }
     Hooks.on('preCreateChatMessage', PD);
-    const ev = eventSkipped(event);
 
-    const primaryRoll = await primary.variants[map].roll({ event:ev });
+    const primaryRoll = await primary.variants[map].roll({ event: eventSkipped(event) });
     const primaryDegreeOfSuccess = primaryRoll?.degreeOfSuccess;
     if ( !primaryDegreeOfSuccess || primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1 ) {
         Hooks.off('preCreateChatMessage', PD);

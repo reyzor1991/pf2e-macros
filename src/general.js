@@ -150,8 +150,7 @@ async function aid(actor) {
             }
         }
     } else {
-        const ev = eventSkipped(event);
-        weapons.find(w => w.slug === id)?.roll({ event: ev, dc, options: [`action:aid:${id}`, 'action:aid'] })
+        weapons.find(w => w.slug === id)?.roll({ event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid'] })
     }
 }
 

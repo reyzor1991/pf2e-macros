@@ -151,7 +151,7 @@ async function knockdown(actor) {
             await game.actionsupportengine.applyDamage(game.user.targets.first().actor, game.user.targets.first(), formula);
         } else {
             let modifiers = [new game.pf2e.Modifier({ label: "PF2E.MultipleAttackPenalty", modifier: map > 0 ? Math.min(2, map) * -5 : map })]
-            game.pf2e.actions.trip({modifiers, event: ev });
+            game.pf2e.actions.trip({modifiers, event: eventSkipped(event) });
         }
     }
 }
@@ -207,7 +207,7 @@ async function dazingBlow(actor) {
         await primary.item.actor.toggleRollOption("all", "dazing-blow")
     }
 
-    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryMessage = await primary.variants[map].roll({ event: eventSkipped(event) });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
     if ( primaryDegreeOfSuccess === 1 || primaryDegreeOfSuccess === 0 ) {return}
@@ -288,7 +288,7 @@ async function snaggingStrike(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryMessage = await primary.variants[map].roll({ event: eventSkipped(event) });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
     if ( primaryDegreeOfSuccess === 1 || primaryDegreeOfSuccess === 0 ) {return}
@@ -352,38 +352,66 @@ async function certainStrike(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const ev = eventSkipped(event);
-
-    const primaryMessage = await primary.variants[map].roll({ event:ev });
+    const primaryMessage = await primary.variants[map].roll({ event: eventSkipped(event) });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
     if ( primaryDegreeOfSuccess != 1 ) { return }
 
-    let formula = await primary.damage({ getFormula: true });
-    let damageAll = [...formula.matchAll(/\+ ([0-9]{1,})\)? ([a-z]{1,})/g)]
+
+    const damages = [];
+    function PD(cm) {
+        if ( cm.user.id === game.userId && cm.isDamageRoll) {
+            damages.push(cm);
+            return false;
+        }
+    }
+    Hooks.on('preCreateChatMessage', PD);
+    await primary.damage({event: eventSkipped(event, true)});
+    Hooks.off('preCreateChatMessage', PD);
+
+    if (damages.length === 0) {
+        console.log(`Damage Message is missing`)
+        return;
+    }
+
+    let damageRoll = damages[0].rolls[0];
+    let damageMods = new game.pf2e.StatisticModifier("", damageRoll?.options?.damage?.damage?.modifiers ?? []).modifiers
+
+    let damageAll = [...damageRoll.formula.matchAll(/\+ ([0-9]{1,})\)? ([a-z]{1,})/g)]
     let damage = damageAll.map(a=>`${a[1]}[${a[2]}]`).join(",")
-    let damageMods = damageAll.map(a=>Number(a[1]))
     if (damage) {
         let options = [`map:increases:${map}`]
 
         let target = game.user.targets.first()
         const targetFlag = target ? { actor: target.actor.uuid, token: target.document.uuid } : null;
-        new DamageRoll(damage, {}, {
+
+        let roll = new DamageRoll(damage, {}, {
             rollerId: game.userId,
             damage: {
                 damage: {
-                    modifiers: damageMods.map(d=> {
-                        return {type: "untyped", label: "Certain Strike", modifier: d, enabled: true, ignored: false, predicate: [], source: primary.item?.uuid, kind: "modifier"}
-                    }),
+                    modifiers: damageMods,
+                    breakdown: {
+                        failure: damageMods.filter((m) => m.enabled).map((m) => `${m.label} ${m.modifier < 0 ? "" : "+"}${m.modifier}`)
+                    }
                 },
+                name: damages[0].item.name
             },
             degreeOfSuccess: 1,
             critRule: null,
+            showBreakdown: true,
             ignoredResistances: []
-        })
-        .toMessage({
+        });
+
+        let flavor = '';
+        let breakdownTags = roll.options.damage.damage.breakdown.failure.map(b=>
+            `<span class="tag tag_transparent" data-visibility="">${b}</span>`
+        );
+        flavor += breakdownTags.length > 0 ? `<div class="tags modifiers">${breakdownTags.join("")}</div>` : ""
+
+        roll.toMessage({
             speaker: ChatMessage.getSpeaker({
                 actor,
             }),
+            flavor,
             flags: {
                 pf2e: {
                     context: {
