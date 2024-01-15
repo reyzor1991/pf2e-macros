@@ -352,7 +352,7 @@ async function certainStrike(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    const primaryMessage = await primary.variants[map].roll({ event: eventSkipped(event) });
+    const primaryMessage = await primary.variants[map].roll({ event: eventSkipped(event), options: ["press","item:trait:press"] });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
     if ( primaryDegreeOfSuccess != 1 ) { return }
 
@@ -405,6 +405,9 @@ async function certainStrike(actor) {
         let breakdownTags = roll.options.damage.damage.breakdown.failure.map(b=>
             `<span class="tag tag_transparent" data-visibility="">${b}</span>`
         );
+        flavor += `<h4 class="action"><strong>Damage Roll: Certain Strike</strong><span class="subtitle">(Miss)</span></h4>`
+        flavor += `<div class="tags" data-tooltip-class="pf2e"><span class="tag" data-trait="press" data-tooltip="PF2E.TraitDescriptionPress" aria-describedby="tooltip">${game.i18n.localize("PF2E.TraitPress")}</span></div>`
+        flavor += `<hr>`
         flavor += breakdownTags.length > 0 ? `<div class="tags modifiers">${breakdownTags.join("")}</div>` : ""
 
         roll.toMessage({

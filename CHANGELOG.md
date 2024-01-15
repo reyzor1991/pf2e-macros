@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.35
+- Add more details to Certain strike
+
 ## Version 0.0.34
 - Add details to Certain strike
 
