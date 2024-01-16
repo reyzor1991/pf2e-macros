@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.36
+- Fix Twin Takedown - combination weapons
+
 ## Version 0.0.35
 - Add more details to Certain strike
 
