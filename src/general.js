@@ -155,7 +155,7 @@ async function aid(actor) {
 }
 
 async function explorationActivity(actor) {
-    if (!actor) { ui.notifications.info(`Need to select target to apply Aid effect`); }
+    if (!actor) { ui.notifications.info(`Select your token before using this macro`); }
 
     const actions = [
         {

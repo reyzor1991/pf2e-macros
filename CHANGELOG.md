@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.37
+- Fix Exploration Activities message error
+
 ## Version 0.0.36
 - Fix Twin Takedown - combination weapons
 
