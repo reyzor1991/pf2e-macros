@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.38
+- Send more details in combined damage message
+
 ## Version 0.0.37
 - Fix Exploration Activities message error
 

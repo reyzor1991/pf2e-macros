@@ -133,7 +133,7 @@ async function knockdown(actor) {
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
     let pd;
-    if (game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike')) {
+    if (xdyAutoRoll(primaryMessage)) {
         pd = true;
     } else {
         if ( primaryDegreeOfSuccess === 2 ) { pd = await primary.damage({event: eventSkipped(event, true)}); }
@@ -202,7 +202,6 @@ async function dazingBlow(actor) {
     if ( currentWeapon === undefined || map === undefined ) { return; }
     let primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 
-    let hasWorkbench = game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
     if (!primary.item.actor.rollOptions?.["all"]?.["dazing-blow"]) {
         await primary.item.actor.toggleRollOption("all", "dazing-blow")
     }
@@ -212,7 +211,7 @@ async function dazingBlow(actor) {
 
     if ( primaryDegreeOfSuccess === 1 || primaryDegreeOfSuccess === 0 ) {return}
 
-    if (!hasWorkbench) {
+    if (!xdyAutoRoll(primaryMessage)) {
         if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: eventSkipped(event, true)}); }
         if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event:eventSkipped(event, true)}); }
     }
@@ -293,9 +292,7 @@ async function snaggingStrike(actor) {
 
     if ( primaryDegreeOfSuccess === 1 || primaryDegreeOfSuccess === 0 ) {return}
 
-    let hasWorkbench = game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
-
-    if (!hasWorkbench) {
+    if (!xdyAutoRoll(primaryMessage)) {
         if ( primaryDegreeOfSuccess === 2 ) {await primary.damage({event: eventSkipped(event, true)}); }
         if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event: eventSkipped(event, true)}); }
     }

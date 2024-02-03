@@ -72,7 +72,7 @@ async function accidentalShot(actor) {
         return;
     }
 
-    const isWorkbench = game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
+    const isWorkbench = xdyAutoRoll(primaryRoll);
 
     const options = ["skip-handling-message"];
     if ( primaryDegreeOfSuccess === 2 ) {

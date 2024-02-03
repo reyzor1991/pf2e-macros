@@ -8,6 +8,19 @@ function eventSkipped(event, isDamage=false) {
         : event;
 }
 
+function xdyAutoRoll(roll) {
+    return game.modules.get('xdy-pf2e-workbench')?.active
+    && (
+        ["all", "players"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
+        && roll.roller.id === game.user?.id && !game.user?.isGM
+    )
+    && (
+        ["all", "gm"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
+        && roll.roller.id === game.user?.id && game.user?.isGM
+    )
+    && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
+}
+
 Hooks.once("init", () => {
     DamageRoll = CONFIG.Dice.rolls.find( r => r.name === "DamageRoll" );
 
@@ -93,15 +106,10 @@ async function fistAttack(message) {
 async function combinedDamage(name, primary, secondary, options, map, map2) {
     let onlyOnePrecision = false;
     const damages = [];
-    const attack = [];
     function PD(cm) {
         if ( cm.user.id === game.userId && cm.isDamageRoll) {
-            if (hasOption(cm, "macro:damage")) {
-                damages.push(cm);
-            }
+            damages.push(cm);
             return false;
-        } else if ( cm.user.id === game.userId && cm.isCheckRoll) {
-            attack.push(cm);
         }
     }
 
@@ -117,7 +125,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
     }
 
-    if (attack[0] && attack[0]?.flags?.pf2e?.modifiers?.find(a=>a.slug === "aid" && a.enabled)) {
+    if (primaryMessage && primaryMessage?.flags?.pf2e?.modifiers?.find(a=>a.slug === "aid" && a.enabled)) {
         const eff = game.actionsupportengine.hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
         if (eff) {
             await game.actionsupportengine.deleteItem(eff)
@@ -139,19 +147,17 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
     }
 
-    const fOpt = [...options, "macro:damage"];
-    const sOpt = [...options, "macro:damage"];
-    if (game.settings.settings.has('xdy-pf2e-workbench.autoRollDamageForStrike') && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike')) {
-        fOpt.push("skip-handling-message");
-        sOpt.push("skip-handling-message");
+    const fOpt = [...options];
+    const sOpt = [...options];
+
+    if (!xdyAutoRoll(primaryMessage)) {
+        if ( primaryDegreeOfSuccess === 2 ) { await primary.damage({event: eventSkipped(event, true), options: fOpt}); }
+        if ( primaryDegreeOfSuccess === 3 ) { await primary.critical({event: eventSkipped(event, true), options: fOpt}); }
     }
+
     if (options.includes("twin-feint")) {
         sOpt.push("twin-feint-second-attack")
     }
-
-    let pd,sd;
-    if ( primaryDegreeOfSuccess === 2 ) { pd = await primary.damage({event: eventSkipped(event, true), options: fOpt}); }
-    if ( primaryDegreeOfSuccess === 3 ) { pd = await primary.critical({event: eventSkipped(event, true), options: fOpt}); }
 
     if (damages.length > 0) {
         if (damages[0].flags.pf2e.modifiers.find(a=>["precision"].includes(a.slug) && a.enabled) || options.includes("double-slice-second")) {
@@ -161,8 +167,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         await fistAttack(damages[0])
     }
 
-    if ( secondaryDegreeOfSuccess === 2 ) { sd = await secondary.damage({event: eventSkipped(event, true), options: sOpt}); }
-    if ( secondaryDegreeOfSuccess === 3 ) { sd = await secondary.critical({event: eventSkipped(event, true), options: sOpt}); }
+    if (!xdyAutoRoll(secondaryMessage)) {
+        if ( secondaryDegreeOfSuccess === 2 ) { await secondary.damage({event: eventSkipped(event, true), options: sOpt}); }
+        if ( secondaryDegreeOfSuccess === 3 ) { await secondary.critical({event: eventSkipped(event, true), options: sOpt}); }
+    }
 
     Hooks.off('preCreateChatMessage', PD);
 
@@ -200,26 +208,41 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         + (damages[0].flavor === damages[1].flavor
             ? `<p>Both Attack<hr>${damages[0].flavor}</p><hr>`
             : `<hr>${damages[0].flavor}<hr>${damages[1].flavor}`)
+
     const target = damages[0].target;
-    await ChatMessage.create({
+    const originF = damages[0]?.flags?.pf2e?.origin;
+    const originS = damages[0]?.flags?.pf2e?.origin;
+
+    let messageData = {
         flags: {
             pf2e: {
-                target: damages[0].target,
+                target: {
+                    actor: target?.actor?.uuid,
+                    token: target?.token?.uuid
+                },
                 context: {
                     options: [...new Set(opts)],
                     domains: [...new Set(doms)],
                     type: "damage-roll",
-                    target: damages[0].target,
+                    target: {
+                        actor: target?.actor?.uuid,
+                        token: target?.token?.uuid
+                    },
                 },
                 modifiers: [...new Set(mods)]
             }
         },
-        target: damages[0].target,
         rolls,
         type: CONST.CHAT_MESSAGE_TYPES.ROLL,
         flavor,
         speaker: ChatMessage.getSpeaker(),
-    });
+    };
+
+    if (originF && originS && originF === originS) {
+        messageData.flags.pf2e.origin = originF;
+    }
+
+    await ChatMessage.create(messageData);
 };
 
 function createDataDamageOnlyOnePrecision(damages) {
