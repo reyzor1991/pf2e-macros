@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.39
+- Fix Flurry of Blow
+
 ## Version 0.0.38
 - Send more details in combined damage message
 
