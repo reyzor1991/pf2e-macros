@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.40
+- Fix Flurry of Blow
+
 ## Version 0.0.39
 - Fix Flurry of Blow
 

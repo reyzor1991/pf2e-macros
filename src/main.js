@@ -163,9 +163,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         if (
             damages[0].rolls[0].options?.damage?.damage?.dice?.find(a=>["precision"].includes(a.category) && a.enabled)
             || damages[0].rolls[0].options?.damage?.damage?.modifiers?.find(a=>["precision"].includes(a.damageCategory) && a.enabled)
-            || options.includes("double-slice-second")
         ) {
-            onlyOnePrecision = true;
+            if (options.includes("double-slice-second")) {
+                onlyOnePrecision = true;
+            }
         }
         await gravityWeapon(damages[0])
         await fistAttack(damages[0])
