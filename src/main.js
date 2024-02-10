@@ -8,6 +8,14 @@ function eventSkipped(event, isDamage=false) {
         : event;
 }
 
+function rollSkipDialog(event) {
+    return game.settings.get(moduleName, "skipRollDialogMacro")
+        ? true
+        : (
+            event.shiftKey ? game.user.flags.pf2e.settings.showCheckDialogs : !game.user.flags.pf2e.settings.showCheckDialogs
+        );
+}
+
 function xdyAutoRoll(roll) {
     return game.modules.get('xdy-pf2e-workbench')?.active
     && (

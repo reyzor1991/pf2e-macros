@@ -221,7 +221,7 @@ async function dazingBlow(actor) {
     }
 
     const cfResult = await game.user.targets.first().actor.saves.fortitude.roll({
-        skipDialog: true,
+        skipDialog: rollSkipDialog(event),
         origin: actor,
         dc: {
             label: "Dazing Blow DC",

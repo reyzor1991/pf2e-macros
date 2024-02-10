@@ -27,8 +27,7 @@ async function scareToDeath(actor) {
         }));
     }
 
-    const skipDialog = game.settings.get(moduleName, "skipRollDialogMacro");
-    const result = await actor.skills['intimidation'].roll({ skipDialog, modifiers, origin: null, dc, traits, title, item: feat, target: game.user.targets.first().actor, extraRollOptions });
+    const result = await actor.skills['intimidation'].roll({ skipDialog: rollSkipDialog(event), modifiers, origin: null, dc, traits, title, item: feat, target: game.user.targets.first().actor, extraRollOptions });
 
     await addImmunity(_token, game.user.targets.first().actor);
 
@@ -39,7 +38,7 @@ async function scareToDeath(actor) {
     } else if (result.degreeOfSuccess === 3) {
         const actorDC = actor?.getStatistic('intimidation')?.dc
         const cfResult = await game.user.targets.first().actor.saves.fortitude.roll({
-            skipDialog: true,
+            skipDialog: rollSkipDialog(event),
             origin: actor,
             dc: {
                 label: "Scare to Death DC",
@@ -138,8 +137,7 @@ async function aid(actor) {
     if (!id) { return }
 
     if (isSkill) {
-        const skipDialog = game.settings.get(moduleName, "skipRollDialogMacro");
-        let roll = await actor.getStatistic(id).roll({ skipDialog, dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
+        let roll = await actor.getStatistic(id).roll({ skipDialog: rollSkipDialog(event), dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
         if (
             id === 'diplomacy'
             && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.classfeatures.Item.4lGhbEjlEoGP4scl" === c.sourceId)

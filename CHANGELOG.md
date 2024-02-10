@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.41
+- Fix Skip dialog for macros
+
 ## Version 0.0.40
 - Fix Flurry of Blow
 
