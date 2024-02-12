@@ -1,10 +1,13 @@
 const moduleName = "pf2e-action-support-engine-macros";
 
 let DamageRoll = undefined;
+let DamageInstance = undefined;
+let ArithmeticExpression = undefined;
+let InstancePool = undefined;
 
 function eventSkipped(event, isDamage=false) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': isDamage?game.user.flags.pf2e.settings.showDamageDialogs:game.user.flags.pf2e.settings.showCheckDialogs})
+        ? new KeyboardEvent('keydown', {'shiftKey': isDamage ? game.user.flags.pf2e.settings.showDamageDialogs:game.user.flags.pf2e.settings.showCheckDialogs})
         : event;
 }
 
@@ -31,6 +34,10 @@ function xdyAutoRoll(roll) {
 
 Hooks.once("init", () => {
     DamageRoll = CONFIG.Dice.rolls.find( r => r.name === "DamageRoll" );
+
+    DamageInstance = CONFIG.Dice.rolls.find((r) => r.name === "DamageInstance");
+    ArithmeticExpression = CONFIG.Dice.termTypes.ArithmeticExpression;
+    InstancePool = CONFIG.Dice.termTypes.InstancePool;
 
     game.settings.register(moduleName, "skipRollDialogMacro", {
         name: "Skip RollDialog for macros",
@@ -127,7 +134,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
     }
     const primaryMessage = await primary.variants[map].roll({ 'event': eventSkipped(event) });
-    const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
+    const primaryDegreeOfSuccess = primaryMessage.options.degreeOfSuccess;
 
     if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
@@ -149,14 +156,14 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     }
 
     const secondaryMessage = await secondary.variants[map2].roll({ 'event': eventSkipped(event), options: secondOpts});
-    const secondaryDegreeOfSuccess = secondaryMessage.degreeOfSuccess;
+    const secondaryDegreeOfSuccess = secondaryMessage.options.degreeOfSuccess;
 
     if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
         await primary.item.actor.toggleRollOption("all", "double-slice-second")
     }
 
-    const fOpt = [...options];
-    const sOpt = [...options];
+    const fOpt = [...options, "skip-handling-message"];
+    const sOpt = [...options, "skip-handling-message"];
 
     if (!xdyAutoRoll(primaryMessage)) {
         if ( primaryDegreeOfSuccess === 2 ) { await primary.damage({event: eventSkipped(event, true), options: fOpt}); }
@@ -168,13 +175,8 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     }
 
     if (damages.length > 0) {
-        if (
-            damages[0].rolls[0].options?.damage?.damage?.dice?.find(a=>["precision"].includes(a.category) && a.enabled)
-            || damages[0].rolls[0].options?.damage?.damage?.modifiers?.find(a=>["precision"].includes(a.damageCategory) && a.enabled)
-        ) {
-            if (options.includes("double-slice-second")) {
-                onlyOnePrecision = true;
-            }
+        if (hasPrecisionDamage(damages[0].rolls[0]) && options.includes("double-slice-second")) {
+            onlyOnePrecision = true;
         }
         await gravityWeapon(damages[0])
         await fistAttack(damages[0])
@@ -200,24 +202,14 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     }
 
     if ( (primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
-        ChatMessage.createDocuments(damages);
+        let m = damages[0].toObject();
+        m.flags.pf2e.context.options=m.flags.pf2e.context.options.filter(e=>e!="skip-handling-message");
+        ChatMessage.createDocuments([m]);
         return;
     }
 
-    console.log(onlyOnePrecision)
-
-
-    const data = !onlyOnePrecision
-        ? createDataDamage(damages.map(a=>a.rolls).flat().map(a=>a.terms).flat().map(a=>a.rolls).flat())
-        : createDataDamageOnlyOnePrecision(damages);
-
-    const formulas = [];
-    Object.keys(data).forEach(k=>{
-         formulas.push(`(${data[k].join('+')})[${k}]`);
-    });
-
-    const rolls = [await new DamageRoll(formulas.join(',')).evaluate( {async: true} )];
-    const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options);
+    const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a=>a.rolls[0]));
+    const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e=>e != 'skip-handling-message');
     const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
     const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
     const flavor = `<strong>${name} Total Damage</strong>`
@@ -261,63 +253,93 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     await ChatMessage.create(messageData);
 };
 
+const TO_AVERAGE_DMG = {
+    'd4': 3,
+    'd6': 4,
+    'd8': 5,
+    'd10': 6,
+    'd12': 7,
+}
+
+function hasPrecisionDamage(damage) {
+    return damage._formula.includes('precision')
+}
+
+function createNewDamageRolls(onlyOnePrecision, damages) {
+    if (onlyOnePrecision && hasPrecisionDamage(damages[0]) && hasPrecisionDamage(damages[1])) {
+        return createDataDamageOnlyOnePrecision(damages)
+    }
+    return combineDamages(damages);
+}
+
+function combineDamages(damages) {
+    let operands = damages.map(a=>a.instances[0]).map(a=>{
+        return {
+            class: "Grouping",
+            term: a.head.toJSON(),
+            options: a.head.toJSON().options
+        }
+    });
+
+    let dInstance = DamageInstance.fromTerms([ArithmeticExpression.fromData({
+        operator: '+',
+        operands,
+         evaluated: true
+     })], foundry.utils.deepClone(damages[0].instances[0].options))
+    let newInstances = [dInstance, ...damages[0].instances.slice(1), ...damages[1].instances.slice(1)];
+
+    return [DamageRoll.fromTerms([InstancePool.fromRolls(newInstances)])]
+}
+
 function createDataDamageOnlyOnePrecision(damages) {
-    if (damages[0].rolls[0]._formula.includes('precision') && damages[1].rolls[0]._formula.includes('precision')) {
-        let fDamages = damages[0].rolls.flat().map(a=>a.terms).flat().map(a=>a.rolls).flat();
-        let sDamages = damages[1].rolls.flat().map(a=>a.terms).flat().map(a=>a.rolls).flat();
+    let f = damages[0].options?.damage?.damage?.modifiers?.filter(a=>a.damageCategory==="precision" && a.enabled)?.map(a=>a.modifier)?.reduce((a, b) => a + b, 0) ?? 0;
+    const fR = damages[0].options?.damage?.damage?.dice?.filter(a=>a.category==="precision" && a.enabled).map(a=>a.diceNumber*TO_AVERAGE_DMG[a.dieSize])?.reduce((a, b) => a + b, 0) ?? 0;
+    const fRMod = damages[0].options.degreeOfSuccess === 3 ? 2 : 1;
 
-        const fR = damages[0].rolls[0]._formula.match(/\+ (([0-9]{1,})d(4|6|8|10|12)|(\(([0-9]{1,})d(4|6|8|10|12)(\[doubled\])?( \+ ([0-9]{1,}))?\)))\[precision\]/);
-        const fRMod = damages[0].rolls[0].options.degreeOfSuccess === 3 ? 2 : 1;
-        const sR = damages[1].rolls[0]._formula.match(/\+ (([0-9]{1,})d(4|6|8|10|12)|(\(([0-9]{1,})d(4|6|8|10|12)(\[doubled\])?( \+ ([0-9]{1,}))?\)))\[precision\]/);
-        const sRMod = damages[1].rolls[0].options.degreeOfSuccess === 3 ? 2 : 1;
+    let s = damages[1].options?.damage?.damage?.modifiers?.filter(a=>a.damageCategory==="precision" && a.enabled)?.map(a=>a.modifier)?.reduce((a, b) => a + b, 0) ?? 0;
+    const sR = damages[1].options?.damage?.damage?.dice?.filter(a=>a.category==="precision" && a.enabled).map(a=>a.diceNumber*TO_AVERAGE_DMG[a.dieSize])?.reduce((a, b) => a + b, 0) ?? 0;
+    const sRMod = damages[1].options.degreeOfSuccess === 3 ? 2 : 1;
 
-        if (getSumDamage(fR, fRMod) > getSumDamage(sR, sRMod)) {
-            //delete from 2
-            sDamages = sDamages.map(obj => {
-                return {
-                    "head": {
-                        "formula": obj.head.formula.replace(sR[0], "")
-                    },
-                    "options": {
-                        "flavor": obj.options.flavor
-                    }
-                };
-            })
-        } else {
-            fDamages = fDamages.map(obj => {
-                return {
-                    "head": {
-                        "formula": obj.head.formula.replace(fR[0], "")
-                    },
-                    "options": {
-                        "flavor": obj.options.flavor
-                    }
-                };
-            })
-        }
-        return createDataDamage(fDamages.concat(sDamages));
+    let damageIdx = 0;
+    if (((f+fR) * fRMod) > ((s+sR) * sRMod)) {
+        //delete from 2
+        damageIdx = 1;
     }
-    return createDataDamage(damages.map(a=>a.rolls).flat().map(a=>a.terms).flat().map(a=>a.rolls).flat());
+
+    let json = deletePrecisionFrom(damages[damageIdx].instances[0].head.toJSON(), damages[damageIdx]?.options?.degreeOfSuccess === 3)
+    let dInstance = DamageInstance.fromTerms([RollTerm.fromData(json)], foundry.utils.deepClone(damages[damageIdx].instances[0].options))
+    damages[damageIdx] = DamageRoll.fromTerms([InstancePool.fromRolls([dInstance, ...damages[damageIdx].instances.slice(1)])])
+
+    return combineDamages(damages)
 }
 
-function getSumDamage(damage, mod) {
-    if (damage[2]&&damage[3]) {
-        return damage[2] * damage[3] * mod;
-    } else if (damage[5] && damage[6]) {
-        return ((damage[5] * damage[6]) + (damage[8] ?? 0)) * mod;
-    }
-}
-
-function createDataDamage(arr) {
-    const data = {}
-    for (const dr of arr) {
-        if (dr.options.flavor in data) {
-            data[dr.options.flavor].push(dr.head.formula);
+function deletePrecisionFrom(json, isCrit) {
+    if (json.term.class === "ArithmeticExpression") {
+        if (isCrit) {
+            if (json.term.operands[1].class === "Grouping") {
+                if (json.term.operands[1].term.class === "ArithmeticExpression") {
+                    if (json.term.operands[1].term.operands[0].class === 'ArithmeticExpression' && json.term.operands[1].term.operands[1].options.flavor === 'precision') {
+                        json.term.operands[1].term = json.term.operands[1].term.operands[0];
+                    }
+                }
+            } else if (json.term.operands[0].class === "ArithmeticExpression") {
+                if (json.term.operands[0].operands[1].class === "Grouping") {
+                    if (json.term.operands[0].operands[1].term.class === "ArithmeticExpression") {
+                        if (json.term.operands[0].operands[1].term.operands[0].class === 'ArithmeticExpression' && json.term.operands[0].operands[1].term.operands[1].options.flavor === 'precision') {
+                            json.term.operands[0].operands[1].term = json.term.operands[0].operands[1].term.operands[0];
+                        }
+                    }
+                }
+            }
         } else {
-            data[dr.options.flavor] = [dr.head.formula]
+            if (json.term.operands[0].class === 'ArithmeticExpression') {
+                if (json.term.operands[1].options.flavor === 'precision') {
+                    json.term = json.term.operands[0];
+                }
+            }
         }
     }
-    return data;
+    return json
 }
 
 function hasEffect(actor, eff) {

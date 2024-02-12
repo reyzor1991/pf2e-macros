@@ -87,6 +87,7 @@ const defDCMap = {
 
 async function aid(actor) {
     if (game.user.targets.size === 0) { ui.notifications.info(`Need to select target to apply Aid effect`); }
+    let target = game.user.targets.first().actor;
 
     let defDC = defDCMap[game.settings.get(moduleName, "defAidDC")];
     let styles = `style="display: flex; align-items: center; justify-content: space-between;"`
@@ -136,8 +137,12 @@ async function aid(actor) {
 
     if (!id) { return }
 
+    let roll;
+    let rank = 0;
     if (isSkill) {
-        let roll = await actor.getStatistic(id).roll({ skipDialog: rollSkipDialog(event), dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
+        rank = actor.skills[id].rank;
+        roll = await actor.getStatistic(id).roll({ skipDialog: rollSkipDialog(event), dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
+
         if (
             id === 'diplomacy'
             && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.classfeatures.Item.4lGhbEjlEoGP4scl" === c.sourceId)
@@ -148,7 +153,42 @@ async function aid(actor) {
             }
         }
     } else {
-        weapons.find(w => w.slug === id)?.roll({ event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid'] })
+        let weapon = weapons.find(w => w.slug === id)
+        roll = await weapon?.roll({ event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid'] })
+        rank = weapon?.options?.includes("proficiency:trained")
+            ? 1
+            : weapon?.options?.includes("proficiency:expert") ? 2
+            : weapon?.options?.includes("proficiency:master") ? 3
+            : weapon?.options?.includes("proficiency:legendary") ? 4
+            : 0
+
+    }
+
+    let hasHelpFeat = game.actionsupportengine.hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.gWyCNTWUhxneOBne');//Helpful Halfling
+    let effectId = undefined;
+    if (roll?.options?.degreeOfSuccess === 0 && !hasHelpFeat) {
+        effectId = "Compendium.pf2e-action-support-engine.effects.Item.w9uaEadTRdzQDvvb";
+    } else if (roll?.options?.degreeOfSuccess === 2) {
+        effectId = "Compendium.pf2e-action-support-engine.effects.Item.L1hIpxQ7GSKecbg8";
+    } else if (roll?.options?.degreeOfSuccess === 3) {
+        effectId = "Compendium.pf2e-action-support-engine.effects.Item.FNg7DnPqAJUHa7M3"//+2
+         if (rank === 4 || (rank === 3 && hasHelpFeat)) {
+            effectId = "Compendium.pf2e-action-support-engine.effects.Item.YflHqtJFA40JQULG"//+4
+        } else if (rank === 3 || (rank === 2 && hasHelpFeat)) {
+            effectId = "Compendium.pf2e-action-support-engine.effects.Item.I2ybp2bragN3affJ"//+3
+        }
+    }
+
+    if (effectId) {
+        if (actor.items.find(a=>a.sourceId === 'Compendium.pf2e.equipment-srd.Item.XyoYrGEAhJ3iCahe')?.isInvested) {//The Publican
+            let effObj = (await fromUuid(effectId)).toObject()
+            effObj.system.rules[0].value += 1;
+
+            await game.actionsupportengine.addItemToActor(target, effObj);
+        } else {
+            await game.actionsupportengine.setEffectToActor(target, effectId);
+        }
+
     }
 }
 

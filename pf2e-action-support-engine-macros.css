@@ -50,3 +50,7 @@
 .pf2e-exploration-activity-list > span > img {
   margin-right: 5px;
 }
+
+.chat-message .message-content .damage-roll .dice-result .instance {
+    white-space: wrap;
+}

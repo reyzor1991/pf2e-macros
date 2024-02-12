@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.42
+- Aid macro apply effects (complex logic)
+
 ## Version 0.0.41
 - Fix Skip dialog for macros
 
