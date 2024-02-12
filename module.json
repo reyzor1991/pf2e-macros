@@ -2,7 +2,7 @@
   "id": "pf2e-action-support-engine-macros",
   "title": "PF2e Action Support Engine Macros",
   "description": "PF2e Action Support Engine Macros",
-  "version": "0.0.42",
+  "version": "0.0.43",
   "authors": [
     {
       "name": "Reyzor",
@@ -51,9 +51,9 @@
     "verified": "11.308"
   },
   "url": "https://www.patreon.com/Reyzor1991",
-  "manifest": "https://drive.usercontent.google.com/download?id=1377g0s3rBASIpplAtqm1PB1PY1imunT3",
-  "download": "https://drive.usercontent.google.com/download?id=1DY_6nTbgokOk54DRgu73Uh5s3jOVLX_i",
-  "changelog": "https://drive.google.com/file/d/1fX_cGfhLy40eiDv3aJCcQYT7G1xgi-Ya",
+  "manifest": "https://www.dropbox.com/scl/fi/mqu7bmz1gxsmsmx31h9bs/module.json?rlkey=axkdw73m2xvrf7zs9rcunq91z&dl=1",
+  "download": "https://www.dropbox.com/scl/fi/nc69pfrcj8wvep0pwhwor/pf2e-action-support-engine-macros.zip?rlkey=dgyke85qodde03o4zib4pz842&dl=1",
+  "changelog": "https://www.dropbox.com/scl/fi/8vz0083s9k06lvvxhqmxq/CHANGELOG.md?rlkey=4n6uoiftula3jdc6di0o93cra&dl=1",
   "relationships": {
     "systems": [
       {
