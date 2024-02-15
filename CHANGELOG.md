@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.0.44
+- Fix Certain Strike
+
+## Version 0.0.43
+- Move to dropbox
+
 ## Version 0.0.42
 - Aid macro apply effects (complex logic)
 

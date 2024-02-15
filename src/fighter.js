@@ -390,6 +390,7 @@ async function certainStrike(actor) {
                         failure: damageMods.filter((m) => m.enabled).map((m) => `${m.label} ${m.modifier < 0 ? "" : "+"}${m.modifier}`)
                     }
                 },
+                modifiers: damageMods,
                 name: damages[0].item.name
             },
             degreeOfSuccess: 1,
@@ -432,7 +433,7 @@ async function certainStrike(actor) {
                         name: primary.item.name,
                         altUsage: primary.item.altUsageType,
                     },
-                    modifiers: [],
+                    modifiers: damageMods,
                     target: targetFlag
                 },
             },
