@@ -1,7 +1,24 @@
 function doubleSliceWeapons(actor) {
-    return actor.system.actions
-        .filter( h => h.ready && h.item?.isMelee && h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1 && !h.item?.system?.traits?.value?.includes("unarmed") );
+    let weapons =  actor.system.actions
+        .filter( h => h.ready && h.item?.isMelee && h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1 && !h.item?.system?.traits?.value?.includes("unarmed") )
+        .map(a=>[a, a.item.name]);
+
+    //Dual Thrower
+    if (game.actionsupportengine.hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.zfTmb78yGZzNpgU3')) {
+        let comboThrows = actor.system.actions.filter( h => h.ready && h.altUsages?.[0]?.item.isThrown)
+            .map(a=>[a.altUsages?.[0], `${a.altUsages?.[0].item.name} Throw`])
+
+        let throws = actor.system.actions.filter( h => h.ready && (h.item.isThrown || (h.item?.isRanged && h.item?.handsHeld === 1 && h.item?.ammo)))
+            .map(a=>[a, `${a.item.name} Throw`])
+
+        weapons = weapons.concat(comboThrows).concat(throws);
+    }
+
+
+    return weapons
 };
+
+const DEGREE_OF_SUCCESS_STRINGS = ["criticalFailure", "failure", "success", "criticalSuccess"];
 
 async function doubleSlice(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
@@ -13,20 +30,16 @@ async function doubleSlice(actor) {
     }
 
     const weapons = doubleSliceWeapons(actor);
-    if (weapons.length != 2) {
+    if (new Set(weapons.map(a=>a[0].item.uuid)).size < 2) {
         ui.notifications.warn(`${actor.name} needs only 2 one-handed melee weapons can be equipped at a time.'`);
         return;
-    }
-    if (weapons[0].item.system.traits.value.includes("agile")) {
-        const element = weapons.splice(0, 1)[0];
-        weapons.splice(1, 0, element);
     }
 
     let weaponOptions = '';
     let weaponOptions2 = '';
-    for ( const w of weapons ) {
-        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
-        weaponOptions2 += `<option value=${w.item.id} ${weapons[1].item.id === w.item.id? 'selected':''}>${w.item.name}</option>`
+    for (const [i, value] of weapons.entries()) {
+        weaponOptions += `<option value=${i}>${value[1]}</option>`
+        weaponOptions2 += `<option value=${i} ${i === 1 ? 'selected':''}>${value[1]}</option>`
     }
 
     const { weapon1, weapon2, map } = await Dialog.wait({
@@ -71,8 +84,8 @@ async function doubleSlice(actor) {
         return;
     }
 
-    let primary =  actor.system.actions.find( w => w.item.id === weapon1 );
-    let secondary =  actor.system.actions.find( w => w.item.id === weapon2 );
+    let primary =  weapons[weapon1][0];
+    let secondary =  weapons[weapon2][0];
 
     combinedDamage("Double Slice", primary, secondary, ["double-slice-second"], map, map);
 }
@@ -312,7 +325,7 @@ async function certainStrike(actor) {
 
     const weapons = actor.system.actions.filter( h => h.ready && h.item?.isMelee);
     if (weapons.length === 0) {
-        ui.notifications.warn(`${actor.name} doesn't have correct weapon'`);
+        ui.notifications.warn(`${actor.name} doesn't have correct weapon`);
         return;
     }
 
@@ -439,6 +452,149 @@ async function certainStrike(actor) {
             },
         })
     }
+};
+
+async function swipe(token) {
+    ui.notifications.info("Not ready yet"); return;
+
+    if ( !token ) { ui.notifications.info("Please select 1 token"); return;}
+    let actor = token.actor;
+    if ( !actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.feats-srd.Item.JbrVcOf82oFXk3mY" === c.sourceId) ) {//swipe
+        ui.notifications.warn(`${actor.name} does not have Swipe!`);
+        return;
+    }
+    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`); return; }
+    let target = game.user.targets.first().document;
+
+    const weapons = actor.system.actions
+        .filter( h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed") && h.item.group != "shield");
+    if (weapons.length === 0) {
+        ui.notifications.warn(`${actor.name} doesn't have correct weapon`);
+        return;
+    };
+
+    let weaponOptions = '';
+    for ( const w of weapons ) {
+        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
+    }
+
+    const { currentWeapon, map } = await Dialog.wait({
+        title:"sweep",
+        content: `
+            <div><div><h3>Attack</h3><select id="fob1" autofocus>
+                ${weaponOptions}
+            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
+                <select id="map">
+                <option value=0>No MAP</option>
+                <option value=1>MAP -5(-4 for agile)</option>
+                <option value=2>MAP -10(-8 for agile)</option>
+            </select><hr>
+        `,
+        buttons: {
+                ok: {
+                    label: "Attack",
+                    icon: "<i class='fa-solid fa-hand-fist'></i>",
+                    callback: (html) => { return { currentWeapon: html[0].querySelector("#fob1").value, map: parseInt(html[0].querySelector("#map").value)} }
+                },
+                cancel: {
+                    label: "Cancel",
+                    icon: "<i class='fa-solid fa-ban'></i>",
+                }
+        },
+        default: "ok"
+    });
+
+    if ( currentWeapon === undefined || map === undefined ) { return; }
+    let weapon =  actor.system.actions.find( w => w.item.id === currentWeapon );
+    let hasSweep = weapon?.item?.traits?.has('sweep')
+
+    let reach = actor.getReach({action: "attack", weapon: weapon.item })
+    let additionalTargets = token.scene.tokens.filter(t=>t.actor!=actor)
+        .filter(t=>t!=target)
+        .filter(t=>actor.isEnemyOf(t.actor))
+        .filter(t=>t._object.distanceTo(token) <= reach)
+        .filter(t=>t._object.distanceTo(target._object) <= 5);
+
+    let additionalTarget = undefined;
+    if (additionalTargets.length > 1) {
+        let tokenOptions = '';
+        for ( const t of additionalTargets ) {
+            tokenOptions += `<option value=${t.id}>${t.name}</option>`
+        }
+
+        const { currentToken } = await Dialog.wait({
+            title:"Choose additional target",
+            content: `
+                <div><div><h3>Target</h3><select id="fob1" autofocus>
+                    ${tokenOptions}
+                </select></div></div<hr>
+            `,
+            buttons: {
+                    ok: {
+                        label: "Attack",
+                        icon: "<i class='fa-solid fa-hand-fist'></i>",
+                        callback: (html) => { return { currentToken: html[0].querySelector("#fob1").value} }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        icon: "<i class='fa-solid fa-ban'></i>",
+                    }
+            },
+            default: "ok"
+        });
+
+        if ( !currentToken ) { return; }
+        additionalTarget = additionalTargets.find(t=>t.id === currentToken)
+    } else if (additionalTargets.length == 1) {
+        additionalTarget = additionalTargets[0]
+    }
+
+    let targetMessage = undefined;
+    let statisticModifier = weapon.variants[map]
+    const rollVsTarget = await statisticModifier.roll({
+        event: eventSkipped(event), target: target._object, options: ['sweep-bonus'], createMessage: true, callback: (roll, outcome, message, event) => {
+            targetMessage = message.toJSON();
+        }
+    });
+
+    if (additionalTarget) {
+        let context = await actor.getCheckContext({
+            item: weapon.item,
+            domains: rollVsTarget.options.domains,
+            statistic: statisticModifier,
+            target: {
+                token: additionalTarget._object
+            },
+            defense: "armor",
+            options: new Set(targetMessage.flags.pf2e.context.options),
+            viewOnly: undefined,
+            traits:  ["attack"]
+        });
+
+        let checkContext = {
+            type: "attack-roll",
+            identifier: `${weapon.item.id}.${weapon.item.slug}.melee`,
+            action: "strike",
+            title: targetMessage?.flags?.pf2e?.context?.title,
+            actor: context.self.actor,
+            token: context.self.token,
+            target: context.target,
+            item: context.self.item,
+            altUsage: targetMessage?.flags?.pf2e?.context?.altUsage,
+            damaging: targetMessage?.flags?.pf2e?.context?.damaging,
+            domains: context.domains,
+            options: context.options,
+            notes: targetMessage?.flags?.pf2e?.context?.notes,
+            dc: context.dc,
+            traits: context.traits,
+            rollTwice: targetMessage?.flags?.pf2e?.context?.rollTwice,
+            substitutions: targetMessage?.flags?.pf2e?.context?.substitutions,
+            dosAdjustments: targetMessage?.flags?.pf2e?.context?.dosAdjustments,
+            mapIncreases: targetMessage?.flags?.pf2e?.context?.mapIncreases,
+            createMessage: true,
+            rollMode: targetMessage?.flags?.pf2e?.context?.rollMode,
+        };
+    }
 }
 
 Hooks.once("init", () => {
@@ -448,5 +604,6 @@ Hooks.once("init", () => {
         "dazingBlow": dazingBlow,
         "snaggingStrike": snaggingStrike,
         "certainStrike": certainStrike,
+        "swipe": swipe,
     })
 });

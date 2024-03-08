@@ -130,127 +130,134 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
 
     Hooks.on('preCreateChatMessage', PD);
 
-    if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
-        await primary.item.actor.toggleRollOption("all", "double-slice-second")
-    }
-    const primaryMessage = await primary.variants[map].roll({ 'event': eventSkipped(event) });
-    const primaryDegreeOfSuccess = primaryMessage.options.degreeOfSuccess;
-
-    if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
-        await primary.item.actor.toggleRollOption("all", "double-slice-second")
-    }
-
-    if (primaryMessage && primaryMessage?.flags?.pf2e?.modifiers?.find(a=>a.slug === "aid" && a.enabled)) {
-        const eff = game.actionsupportengine.hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
-        if (eff) {
-            await game.actionsupportengine.deleteItem(eff)
+    try {
+        if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
+            await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
-    }
-    let secondOpts = [];
-    if (primary.item.id === secondary.item.id && secondary.item.system.traits.value.includes("backswing") && (primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1)) {
-        secondOpts.push("backswing-bonus")
-    }
-    if (options.includes("twin-feint")) {
-        await game.actionsupportengine.setEffectToActor(secondary.item.actor, 'Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO')
-        secondOpts.push("twin-feint-second-attack")
-    }
+        const primaryMessage = await primary.variants[map].roll({ 'event': eventSkipped(event) });
+        const primaryDegreeOfSuccess = primaryMessage.options.degreeOfSuccess;
 
-    const secondaryMessage = await secondary.variants[map2].roll({ 'event': eventSkipped(event), options: secondOpts});
-    const secondaryDegreeOfSuccess = secondaryMessage.options.degreeOfSuccess;
-
-    if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
-        await primary.item.actor.toggleRollOption("all", "double-slice-second")
-    }
-
-    const fOpt = [...options, "skip-handling-message"];
-    const sOpt = [...options, "skip-handling-message"];
-
-    if (!xdyAutoRoll(primaryMessage)) {
-        if ( primaryDegreeOfSuccess === 2 ) { await primary.damage({event: eventSkipped(event, true), options: fOpt}); }
-        if ( primaryDegreeOfSuccess === 3 ) { await primary.critical({event: eventSkipped(event, true), options: fOpt}); }
-    }
-
-    if (options.includes("twin-feint")) {
-        sOpt.push("twin-feint-second-attack")
-    }
-
-    if (damages.length > 0) {
-        if (hasPrecisionDamage(damages[0].rolls[0]) && options.includes("double-slice-second")) {
-            onlyOnePrecision = true;
+        if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
+            await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
-        await gravityWeapon(damages[0])
-        await fistAttack(damages[0])
-    }
 
-    if (!xdyAutoRoll(secondaryMessage)) {
-        if ( secondaryDegreeOfSuccess === 2 ) { await secondary.damage({event: eventSkipped(event, true), options: sOpt}); }
-        if ( secondaryDegreeOfSuccess === 3 ) { await secondary.critical({event: eventSkipped(event, true), options: sOpt}); }
-    }
+        if (primaryMessage && primaryMessage?.flags?.pf2e?.modifiers?.find(a=>a.slug === "aid" && a.enabled)) {
+            const eff = game.actionsupportengine.hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
+            if (eff) {
+                await game.actionsupportengine.deleteItem(eff)
+            }
+        }
+        let secondOpts = [];
+        if (primary.item.id === secondary.item.id && secondary.item.system.traits.value.includes("backswing") && (primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1)) {
+            secondOpts.push("backswing-bonus")
+        }
+        if (options.includes("twin-feint")) {
+            await game.actionsupportengine.setEffectToActor(secondary.item.actor, 'Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO')
+            secondOpts.push("twin-feint-second-attack")
+        }
 
-    Hooks.off('preCreateChatMessage', PD);
+        const secondaryMessage = await secondary.variants[map2].roll({ 'event': eventSkipped(event), options: secondOpts});
+        const secondaryDegreeOfSuccess = secondaryMessage.options.degreeOfSuccess;
 
-    if (options.includes("twin-feint")) {
-        await game.actionsupportengine.removeEffectFromActor(secondary.item.actor, "Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO");
-    }
+        if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
+            await primary.item.actor.toggleRollOption("all", "double-slice-second")
+        }
 
-    if (damages.length === 0) {
-        ChatMessage.create({
-            type: CONST.CHAT_MESSAGE_TYPES.OOC,
-            content: "Both attacks missed"
-        });
-        return;
-    }
+        const fOpt = [...options, "skip-handling-message"];
+        const sOpt = [...options, "skip-handling-message"];
 
-    if ( (primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
-        let m = damages[0].toObject();
-        m.flags.pf2e.context.options=m.flags.pf2e.context.options.filter(e=>e!="skip-handling-message");
-        ChatMessage.createDocuments([m]);
-        return;
-    }
+        if (!xdyAutoRoll(primaryMessage)) {
+            if ( primaryDegreeOfSuccess === 2 ) { await primary.damage({event: eventSkipped(event, true), options: fOpt}); }
+            if ( primaryDegreeOfSuccess === 3 ) { await primary.critical({event: eventSkipped(event, true), options: fOpt}); }
+        }
 
-    const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a=>a.rolls[0]));
-    const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e=>e != 'skip-handling-message');
-    const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
-    const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
-    const flavor = `<strong>${name} Total Damage</strong>`
-        + (damages[0].flavor === damages[1].flavor
-            ? `<p>Both Attack<hr>${damages[0].flavor}</p><hr>`
-            : `<hr>${damages[0].flavor}<hr>${damages[1].flavor}`)
+        if (options.includes("twin-feint")) {
+            sOpt.push("twin-feint-second-attack")
+        }
 
-    const target = damages[0].target;
-    const originF = damages[0]?.flags?.pf2e?.origin;
-    const originS = damages[0]?.flags?.pf2e?.origin;
+        if (damages.length > 0) {
+            if (hasPrecisionDamage(damages[0].rolls[0]) && options.includes("double-slice-second")) {
+                onlyOnePrecision = true;
+            }
+            await gravityWeapon(damages[0])
+            await fistAttack(damages[0])
+        }
 
-    let messageData = {
-        flags: {
-            pf2e: {
-                target: {
-                    actor: target?.actor?.uuid,
-                    token: target?.token?.uuid
-                },
-                context: {
-                    options: [...new Set(opts)],
-                    domains: [...new Set(doms)],
-                    type: "damage-roll",
+        if (!xdyAutoRoll(secondaryMessage)) {
+            if ( secondaryDegreeOfSuccess === 2 ) { await secondary.damage({event: eventSkipped(event, true), options: sOpt}); }
+            if ( secondaryDegreeOfSuccess === 3 ) { await secondary.critical({event: eventSkipped(event, true), options: sOpt}); }
+        }
+
+        Hooks.off('preCreateChatMessage', PD);
+
+        if (options.includes("twin-feint")) {
+            await game.actionsupportengine.removeEffectFromActor(secondary.item.actor, "Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO");
+        }
+
+        if (damages.length === 0) {
+            ChatMessage.create({
+                type: CONST.CHAT_MESSAGE_TYPES.OOC,
+                content: "Both attacks missed"
+            });
+            return;
+        }
+
+        if ( (primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
+            let m = damages[0].toObject();
+            m.flags.pf2e.context.options=m.flags.pf2e.context.options.filter(e=>e!="skip-handling-message");
+            ChatMessage.createDocuments([m]);
+            return;
+        }
+
+        const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a=>a.rolls[0]));
+        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e=>e != 'skip-handling-message');
+        const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
+        const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
+        const flavor = `<strong>${name} Total Damage</strong>`
+            + (damages[0].flavor === damages[1].flavor
+                ? `<p>Both Attack<hr>${damages[0].flavor}</p><hr>`
+                : `<hr>${damages[0].flavor}<hr>${damages[1].flavor}`)
+
+        const target = damages[0].target;
+        const originF = damages[0]?.flags?.pf2e?.origin;
+        const originS = damages[0]?.flags?.pf2e?.origin;
+
+        let messageData = {
+            flags: {
+                pf2e: {
                     target: {
                         actor: target?.actor?.uuid,
                         token: target?.token?.uuid
                     },
-                },
-                modifiers: [...new Set(mods)]
-            }
-        },
-        rolls,
-        type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-        flavor,
-        speaker: ChatMessage.getSpeaker(),
-    };
+                    context: {
+                        options: [...new Set(opts)],
+                        domains: [...new Set(doms)],
+                        type: "damage-roll",
+                        target: {
+                            actor: target?.actor?.uuid,
+                            token: target?.token?.uuid
+                        },
+                    },
+                    modifiers: [...new Set(mods)]
+                }
+            },
+            rolls,
+            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+            flavor,
+            speaker: ChatMessage.getSpeaker(),
+        };
 
-    if (originF && originS && originF === originS) {
-        messageData.flags.pf2e.origin = originF;
+        if (originF && originS && originF === originS) {
+            messageData.flags.pf2e.origin = originF;
+        }
+
+        await ChatMessage.create(messageData);
+    } catch (error) {
+        Hooks.off('preCreateChatMessage', PD);
+        console.log(error)
+    } finally {
+        Hooks.off('preCreateChatMessage', PD);
     }
-
-    await ChatMessage.create(messageData);
 };
 
 const TO_AVERAGE_DMG = {
@@ -259,6 +266,10 @@ const TO_AVERAGE_DMG = {
     'd8': 5,
     'd10': 6,
     'd12': 7,
+}
+
+function extractNotes(rollNotes, selectors) {
+    return selectors.flatMap((s) => (rollNotes[s] ?? []).map((n) => n.clone()));
 }
 
 function hasPrecisionDamage(damage) {
@@ -273,20 +284,19 @@ function createNewDamageRolls(onlyOnePrecision, damages) {
 }
 
 function combineDamages(damages) {
-    let operands = damages.map(a=>a.instances[0]).map(a=>{
-        return {
-            class: "Grouping",
-            term: a.head.toJSON(),
-            options: a.head.toJSON().options
-        }
-    });
+    let groups = Object.values(Object.groupBy(damages.map(a=>a.instances).flat(), ({ options }) => options.flavor))
 
-    let dInstance = DamageInstance.fromTerms([ArithmeticExpression.fromData({
-        operator: '+',
-        operands,
-         evaluated: true
-     })], foundry.utils.deepClone(damages[0].instances[0].options))
-    let newInstances = [dInstance, ...damages[0].instances.slice(1), ...damages[1].instances.slice(1)];
+    let newInstances = groups.map(g=> {
+        if (g.length === 1) {
+            return DamageInstance.fromData(g[0].toJSON())
+        } else {
+            return DamageInstance.fromTerms([ArithmeticExpression.fromData({
+                operator: '+',
+                operands: g.map(a=>a.toJSON().terms[0]),
+                 evaluated: true
+             })], foundry.utils.deepClone(g[0].head.toJSON().options));
+        }
+    })
 
     return [DamageRoll.fromTerms([InstancePool.fromRolls(newInstances)])]
 }

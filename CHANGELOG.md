@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.45
+- Fixes
+- Add Dual Thrower
+
 ## Version 0.0.44
 - Fix Certain Strike
 
