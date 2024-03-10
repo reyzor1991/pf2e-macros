@@ -26,7 +26,7 @@
         "ASSISTANT": "OWNER"
       },
       "packs": [
-        "action-support-engine-effects",
+        "effects",
         "action-support-engine-macros"
       ]
     }
@@ -34,7 +34,7 @@
   "packs": [
     {
       "label": "ASE - Effects",
-      "name": "action-support-engine-effects",
+      "name": "effects",
       "path": "packs/effects.db",
       "system": "pf2e",
       "ownership": {
