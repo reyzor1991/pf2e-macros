@@ -112,7 +112,7 @@ function getWeapon(actor, id, isRanged, slug) {
 }
 
 Hooks.once("init", () => {
-    game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
+    game.activemacros = mergeObject(game.activemacros ?? {}, {
         "flurryOfBlows": flurryOfBlows,
     })
 });

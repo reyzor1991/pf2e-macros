@@ -152,7 +152,7 @@ async function rangerLink(actor) {
 }
 
 Hooks.once("init", () => {
-    game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
+    game.activemacros = mergeObject(game.activemacros ?? {}, {
         "huntedShot": huntedShot,
         "twinTakedown": twinTakedown,
         "rangerLink": rangerLink,

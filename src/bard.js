@@ -78,7 +78,7 @@ async function inspireHeroics(actor) {
 
 Hooks.once("init", () => {
 
-    game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
+    game.activemacros = mergeObject(game.activemacros ?? {}, {
         "inspireHeroics": inspireHeroics,
     })
 });

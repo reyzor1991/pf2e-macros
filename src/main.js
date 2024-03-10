@@ -1,5 +1,4 @@
-const moduleName = "pf2e-action-support-engine-macroses";
-const engineModuleName = "pf2e-action-support-engine";
+const moduleName = "pf2e-macros";
 
 let socketlibSocket = undefined;
 let DamageRoll = undefined;
@@ -387,7 +386,7 @@ const setupSocket = () => {
 };
 
 Hooks.once("setup", function () {
-  if (!setupSocket()) console.error("Error: Unable to set up socket lib for PF2e Action Support Engine");
+  if (!setupSocket()) console.error("Error: Unable to set up socket lib");
 });
 
 async function setEffectToActor(

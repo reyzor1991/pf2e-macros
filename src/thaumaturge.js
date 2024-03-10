@@ -48,7 +48,7 @@ async function rootToLife(actor) {
 }
 
 Hooks.once("init", () => {
-    game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
+    game.activemacros = mergeObject(game.activemacros ?? {}, {
         "rootToLife": rootToLife,
     })
 });

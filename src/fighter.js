@@ -598,7 +598,7 @@ async function swipe(token) {
 }
 
 Hooks.once("init", () => {
-    game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
+    game.activemacros = mergeObject(game.activemacros ?? {}, {
         "doubleSlice": doubleSlice,
         "knockdown": knockdown,
         "dazingBlow": dazingBlow,

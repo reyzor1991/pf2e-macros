@@ -61,7 +61,7 @@ async function pairedShots(actor) {
 }
 
 Hooks.once("init", () => {
-    game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
+    game.activemacros = mergeObject(game.activemacros ?? {}, {
         "pairedShots": pairedShots,
     })
 });

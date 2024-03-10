@@ -107,8 +107,7 @@ async function aid(actor) {
                 <strong>Skill or Attack</strong>
                 <select id="actions">
                     ${game.settings.get(moduleName, "aidWeaponTop") ? weaponsHtml + skillsHtml : skillsHtml + weaponsHtml}
-                    {{/each}}
-            </select>
+                </select>
             </p>
             <p ${styles}>
                 <strong>DC</strong>
@@ -140,7 +139,7 @@ async function aid(actor) {
     let roll;
     let rank = 0;
     if (isSkill) {
-        rank = actor.skills[id].rank;
+        rank = id === 'perception' ? actor.perception.rank : actor.skills[id].rank;
         roll = await actor.getStatistic(id).roll({ skipDialog: rollSkipDialog(event), dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
 
         if (
@@ -302,7 +301,7 @@ async function explorationActivity(actor) {
 }
 
 Hooks.once("init", () => {
-    game.actionsupportenginemacro = mergeObject(game.actionsupportenginemacro ?? {}, {
+    game.activemacros = mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
         "aid": aid,
         "explorationActivity": explorationActivity,

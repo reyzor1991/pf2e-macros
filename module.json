@@ -1,8 +1,8 @@
 {
-  "id": "pf2e-action-support-engine-macroses",
-  "title": "PF2e Action Support Engine Macros",
-  "description": "PF2e Action Support Engine Macros",
-  "version": "0.0.46",
+  "id": "pf2e-macros",
+  "title": "PF2e Macros",
+  "description": "",
+  "version": "0.0.1",
   "authors": [
     {
       "name": "Reyzor",
@@ -12,14 +12,14 @@
   ],
   "languages": [],
   "esmodules": [
-    "pf2e-action-support-engine-macros.js"
+    "main.js"
   ],
   "styles": [
-    "pf2e-action-support-engine-macros.css"
+    "main.css"
   ],
   "packFolders": [
     {
-      "name": "PF2e Action Support Engine Macro",
+      "name": "PF2e Macros",
       "sorting": "m",
       "ownership": {
         "PLAYER": "OBSERVER",
@@ -27,13 +27,13 @@
       },
       "packs": [
         "effects",
-        "action-support-engine-macros"
+        "macros"
       ]
     }
   ],
   "packs": [
     {
-      "label": "ASE - Effects",
+      "label": "Effects",
       "name": "effects",
       "path": "packs/effects.db",
       "system": "pf2e",
@@ -45,8 +45,8 @@
       "flags": {}
     },
     {
-      "label": "ASE - Macros",
-      "name": "action-support-engine-macros",
+      "label": "Macros",
+      "name": "macros",
       "path": "packs/macros.db",
       "system": "pf2e",
       "private": false,
@@ -61,12 +61,11 @@
   "socket": true,
   "compatibility": {
     "minimum": "11",
-    "verified": "11.308"
+    "verified": "11.315"
   },
-  "url": "https://www.patreon.com/Reyzor1991",
-  "manifest": "https://www.dropbox.com/scl/fi/mqu7bmz1gxsmsmx31h9bs/module.json?rlkey=axkdw73m2xvrf7zs9rcunq91z&dl=1",
-  "download": "https://www.dropbox.com/scl/fi/nc69pfrcj8wvep0pwhwor/pf2e-action-support-engine-macros.zip?rlkey=dgyke85qodde03o4zib4pz842&dl=1",
-  "changelog": "https://www.dropbox.com/scl/fi/8vz0083s9k06lvvxhqmxq/CHANGELOG.md?rlkey=4n6uoiftula3jdc6di0o93cra&dl=1",
+  "url": "https://github.com/reyzor1991",
+  "manifest": "https://www.dropbox.com/scl/fi/6iqgochhz8qd5kh8e3bi1/module.json?rlkey=4tbyatafnrd3q1rtpxrctwgxs&dl=1",
+  "download": "https://www.dropbox.com/scl/fi/wuybfq918qn0v0fqmvrnx/pf2e-macros.zip?rlkey=je3f1vtkz30u2ebdc9xdplsf4&dl=1",
   "relationships": {
     "systems": [
       {
@@ -75,7 +74,7 @@
         "manifest": "https://github.com/foundryvtt/pf2e/releases/latest/download/system.json",
         "compatibility": {
           "minimum": "5.3.2",
-          "verified": "5.7.2"
+          "verified": "5.14.1"
         }
       }
     ],
