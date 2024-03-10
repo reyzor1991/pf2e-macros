@@ -1,6 +1,7 @@
-const moduleName = "pf2e-action-support-engine-macros";
+const moduleName = "pf2e-action-support-engine-macroses";
 const engineModuleName = "pf2e-action-support-engine";
 
+let socketlibSocket = undefined;
 let DamageRoll = undefined;
 let DamageInstance = undefined;
 let ArithmeticExpression = undefined;
@@ -143,9 +144,9 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         }
 
         if (primaryMessage && primaryMessage?.flags?.pf2e?.modifiers?.find(a=>a.slug === "aid" && a.enabled)) {
-            const eff = game.actionsupportengine.hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
+            const eff = hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
             if (eff) {
-                await game.actionsupportengine.deleteItem(eff)
+                await deleteItem(eff)
             }
         }
         let secondOpts = [];
@@ -153,7 +154,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             secondOpts.push("backswing-bonus")
         }
         if (options.includes("twin-feint")) {
-            await game.actionsupportengine.setEffectToActor(secondary.item.actor, 'Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO')
+            await setEffectToActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`)
             secondOpts.push("twin-feint-second-attack")
         }
 
@@ -192,7 +193,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         Hooks.off('preCreateChatMessage', PD);
 
         if (options.includes("twin-feint")) {
-            await game.actionsupportengine.removeEffectFromActor(secondary.item.actor, "Compendium.pf2e-action-support-engine.effects.Item.HnErWUKHpIpE7eqO");
+            await removeEffectFromActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`);
         }
 
         if (damages.length === 0) {
@@ -359,4 +360,218 @@ function hasEffect(actor, eff) {
 
 function hasOption(message, opt) {
     return message?.flags?.pf2e?.context?.options?.includes(opt);
+}
+
+function hasPermissions(item) {
+  return 3 === item?.ownership[game.user.id] || isGM();
+}
+
+async function setEffectToActorId(actorId, effUuid, level = undefined, optionalData) {
+  await setEffectToActor(await fromUuid(actorId), effUuid, level, optionalData);
+}
+
+const setupSocket = () => {
+  if (globalThis.socketlib) {
+    socketlibSocket = globalThis.socketlib.registerModule(moduleName);
+    socketlibSocket.register("setEffectToActorId", setEffectToActorId);
+    socketlibSocket.register("removeConditionFromActorId", removeConditionFromActorId);
+    socketlibSocket.register("rollAllRecoveryById", rollAllRecoveryById);
+    socketlibSocket.register("deleteItemById", deleteItemById);
+    socketlibSocket.register("addItemToActorId", addItemToActorId);
+    socketlibSocket.register("increaseConditionForActorId", increaseConditionForActorId);
+    socketlibSocket.register("decreaseConditionForActorId", decreaseConditionForActorId);
+    socketlibSocket.register("removeEffectFromActorId", removeEffectFromActorId);
+    socketlibSocket.register("applyDamageById", applyDamageById);
+  }
+  return !!globalThis.socketlib;
+};
+
+Hooks.once("setup", function () {
+  if (!setupSocket()) console.error("Error: Unable to set up socket lib for PF2e Action Support Engine");
+});
+
+async function setEffectToActor(
+  actor,
+  effUuid,
+  level = undefined,
+  optionalData = { name: undefined, icon: undefined, origin: undefined, duplication: false }
+) {
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("setEffectToActorId", [actor.uuid, effUuid, level, optionalData], 0);
+    return;
+  }
+
+  let source = await fromUuid(effUuid);
+  let withBa = hasEffectBySourceId(actor, effUuid);
+  if (withBa && withBa.system.badge) {
+    withBa.update({
+      "system.badge.value": (withBa.system.badge.value += 1),
+    });
+  } else if (!withBa || optionalData?.duplication) {
+    source = source.toObject();
+    if (optionalData?.name) {
+      source.name = optionalData.name;
+    }
+    if (optionalData?.icon) {
+      source.img = optionalData.icon;
+    }
+    source.flags = mergeObject(source.flags ?? {}, { core: { sourceId: effUuid } });
+    if (level) {
+      source.system.level = { value: level };
+    }
+    if (optionalData?.origin) {
+      source.system.context = mergeObject(source.system.context ?? {}, {
+        origin: optionalData?.origin,
+      });
+    }
+    await actor.createEmbeddedDocuments("Item", [source]);
+  }
+}
+
+function hasFeatBySourceId(actor, eff) {
+  return actor?.itemTypes?.feat?.find((c) => eff === c.sourceId);
+}
+
+function hasEffectBySourceId(actor, eff) {
+  return actor?.itemTypes?.effect?.find((c) => eff === c.sourceId);
+}
+
+
+function distanceIsCorrect(firstT, secondT, distance) {
+  return (
+    (firstT instanceof Token ? firstT : firstT.object).distanceTo(
+      secondT instanceof Token ? secondT : secondT.object
+    ) <= distance
+  );
+}
+
+async function removeConditionFromActorId(actorId, condition, forceRemove = false) {
+  await removeConditionFromActor(await fromUuid(actorId), condition, forceRemove);
+}
+
+async function removeConditionFromActor(actor, condition, forceRemove = false) {
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("removeConditionFromActorId", [actor.uuid, condition, forceRemove], 0);
+    return;
+  }
+
+  await actor.decreaseCondition(condition, { forceRemove: forceRemove });
+}
+
+async function rollAllRecoveryById(actorUUID) {
+  await rollAllRecovery(await fromUuid(actorUUID));
+}
+
+async function rollAllRecovery(actor) {
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("rollAllRecoveryById", [actor.uuid], 0);
+    return;
+  }
+  const list = actor.itemTypes.condition.filter((a) => a.slug === "persistent-damage");
+  for (const element of list) {
+    element.rollRecovery();
+  }
+}
+
+async function deleteItemById(itemUuid) {
+  await deleteItem(await fromUuid(itemUuid));
+}
+
+async function deleteItem(item) {
+  if (!hasPermissions(item)) {
+    socketlibSocket._sendRequest("deleteItemById", [item.uuid], 0);
+  } else {
+    await item.delete();
+  }
+}
+
+async function increaseConditionForActorId(actorId, condition, value = undefined) {
+  await increaseConditionForActor(await fromUuid(actorId), condition, value);
+}
+
+async function increaseConditionForActor(actor, condition, value = undefined) {
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("increaseConditionForActorId", [actor.uuid, condition, value], 0);
+    return;
+  }
+
+  let activeCondition = undefined;
+  const valueObj = {};
+  if (value) {
+    activeCondition = hasCondition(actor, condition);
+    if (activeCondition && activeCondition?.value >= value) {
+      return;
+    } else if (activeCondition) {
+      valueObj["value"] = value - activeCondition.value;
+    } else {
+      valueObj["value"] = value;
+    }
+  }
+
+  await actor.increaseCondition(condition, valueObj);
+}
+
+async function decreaseConditionForActorId(actorId, condition, value = undefined) {
+  await decreaseConditionForActor(await fromUuid(actorId), condition, value);
+}
+
+async function decreaseConditionForActor(actor, condition, value = undefined) {
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("decreaseConditionForActorId", [actor.uuid, condition, value], 0);
+    return;
+  }
+
+  let activeCondition = hasCondition(actor, condition);
+  if (!activeCondition) {
+    return;
+  }
+
+  for (let i = 0; i < value; i++) {
+    await actor.decreaseCondition(condition);
+  }
+}
+
+async function addItemToActorId(actorUuid, item) {
+  await addItemToActor(await fromUuid(actorUuid), item);
+}
+
+async function addItemToActor(actor, item) {
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("addItemToActorId", [actor.uuid, item], 0);
+    return;
+  }
+  await actor.createEmbeddedDocuments("Item", [item]);
+}
+
+async function removeEffectFromActorId(actor, effect) {
+  await removeEffectFromActor(await fromUuid(actorId), effect);
+}
+
+async function removeEffectFromActor(actor, effect) {
+  if (!actor) { return }
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("removeEffectFromActorId", [actor.uuid, effect], 0);
+    return;
+  }
+
+  let eff = actor.itemTypes.effect.find((a) => a.flags?.core?.sourceId === effect);
+  if (eff) {
+    await eff.delete();
+  }
+}
+
+async function applyDamageById(actorUUID, tokenUUID, formula) {
+  await applyDamage(await fromUuid(actorUUID), await fromUuid(tokenUUID), formula);
+}
+
+async function applyDamage(actor, token, formula) {
+  if (!hasPermissions(actor)) {
+    socketlibSocket._sendRequest("applyDamageById", [actor.uuid, token.uuid, formula], 0);
+    return;
+  }
+
+  const roll = new DamageRoll(parseFormula(actor, formula));
+  await roll.evaluate({ async: true });
+  actor.applyDamage({ damage: roll, token });
+  roll.toMessage({ speaker: { alias: actor.name } });
 }

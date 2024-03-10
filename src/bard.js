@@ -40,7 +40,7 @@ async function inspireHeroics(actor) {
 
     let degreeOfSuccess = (await actor.skills.performance.roll({ skipDialog: rollSkipDialog(event), dc:{value: dc} })).degreeOfSuccess;
 
-    const aura = (await fromUuid("Compendium.pf2e-action-support-engine.effects.Item.mGQMqBoTFRz3or4D")).toObject();
+    const aura = (await fromUuid(`Compendium.${moduleName}.effects.Item.mGQMqBoTFRz3or4D`)).toObject();
     let idOfEffect='';
     if (spell === 0) {
         if (degreeOfSuccess === 3) {
@@ -60,9 +60,9 @@ async function inspireHeroics(actor) {
         }
     } else if (spell === 2) {
         if (degreeOfSuccess === 3) {
-            idOfEffect = "Compendium.pf2e-action-support-engine.effects.Item.Edq4AdKBHUtseItk";
+            idOfEffect = `Compendium.${moduleName}.effects.Item.Edq4AdKBHUtseItk`;
         } else if (degreeOfSuccess === 2) {
-            idOfEffect = "Compendium.pf2e-action-support-engine.effects.Item.Sc2JpGRqXir7WSx2";
+            idOfEffect = `Compendium.${moduleName}.effects.Item.Sc2JpGRqXir7WSx2`;
         } else {
             idOfEffect = "Compendium.pf2e.spell-effects.Item.8adLKKzJy49USYJt";
         }

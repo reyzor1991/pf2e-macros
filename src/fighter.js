@@ -4,7 +4,7 @@ function doubleSliceWeapons(actor) {
         .map(a=>[a, a.item.name]);
 
     //Dual Thrower
-    if (game.actionsupportengine.hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.zfTmb78yGZzNpgU3')) {
+    if (hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.zfTmb78yGZzNpgU3')) {
         let comboThrows = actor.system.actions.filter( h => h.ready && h.altUsages?.[0]?.item.isThrown)
             .map(a=>[a.altUsages?.[0], `${a.altUsages?.[0].item.name} Throw`])
 
@@ -155,13 +155,13 @@ async function knockdown(actor) {
 
     if (pd) {
         if (actor?.itemTypes?.feat?.find(c => "improved-knockdown" === c.slug) || actor?.itemTypes?.feat?.find(c => "crashing-slam" === c.slug) ) {
-            await game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "prone");
+            await increaseConditionForActor(game.user.targets.first().actor, "prone");
 
             let formula = "1d6[bludgeoning]";
             if (primary.item.hands === '2') {
                 formula = `${primary.item.system.damage.die}[bludgeoning]`
             }
-            await game.actionsupportengine.applyDamage(game.user.targets.first().actor, game.user.targets.first(), formula);
+            await applyDamage(game.user.targets.first().actor, game.user.targets.first(), formula);
         } else {
             let modifiers = [new game.pf2e.Modifier({ label: "PF2E.MultipleAttackPenalty", modifier: map > 0 ? Math.min(2, map) * -5 : map })]
             game.pf2e.actions.trip({modifiers, event: eventSkipped(event) });
@@ -246,7 +246,7 @@ async function dazingBlow(actor) {
         return
     }
 
-    await game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "stunned", 3 - cfResult.degreeOfSuccess);
+    await increaseConditionForActor(game.user.targets.first().actor, "stunned", 3 - cfResult.degreeOfSuccess);
 }
 
 async function snaggingStrike(actor) {
@@ -310,7 +310,7 @@ async function snaggingStrike(actor) {
         if ( primaryDegreeOfSuccess === 3 ) {await primary.critical({event: eventSkipped(event, true)}); }
     }
 
-    await game.actionsupportengine.setEffectToActor(game.user.targets.first().actor, "Compendium.pf2e-action-support-engine.effects.Item.YsNqG4OocHoErbc9", feat.level, {origin: {actor:actor?.uuid, item: feat.uuid}} )
+    await setEffectToActor(game.user.targets.first().actor, `Compendium.${moduleName}.effects.Item.YsNqG4OocHoErbc9`, feat.level, {origin: {actor:actor?.uuid, item: feat.uuid}} )
 };
 
 async function certainStrike(actor) {

@@ -52,7 +52,7 @@ async function accidentalShot(actor) {
     if ( map === undefined ) { return; }
     if ( currentWeapon === undefined || map === undefined ) { return; }
 
-    await game.actionsupportengine.setEffectToActor(actor, 'Compendium.pf2e.spell-effects.Item.fpGDAz2v5PG0zUSl')
+    await setEffectToActor(actor, 'Compendium.pf2e.spell-effects.Item.fpGDAz2v5PG0zUSl')
 
     const primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
 

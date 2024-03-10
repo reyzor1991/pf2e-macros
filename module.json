@@ -1,8 +1,8 @@
 {
-  "id": "pf2e-action-support-engine-macros",
+  "id": "pf2e-action-support-engine-macroses",
   "title": "PF2e Action Support Engine Macros",
   "description": "PF2e Action Support Engine Macros",
-  "version": "0.0.46",
+  "version": "0.0.47",
   "authors": [
     {
       "name": "Reyzor",
@@ -19,18 +19,31 @@
   ],
   "packFolders": [
     {
-      "name": "PF2e Action Support Engine",
+      "name": "PF2e Action Support Engine Macro",
       "sorting": "m",
       "ownership": {
         "PLAYER": "OBSERVER",
         "ASSISTANT": "OWNER"
       },
       "packs": [
+        "action-support-engine-effects",
         "action-support-engine-macros"
       ]
     }
   ],
   "packs": [
+    {
+      "label": "ASE - Effects",
+      "name": "action-support-engine-effects",
+      "path": "packs/effects.db",
+      "system": "pf2e",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "type": "Item",
+      "flags": {}
+    },
     {
       "label": "ASE - Macros",
       "name": "action-support-engine-macros",
@@ -66,6 +79,12 @@
         }
       }
     ],
-    "requires": []
+    "requires": [
+      {
+        "id": "socketlib",
+        "type": "module",
+        "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json"
+      }
+    ]
   }
 }

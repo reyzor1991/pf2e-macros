@@ -6,7 +6,7 @@ async function scareToDeath(actor) {
         return;
     }
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`); return; }
-    if (!game.actionsupportengine.distanceIsCorrect(_token, game.user.targets.first(), 30)) { ui.notifications.info(`Target should be in 30ft radius`); return; }
+    if (!distanceIsCorrect(_token, game.user.targets.first(), 30)) { ui.notifications.info(`Target should be in 30ft radius`); return; }
     if (game.user.targets.first().actor?.itemTypes?.effect?.find(c => `scare-to-death-immunity-${actor.id}` === c.slug)) { ui.notifications.info(`Target has immunity to Scare to Death from ${actor.name}`); return }
 
     const extraRollOptions = ["action:scare-to-death", "emotion", "fear", "incapacitation", "general", "skill"];
@@ -32,9 +32,9 @@ async function scareToDeath(actor) {
     await addImmunity(_token, game.user.targets.first().actor);
 
     if (result.degreeOfSuccess === 1) {
-        game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "frightened", 1);
+        increaseConditionForActor(game.user.targets.first().actor, "frightened", 1);
     } else if (result.degreeOfSuccess === 2) {
-        game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "frightened", 2);
+        increaseConditionForActor(game.user.targets.first().actor, "frightened", 2);
     } else if (result.degreeOfSuccess === 3) {
         const actorDC = actor?.getStatistic('intimidation')?.dc
         const cfResult = await game.user.targets.first().actor.saves.fortitude.roll({
@@ -51,8 +51,8 @@ async function scareToDeath(actor) {
                 content: `${game.user.targets.first().actor.name} died because of Scare to Death`
             });
         } else {
-            await game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "frightened", 2);
-            await game.actionsupportengine.increaseConditionForActor(game.user.targets.first().actor, "fleeing", 1);
+            await increaseConditionForActor(game.user.targets.first().actor, "frightened", 2);
+            await increaseConditionForActor(game.user.targets.first().actor, "fleeing", 1);
         }
     }
 }
@@ -75,7 +75,7 @@ async function addImmunity(_token, target) {
             slug: `scare-to-death-immunity-${_token.actor.id}`
         },
     };
-    await game.actionsupportengine.addItemToActor(target, exampleImmunityEffect);
+    await addItemToActor(target, exampleImmunityEffect);
 };
 
 const defDCMap = {
@@ -149,7 +149,7 @@ async function aid(actor) {
             && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.feats-srd.Item.bCizH4ByTwbLcYA1" === c.sourceId)
         ) {//Wit&One For All
             if (roll.total >= veryHardDCByLvl(actor.level)) {
-                await game.actionsupportengine.setEffectToActor(actor, 'Compendium.pf2e.feat-effects.Item.uBJsxCzNhje8m8jj')//set panache
+                await setEffectToActor(actor, 'Compendium.pf2e.feat-effects.Item.uBJsxCzNhje8m8jj')//set panache
             }
         }
     } else {
@@ -164,18 +164,18 @@ async function aid(actor) {
 
     }
 
-    let hasHelpFeat = game.actionsupportengine.hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.gWyCNTWUhxneOBne');//Helpful Halfling
+    let hasHelpFeat = hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.gWyCNTWUhxneOBne');//Helpful Halfling
     let effectId = undefined;
     if (roll?.options?.degreeOfSuccess === 0 && !hasHelpFeat) {
-        effectId = "Compendium.pf2e-action-support-engine.effects.Item.w9uaEadTRdzQDvvb";
+        effectId = `Compendium.${moduleName}.effects.Item.w9uaEadTRdzQDvvb`;
     } else if (roll?.options?.degreeOfSuccess === 2) {
-        effectId = "Compendium.pf2e-action-support-engine.effects.Item.L1hIpxQ7GSKecbg8";
+        effectId = `Compendium.${moduleName}.effects.Item.L1hIpxQ7GSKecbg8`;
     } else if (roll?.options?.degreeOfSuccess === 3) {
-        effectId = "Compendium.pf2e-action-support-engine.effects.Item.FNg7DnPqAJUHa7M3"//+2
+        effectId = `Compendium.${moduleName}.effects.Item.FNg7DnPqAJUHa7M3`//+2
          if (rank === 4 || (rank === 3 && hasHelpFeat)) {
-            effectId = "Compendium.pf2e-action-support-engine.effects.Item.YflHqtJFA40JQULG"//+4
+            effectId = `Compendium.${moduleName}.effects.Item.YflHqtJFA40JQULG`//+4
         } else if (rank === 3 || (rank === 2 && hasHelpFeat)) {
-            effectId = "Compendium.pf2e-action-support-engine.effects.Item.I2ybp2bragN3affJ"//+3
+            effectId = `Compendium.${moduleName}.effects.Item.I2ybp2bragN3affJ`//+3
         }
     }
 
@@ -184,9 +184,9 @@ async function aid(actor) {
             let effObj = (await fromUuid(effectId)).toObject()
             effObj.system.rules[0].value += 1;
 
-            await game.actionsupportengine.addItemToActor(target, effObj);
+            await addItemToActor(target, effObj);
         } else {
-            await game.actionsupportengine.setEffectToActor(target, effectId);
+            await setEffectToActor(target, effectId);
         }
 
     }
