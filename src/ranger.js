@@ -145,8 +145,8 @@ async function rangerLink(actor) {
         return
     }
 
-    await target.setFlag("pf2e-action-support-engine", "ranger", actor.id);
-    await actor.setFlag("pf2e-action-support-engine", "animalCompanion", target.uuid);
+    await target.setFlag(engineModuleName, "ranger", actor.id);
+    await actor.setFlag(engineModuleName, "animalCompanion", target.uuid);
 
     ui.notifications.info(`Ranger and Animal Companion were linked`);
 }

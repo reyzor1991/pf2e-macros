@@ -1,4 +1,5 @@
 const moduleName = "pf2e-action-support-engine-macros";
+const engineModuleName = "pf2e-action-support-engine";
 
 let DamageRoll = undefined;
 let DamageInstance = undefined;

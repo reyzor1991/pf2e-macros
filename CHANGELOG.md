@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.46
+- Fixes
+
 ## Version 0.0.45
 - Fixes
 - Add Dual Thrower
