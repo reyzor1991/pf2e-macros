@@ -359,7 +359,11 @@ function hasEffect(actor, eff) {
 
 function hasOption(message, opt) {
     return message?.flags?.pf2e?.context?.options?.includes(opt);
-}
+};
+
+function isGM() {
+    return game.user.isGM;
+};
 
 function hasPermissions(item) {
   return 3 === item?.ownership[game.user.id] || isGM();
