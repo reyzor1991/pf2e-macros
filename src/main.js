@@ -177,7 +177,12 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         }
 
         if (damages.length > 0) {
-            if (hasPrecisionDamage(damages[0].rolls[0]) && options.includes("double-slice-second")) {
+            if (hasPrecisionDamage(damages[0].rolls[0])
+                && (
+                    options.includes("double-slice-second")
+                    || options.includes("paired-shots")
+                )
+            ) {
                 onlyOnePrecision = true;
             }
             await gravityWeapon(damages[0])
@@ -325,6 +330,7 @@ function createDataDamageOnlyOnePrecision(damages) {
 }
 
 function deletePrecisionFrom(json, isCrit) {
+    console.log(json)
     if (json.term.class === "ArithmeticExpression") {
         if (isCrit) {
             if (json.term.operands[1].class === "Grouping") {
@@ -338,12 +344,18 @@ function deletePrecisionFrom(json, isCrit) {
                     if (json.term.operands[0].operands[1].term.class === "ArithmeticExpression") {
                         if (json.term.operands[0].operands[1].term.operands[0].class === 'ArithmeticExpression' && json.term.operands[0].operands[1].term.operands[1].options.flavor === 'precision') {
                             json.term.operands[0].operands[1].term = json.term.operands[0].operands[1].term.operands[0];
+                        } else if (json.term.operands[0].operands[1].term.operands[0].class === 'Die' && json.term.operands[0].operands[1].term.operands[1].options.flavor === 'precision') {
+                            json.term.operands[0].operands[1].term = json.term.operands[0].operands[1].term.operands[0];
                         }
                     }
                 }
             }
         } else {
             if (json.term.operands[0].class === 'ArithmeticExpression') {
+                if (json.term.operands[1].options.flavor === 'precision') {
+                    json.term = json.term.operands[0];
+                }
+            } else if (json.term.operands[0].class === 'Die') {
                 if (json.term.operands[1].options.flavor === 'precision') {
                     json.term = json.term.operands[0];
                 }
