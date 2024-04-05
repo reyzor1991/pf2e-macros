@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.4
+- Fix persistent damage
+
 ## Version 0.0.3
 - Fix paired shots
 

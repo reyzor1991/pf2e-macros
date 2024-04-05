@@ -293,7 +293,9 @@ function combineDamages(damages) {
     let groups = Object.values(Object.groupBy(damages.map(a=>a.instances).flat(), ({ options }) => options.flavor))
 
     let newInstances = groups.map(g=> {
-        if (g.length === 1) {
+        if (g[0]?.options?.flavor?.includes('persistent')) {
+            return g
+        } else if (g.length === 1) {
             return DamageInstance.fromData(g[0].toJSON())
         } else {
             return DamageInstance.fromTerms([ArithmeticExpression.fromData({
@@ -302,7 +304,7 @@ function combineDamages(damages) {
                  evaluated: true
              })], foundry.utils.deepClone(g[0].head.toJSON().options));
         }
-    })
+    }).flat()
 
     return [DamageRoll.fromTerms([InstancePool.fromRolls(newInstances)])]
 }
@@ -330,7 +332,6 @@ function createDataDamageOnlyOnePrecision(damages) {
 }
 
 function deletePrecisionFrom(json, isCrit) {
-    console.log(json)
     if (json.term.class === "ArithmeticExpression") {
         if (isCrit) {
             if (json.term.operands[1].class === "Grouping") {
