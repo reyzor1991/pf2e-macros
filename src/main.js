@@ -22,14 +22,14 @@ function rollSkipDialog(event) {
 
 function xdyAutoRoll(roll) {
     return game.modules.get('xdy-pf2e-workbench')?.active
-    && (
+    && ((
         ["all", "players"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
         && roll.roller.id === game.user?.id && !game.user?.isGM
     )
-    && (
+    || (
         ["all", "gm"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
         && roll.roller.id === game.user?.id && game.user?.isGM
-    )
+    ))
     && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
 }
 

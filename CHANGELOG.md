@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.5
+- Fix double slice damage
+
 ## Version 0.0.4
 - Fix persistent damage
 
