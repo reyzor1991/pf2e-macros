@@ -10,7 +10,7 @@ async function pairedShots(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
-    if ( !actor?.itemTypes?.feat?.find(c => "paired-shots" === c.slug) ) {
+    if ( !actorFeat(actor, "paired-shots") ) {
         ui.notifications.warn(`${actor.name} does not have Paired Shots!`);
         return;
     }

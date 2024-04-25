@@ -591,3 +591,11 @@ async function applyDamage(actor, token, formula) {
   actor.applyDamage({ damage: roll, token });
   roll.toMessage({ speaker: { alias: actor.name } });
 }
+
+function actorFeat(actor, feat) {
+    return actor?.itemTypes?.feat?.find((c => feat === c.slug))
+};
+
+function actorAction(actor, action) {
+    return actor?.itemTypes?.action?.find((c => action === c.slug))
+};

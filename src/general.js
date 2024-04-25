@@ -1,6 +1,6 @@
 async function scareToDeath(actor) {
     if (!actor) { ui.notifications.info("Please select 1 token"); return; }
-    const feat = actor?.itemTypes?.feat?.find(c => "scare-to-death" === c.slug);
+    const feat = actorFeat(actor, "scare-to-death");
     if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Scare to Death!`);
         return;
@@ -144,8 +144,8 @@ async function aid(actor) {
 
         if (
             id === 'diplomacy'
-            && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.classfeatures.Item.4lGhbEjlEoGP4scl" === c.sourceId)
-            && actor?.itemTypes?.feat?.find(c => "Compendium.pf2e.feats-srd.Item.bCizH4ByTwbLcYA1" === c.sourceId)
+            && hasFeatBySourceId(actor, "Compendium.pf2e.classfeatures.Item.4lGhbEjlEoGP4scl")
+            && hasFeatBySourceId(actor, "Compendium.pf2e.feats-srd.Item.bCizH4ByTwbLcYA1")
         ) {//Wit&One For All
             if (roll.total >= veryHardDCByLvl(actor.level)) {
                 await setEffectToActor(actor, 'Compendium.pf2e.feat-effects.Item.uBJsxCzNhje8m8jj')//set panache

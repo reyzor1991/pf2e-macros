@@ -1,5 +1,7 @@
 function flurryOfBlowsWeapons(actor) {
-    let weapons = actor.system.actions.filter( h => h.visible && h.item?.isMelee && h.item?.system?.traits?.value?.includes("unarmed") );
+    let weapons = actor.system.actions.filter( h => h.item?.isMelee && h.item?.system?.traits?.value?.includes("unarmed")
+        && ( h.visible || actor.isOfType('npc'))
+    );
 
     if ( actor.system.actions.some( e => e.visible && e.origin?.type === "effect" && e.origin?.slug.includes("stance") ) ) {
         weapons = actor.system.actions.filter( e => e.visible && e.origin?.type === "effect" && e.origin?.slug.includes("stance") ).concat(actor.system.actions.filter( h => h.visible && h.item?.isMelee && h.item?.system?.traits?.value?.includes("unarmed") && h.origin?.type !== "effect" ));
@@ -23,7 +25,7 @@ async function flurryOfBlows(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
-    if ( !actor?.itemTypes?.action?.find(c => "flurry-of-blows" === c.slug) && !actor?.itemTypes?.feat?.find(c => "flurry-of-blows" === c.slug) ) {
+    if ( !actorAction(actor, "flurry-of-blows") && !actorFeat(actor, "flurry-of-blows" ) ) {
         ui.notifications.warn(`${actor.name} does not have Flurry of Blows!`);
         return;
     }
@@ -89,7 +91,7 @@ async function flurryOfBlows(actor) {
     let secondary =  getWeapon(actor, weapon2[0], weapon2[1], weapon2[2]);
     if ( !primary || !secondary ) { ui.notifications.error("Can't map to correct weapon");return; }
 
-    const options = actor?.itemTypes?.feat?.find(c => "stunning-fist" === c.slug) ? ["stunning-fist"] : [];
+    const options = actorFeat(actor, "stunning-fist") ? ["stunning-fist"] : [];
 
     combinedDamage("Flurry Of Blows", primary, secondary, options, map, map2);
 }

@@ -7,7 +7,7 @@ async function accidentalShot(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
-    if (!actor?.itemTypes?.action?.find(c => "accidental-shot" === c.slug)) {
+    if (!actorAction(actor, "accidental-shot")) {
         ui.notifications.warn(`${actor.name} does not have Accidental Shot!`);
         return;
     }
@@ -21,7 +21,7 @@ async function accidentalShot(actor) {
     let weaponOptions = weapons.map(w=>`<option value=${w.item.id}>${w.item.name}</option>`).join('');
 
     const { currentWeapon, map } = await Dialog.wait({
-        title:"Accidental Shot",
+        title: "Accidental Shot",
         content: `
             <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}

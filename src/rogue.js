@@ -1,13 +1,17 @@
 function twinFeintWeapons(actor) {
     return actor.system.actions
-        .filter( h => h.ready && h.item?.isMelee && h.item?.isHeld && (h.item?.hands === "1" || h.item?.hands === "1+") && h.item?.handsHeld === 1 && !h.item?.system?.traits?.value?.includes("unarmed") );
+        .filter( h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed")
+            && (
+                (h.item?.isHeld && (h.item?.hands === "1" || h.item?.hands === "1+") && h.item?.handsHeld === 1) || actor.isOfType('npc')
+            )
+        );
 };
 
 async function twinFeint(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
-    if ( !actor?.itemTypes?.feat?.find(c => "twin-feint" === c.slug) ) {
+    if ( !actorAction(actor, "twin-feint") && !actorFeat(actor, "twin-feint") ) {
         ui.notifications.warn(`${actor.name} does not have Twin Feint!`);
         return;
     }

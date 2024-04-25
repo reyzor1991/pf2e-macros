@@ -1,6 +1,6 @@
 async function rootToLife(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    const feat = actor?.itemTypes?.feat?.find(c => "root-to-life" === c.slug);
+    const feat = actorFeat(actor, "root-to-life");
     if ( !feat ) {
         ui.notifications.warn(`${actor.name} does not have Root to Life!`);
         return;

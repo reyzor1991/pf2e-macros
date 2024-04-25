@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.6
+- Adapt macros for NPC
+
 ## Version 0.0.5
 - Fix double slice damage
 
