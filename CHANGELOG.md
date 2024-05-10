@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.0.7
+- Doff party armor
+
 ## Version 0.0.6
 - Adapt macros for NPC
 

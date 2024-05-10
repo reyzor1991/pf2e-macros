@@ -300,10 +300,23 @@ async function explorationActivity(actor) {
     }, { popOut: true, resizable: true, width: 450 }).render(true);
 }
 
+async function doffPartyArmor() {
+    await Promise.all(
+        game.actors.party.members.map(a=>a.itemTypes.armor.find(i=>i.isEquipped))
+            .filter(b=>b)
+            .map(async (i) => {
+                await i.actor.changeCarryType(i, {carryType: 'worn'});
+            })
+    );
+
+    ChatMessage.create({ content: 'Party Armor was doff' });
+}
+
 Hooks.once("init", () => {
     game.activemacros = mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
         "aid": aid,
         "explorationActivity": explorationActivity,
+        "doffPartyArmor": doffPartyArmor,
     })
 });
