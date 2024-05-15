@@ -1,4 +1,5 @@
-# Changelog
+## Version 0.0.8
+- Add logs to missed both attacks
 
 ## Version 0.0.7
 - Doff party armor

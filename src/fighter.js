@@ -384,9 +384,9 @@ async function certainStrike(actor) {
             return false;
         }
     }
-    Hooks.on('preCreateChatMessage', PD);
+    let hookId = Hooks.on('preCreateChatMessage', PD);
     await primary.damage({event: eventSkipped(event, true)});
-    Hooks.off('preCreateChatMessage', PD);
+    Hooks.off('preCreateChatMessage', hookId);
 
     if (damages.length === 0) {
         console.log(`Damage Message is missing`)

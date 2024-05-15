@@ -63,12 +63,12 @@ async function accidentalShot(actor) {
             return false;
         }
     }
-    Hooks.on('preCreateChatMessage', PD);
+    let hookId = Hooks.on('preCreateChatMessage', PD);
 
     const primaryRoll = await primary.variants[map].roll({ event: eventSkipped(event) });
     const primaryDegreeOfSuccess = primaryRoll?.degreeOfSuccess;
     if ( !primaryDegreeOfSuccess || primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1 ) {
-        Hooks.off('preCreateChatMessage', PD);
+        Hooks.off('preCreateChatMessage', hookId);
         return;
     }
 
@@ -89,7 +89,7 @@ async function accidentalShot(actor) {
         }
     }
 
-    Hooks.off('preCreateChatMessage', PD);
+    Hooks.off('preCreateChatMessage', hookId);
 
     if (damages[0].rolls[0].total > damages[1].rolls[0].total) {
         ChatMessage.createDocuments([damages[0]]);

@@ -129,7 +129,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         }
     }
 
-    Hooks.on('preCreateChatMessage', PD);
+    let hookId = Hooks.on('preCreateChatMessage', PD);
 
     try {
         if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
@@ -194,8 +194,6 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             if ( secondaryDegreeOfSuccess === 3 ) { await secondary.critical({event: eventSkipped(event, true), options: sOpt}); }
         }
 
-        Hooks.off('preCreateChatMessage', PD);
-
         if (options.includes("twin-feint")) {
             await removeEffectFromActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`);
         }
@@ -205,6 +203,11 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
                 type: CONST.CHAT_MESSAGE_TYPES.OOC,
                 content: "Both attacks missed"
             });
+            Hooks.off('preCreateChatMessage', hookId);
+            console.log('primaryDegreeOfSuccess')
+            console.log(primaryDegreeOfSuccess)
+            console.log('secondaryDegreeOfSuccess')
+            console.log(secondaryDegreeOfSuccess)
             return;
         }
 
@@ -259,10 +262,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
 
         await ChatMessage.create(messageData);
     } catch (error) {
-        Hooks.off('preCreateChatMessage', PD);
+        Hooks.off('preCreateChatMessage', hookId);
         console.log(error)
     } finally {
-        Hooks.off('preCreateChatMessage', PD);
+        Hooks.off('preCreateChatMessage', hookId);
     }
 };
 
