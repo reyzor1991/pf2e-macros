@@ -260,6 +260,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             messageData.flags.pf2e.origin = originF;
         }
 
+        Hooks.off('preCreateChatMessage', hookId);
         await ChatMessage.create(messageData);
     } catch (error) {
         Hooks.off('preCreateChatMessage', hookId);

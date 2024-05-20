@@ -1,3 +1,6 @@
+## Version 0.0.9
+- Fix issue with Handling combined damage
+
 ## Version 0.0.8
 - Add logs to missed both attacks
 
