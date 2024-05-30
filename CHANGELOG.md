@@ -1,3 +1,6 @@
+## Version 0.0.10
+- Target is off-guard macro
+
 ## Version 0.0.9
 - Fix issue with Handling combined damage
 

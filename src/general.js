@@ -312,11 +312,66 @@ async function doffPartyArmor() {
     ChatMessage.create({ content: 'Party Armor was doff' });
 }
 
+const OFF_GUARD_TARGET_EFF = {
+  "name": " is Off-guard",
+  "type": "effect",
+  "effects": [],
+  "system": {
+    "description": {
+      "gm": "",
+      "value": ""
+    },
+    "rules": [
+      {
+        "key": "EphemeralEffect",
+        "selectors": [
+          "attack-roll",
+          "damage"
+        ],
+        "predicate": [],
+        "uuid": "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg"
+      }
+    ],
+    "slug": "target-is-off-guard",
+    "traits": {
+      "otherTags": [],
+      "value": []
+    },
+    "level": { "value": 1 },
+    "duration": {
+      "value": -1,
+      "unit": "unlimited",
+      "expiry": null,
+      "sustained": false
+    },
+    "tokenIcon": { "show": true },
+  },
+  "img": "icons/skills/melee/strike-blade-scimitar-gray-red.webp"
+}
+
+async function targetIsOffGuard(token) {
+    if (!token) {
+        ui.notifications.info(`Select your token before using this macro`);
+        return;
+    }
+    if (game.user.targets.size === 0) {
+        ui.notifications.info(`Need to select target before using this macro`);
+        return;
+    }
+    let target = game.user.targets.first().actor;
+
+    let o = deepClone(OFF_GUARD_TARGET_EFF);
+    o.system.rules[0].predicate.push("target:signature:"+target.signature)
+
+    await token.actor.createEmbeddedDocuments("Item", [o]);
+}
+
 Hooks.once("init", () => {
     game.activemacros = mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
         "aid": aid,
         "explorationActivity": explorationActivity,
         "doffPartyArmor": doffPartyArmor,
+        "targetIsOffGuard": targetIsOffGuard,
     })
 });
