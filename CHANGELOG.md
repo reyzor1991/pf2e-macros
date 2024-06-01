@@ -1,3 +1,6 @@
+## Version 0.0.11
+- Pistolero's Challenge
+
 ## Version 0.0.10
 - Target is off-guard macro
 

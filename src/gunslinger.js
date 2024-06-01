@@ -60,8 +60,53 @@ async function pairedShots(actor) {
     combinedDamage("Paired Shots", primary, secondary, ["paired-shots"], map, map);
 }
 
+async function pistolerosChallenge(actor) {
+    if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
+    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if ( !actorFeat(actor, "pistoleros-challenge") ) {
+        ui.notifications.warn(`${actor.name} does not have Pistolero's Challenge!`);
+        return;
+    }
+    let target = game.user.targets.first().actor;
+
+
+    let itemSource = foundry.utils.deepClone((await fromUuid('Compendium.pf2e.feat-effects.Item.0kO3M46aK64a8ru8'))?.toObject());
+    let rule = itemSource.system.rules[1];
+
+    const effect = new CONFIG.Item.documentClass(itemSource, { parent: target });
+
+    const ele = new game.pf2e.RuleElements.builtin.ChoiceSet(foundry.utils.deepClone(rule), {parent: effect});
+    await ele.preCreate({itemSource, ruleSource: rule, tempItems: []});
+
+    if (!rule.selection) {return}
+    let label = rule.choices.find(c=>c.value === rule.selection)?.label;
+    if (!label) {return}
+
+
+    let curEff = hasEffectBySourceId(actor, "Compendium.pf2e.feat-effects.Item.0kO3M46aK64a8ru8");
+    if (curEff) {
+        await curEff.delete()
+    }
+
+
+    let shortSkill = Object.entries(CONFIG.PF2E.skills).find(a=>a[1]===label)[0]
+    const skill = actor.skills[actor.system.skills[shortSkill].slug]
+
+    let result = await skill.roll({
+        extraRollOptions: ["pistoleros-challenge"],
+        dc: { value: target.saves.will.dc.value }
+    })
+
+    if (result.options.degreeOfSuccess === 2 || result.options.degreeOfSuccess === 3) {
+        await CONFIG.Item.documentClass.createDocuments([itemSource], {parent: actor})
+    } else if (result.options.degreeOfSuccess === 0 && !actor.hasCondition('frightened')) {
+        await actor.increaseCondition('frightened')
+    }
+}
+
 Hooks.once("init", () => {
     game.activemacros = mergeObject(game.activemacros ?? {}, {
         "pairedShots": pairedShots,
+        "pistolerosChallenge": pistolerosChallenge,
     })
 });

@@ -361,6 +361,7 @@ async function targetIsOffGuard(token) {
     let target = game.user.targets.first().actor;
 
     let o = deepClone(OFF_GUARD_TARGET_EFF);
+    o.name = target.name + o.name
     o.system.rules[0].predicate.push("target:signature:"+target.signature)
 
     await token.actor.createEmbeddedDocuments("Item", [o]);
