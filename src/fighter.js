@@ -608,7 +608,7 @@ async function swipe(token) {
 }
 
 Hooks.once("init", () => {
-    game.activemacros = mergeObject(game.activemacros ?? {}, {
+    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "doubleSlice": doubleSlice,
         "knockdown": knockdown,
         "dazingBlow": dazingBlow,

@@ -368,7 +368,7 @@ async function targetIsOffGuard(token) {
 }
 
 Hooks.once("init", () => {
-    game.activemacros = mergeObject(game.activemacros ?? {}, {
+    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
         "aid": aid,
         "explorationActivity": explorationActivity,

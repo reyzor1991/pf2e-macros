@@ -263,7 +263,6 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         Hooks.off('preCreateChatMessage', hookId);
         await ChatMessage.create(messageData);
     } catch (error) {
-        Hooks.off('preCreateChatMessage', hookId);
         console.log(error)
     } finally {
         Hooks.off('preCreateChatMessage', hookId);
@@ -435,12 +434,12 @@ async function setEffectToActor(
     if (optionalData?.icon) {
       source.img = optionalData.icon;
     }
-    source.flags = mergeObject(source.flags ?? {}, { core: { sourceId: effUuid } });
+    source.flags = foundry.utils.mergeObject(source.flags ?? {}, { core: { sourceId: effUuid } });
     if (level) {
       source.system.level = { value: level };
     }
     if (optionalData?.origin) {
-      source.system.context = mergeObject(source.system.context ?? {}, {
+      source.system.context = foundry.utils.mergeObject(source.system.context ?? {}, {
         origin: optionalData?.origin,
       });
     }

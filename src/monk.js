@@ -114,7 +114,7 @@ function getWeapon(actor, id, isRanged, slug) {
 }
 
 Hooks.once("init", () => {
-    game.activemacros = mergeObject(game.activemacros ?? {}, {
+    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "flurryOfBlows": flurryOfBlows,
     })
 });

@@ -99,7 +99,7 @@ async function accidentalShot(actor) {
 }
 
 Hooks.once("init", () => {
-    game.activemacros = mergeObject(game.activemacros ?? {}, {
+    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "accidentalShot": accidentalShot,
     })
 });

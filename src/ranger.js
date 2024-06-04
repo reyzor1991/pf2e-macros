@@ -160,7 +160,7 @@ async function rangerLink(actor) {
 }
 
 Hooks.once("init", () => {
-    game.activemacros = mergeObject(game.activemacros ?? {}, {
+    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "huntedShot": huntedShot,
         "twinTakedown": twinTakedown,
         "rangerLink": rangerLink,

@@ -1,3 +1,6 @@
+## Version 0.0.12
+- Fix warning v12 
+
 ## Version 0.0.11
 - Pistolero's Challenge
 
