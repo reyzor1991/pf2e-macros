@@ -1,3 +1,6 @@
+### Version 0.1.0
+- V12 Compatibility
+
 ## Version 0.0.12
 - Fix warning v12 
 

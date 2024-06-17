@@ -86,7 +86,7 @@ const defDCMap = {
 }
 
 async function aid(actor) {
-    if (game.user.targets.size === 0) { ui.notifications.info(`Need to select target to apply Aid effect`); }
+    if (game.user.targets.size === 0) { ui.notifications.info(`Need to select target to apply Aid effect`);return; }
     let target = game.user.targets.first().actor;
 
     let defDC = defDCMap[game.settings.get(moduleName, "defAidDC")];
