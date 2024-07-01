@@ -349,8 +349,8 @@ const OFF_GUARD_TARGET_EFF = {
   "img": "icons/skills/melee/strike-blade-scimitar-gray-red.webp"
 }
 
-async function targetIsOffGuard(token) {
-    if (!token) {
+async function targetIsOffGuard(actor) {
+    if (!actor) {
         ui.notifications.info(`Select your token before using this macro`);
         return;
     }
@@ -360,11 +360,11 @@ async function targetIsOffGuard(token) {
     }
     let target = game.user.targets.first().actor;
 
-    let o = deepClone(OFF_GUARD_TARGET_EFF);
+    let o = foundry.utils.deepClone(OFF_GUARD_TARGET_EFF);
     o.name = target.name + o.name
     o.system.rules[0].predicate.push("target:signature:"+target.signature)
 
-    await token.actor.createEmbeddedDocuments("Item", [o]);
+    return await actor.createEmbeddedDocuments("Item", [o]);
 }
 
 Hooks.once("init", () => {
