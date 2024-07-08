@@ -8,3 +8,16 @@
 - Inspire Heroics
 - Paired Shots
 - Accidental Shot
+- Knockdown
+- Pistolero's Challenge
+- Aid
+- Sword And Pistol
+- Twin Feint
+- Target Is Off-Guard
+- Doff Party Armor
+- Exploration Activity
+- Scare To Death
+- Certain Strike
+- Snagging Strike
+- Dazing Blow
+- Root To Life
