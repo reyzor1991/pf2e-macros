@@ -1,3 +1,6 @@
+### Version 0.1.2
+- Update to new version
+
 ### Version 0.1.1
 - Sword and Pistol
 
