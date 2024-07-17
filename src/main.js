@@ -602,3 +602,12 @@ function actorFeat(actor, feat) {
 function actorAction(actor, action) {
     return actor?.itemTypes?.action?.find((c => action === c.slug))
 };
+
+function getMap() {
+    return `<hr><h3>Multiple Attack Penalty</h3>
+                <select id="map">
+                <option value=0>No MAP</option>
+                <option value=1>MAP -5(-4 for agile)</option>
+                <option value=2>MAP -10(-8 for agile)</option>
+            </select><hr>`
+}

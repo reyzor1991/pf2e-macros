@@ -126,12 +126,7 @@ async function knockdown(actor) {
         content: `
             <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}
-            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            </select></div></div>${getMap()}
         `,
         buttons: {
                 ok: {
@@ -202,12 +197,7 @@ async function dazingBlow(actor) {
         content: `
             <div><div><h3>Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}
-            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            </select></div></div>${getMap()}
         `,
         buttons: {
                 ok: {
@@ -286,12 +276,7 @@ async function snaggingStrike(actor) {
         content: `
             <div><div><h3>Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}
-            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            </select></div></div>${getMap()}
         `,
         buttons: {
                 ok: {
@@ -493,12 +478,7 @@ async function swipe(token) {
         content: `
             <div><div><h3>Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}
-            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            </select></div></div>${getMap()}
         `,
         buttons: {
                 ok: {
@@ -605,6 +585,65 @@ async function swipe(token) {
             rollMode: targetMessage?.flags?.pf2e?.context?.rollMode,
         };
     }
+};
+
+async function whirlwindStrike(token) {
+    console.log(token)
+    let actor = token?.actor;
+    if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
+    if ( !hasFeatBySourceId(actor, "Compendium.pf2e.feats-srd.Item.AGydz5DKJ2KHSO4S") ) {//swipe
+        ui.notifications.warn(`${actor.name} does not have Swipe!`);
+        return;
+    }
+
+    const weapons = actor.system.actions
+        .filter( h => h.ready && h.item?.isMelee);
+
+    let weaponOptions = weapons.map((w,i)=>`<option value=${i}>${w.item.name}</option>`).join('')
+
+    const { currentWeapon, map } = await Dialog.wait({
+        title: "Whirlwind Strike",
+        content: `
+            <div><div><h3>Weapon</h3><select id="fob1" autofocus>
+                ${weaponOptions}
+            </select></div></div>${getMap()}
+        `,
+        buttons: {
+                ok: {
+                    label: "Attack",
+                    icon: "<i class='fa-solid fa-hand-fist'></i>",
+                    callback: (html) => { return { currentWeapon: html[0].querySelector("#fob1").value, map: parseInt(html[0].querySelector("#map").value)} }
+                },
+                cancel: {
+                    label: "Cancel",
+                    icon: "<i class='fa-solid fa-ban'></i>",
+                }
+        },
+        render: (html) => {
+            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
+        },
+        default: "ok"
+    });
+    if ( currentWeapon === undefined || map === undefined ) { return; }
+
+    let weapon = weapons[currentWeapon].item;
+    let action = "attack";
+    let reach = actor.getReach({action,weapon})
+
+    let enemies = token.scene.tokens.map(t=>t.object)
+        .filter(t=>t!=token && t.actor)
+        .filter(t=>!actor.isAllyOf(t.actor))
+        .filter(t=>distanceIsCorrect(t, token, reach))
+
+    if (weapons.length === 0) {
+        ui.notifications.warn(`No available enemies`);
+        return;
+    }
+    for ( const enemy of enemies ) {
+        enemy.setTarget();
+        await weapons[currentWeapon].variants[map].roll({ event:eventSkipped(event) });
+        enemy.setTarget(false);
+    }
 }
 
 Hooks.once("init", () => {
@@ -615,5 +654,6 @@ Hooks.once("init", () => {
         "snaggingStrike": snaggingStrike,
         "certainStrike": certainStrike,
         "swipe": swipe,
+        "whirlwindStrike": whirlwindStrike,
     })
 });

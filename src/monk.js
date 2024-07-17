@@ -51,12 +51,7 @@ async function flurryOfBlows(actor) {
             </select></div><div class="column-flurry second-flurry"><h3>Second Attack</h3>
             <select id="fob2">
                 ${weaponOptions}
-            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            </select></div></div>${getMap()}
         `,
         buttons: {
                 ok: {

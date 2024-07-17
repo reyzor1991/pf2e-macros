@@ -21,3 +21,4 @@
 - Snagging Strike
 - Dazing Blow
 - Root To Life
+- Whirlwind Strike

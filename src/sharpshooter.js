@@ -25,12 +25,7 @@ async function accidentalShot(actor) {
         content: `
             <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}
-            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            </select></div></div>${getMap()}
         `,
         buttons: {
                 ok: {

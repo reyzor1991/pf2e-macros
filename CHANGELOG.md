@@ -1,3 +1,6 @@
+### Version 0.1.3
+- Add Whirlwind Strike
+
 ### Version 0.1.2
 - Update to new version
 
