@@ -1,3 +1,6 @@
+### Version 0.1.4
+- Clean code
+
 ### Version 0.1.3
 - Add Whirlwind Strike
 

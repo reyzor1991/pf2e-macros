@@ -588,11 +588,10 @@ async function swipe(token) {
 };
 
 async function whirlwindStrike(token) {
-    console.log(token)
     let actor = token?.actor;
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if ( !hasFeatBySourceId(actor, "Compendium.pf2e.feats-srd.Item.AGydz5DKJ2KHSO4S") ) {//swipe
-        ui.notifications.warn(`${actor.name} does not have Swipe!`);
+        ui.notifications.warn(`${actor.name} does not have Whirlwind Strike!`);
         return;
     }
 
