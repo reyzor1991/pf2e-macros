@@ -43,7 +43,7 @@ async function doubleSlice(actor) {
     let weaponOptions2 = '';
     for (const [i, value] of weapons.entries()) {
         weaponOptions += `<option value=${i}>${value[1]}</option>`
-        weaponOptions2 += `<option value=${i} ${i === 1 ? 'selected':''}>${value[1]}</option>`
+        weaponOptions2 += `<option value=${i} ${i === 1 || value[0].item?.traits.has('agile') ? 'selected':''}>${value[1]}</option>`
     }
 
     const { weapon1, weapon2, map } = await Dialog.wait({

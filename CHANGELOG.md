@@ -1,3 +1,6 @@
+### Version 0.1.5
+- Double slice - second attack for agile
+
 ### Version 0.1.4
 - Clean code
 
