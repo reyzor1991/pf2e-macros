@@ -1,3 +1,6 @@
+### Version 0.1.7
+- Twin Takedown - possibility to select weapons
+
 ### Version 0.1.6
 - Disable/Enable NPC Vision
 

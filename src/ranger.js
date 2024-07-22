@@ -7,16 +7,6 @@ function huntedShotWeapons(actor) {
         );
 };
 
-function twinTakedownWeapons(actor) {
-    return actor.system.actions
-        .filter( h => h.ready && (h.item?.isMelee || (h?.item?.isRanged && h.altUsages[0]?.options?.includes('melee') ))  && !h.item?.system?.traits?.value?.includes("unarmed")
-            && (
-                (h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1)
-                 || actor.isOfType('npc')
-            )
-        );
-};
-
 async function huntedShot(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
@@ -70,6 +60,16 @@ async function huntedShot(actor) {
     combinedDamage("Hunted Shot", primary, secondary, [], map, map2);
 };
 
+function twinTakedownWeapons(actor) {
+    return actor.system.actions
+        .filter( h => h.ready && (h.item?.isMelee || (h?.item?.isRanged && h.altUsages[0]?.options?.includes('melee') ))  && !h.item?.system?.traits?.value?.includes("unarmed")
+            && (
+                (h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1)
+                 || actor.isOfType('npc')
+            )
+        );
+};
+
 async function twinTakedown(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
@@ -80,14 +80,32 @@ async function twinTakedown(actor) {
     }
 
     const weapons = twinTakedownWeapons(actor);
-    if (weapons.length != 2) {
+    if (weapons.length < 2) {
         ui.notifications.warn(`${actor.name} needs only 2 one-handed melee weapons can be equipped at a time.'`);
         return;
     }
 
-    const { map } = await Dialog.wait({
+    let weaponOptions = weapons.map((w,i)=>`<option value=${i}>${w.item.name}</option>`).join('')
+    let weaponOptions2 = weapons.map((w,i)=>`<option value=${i} ${i === 1 || w.item?.traits.has('agile') ? 'selected':''}>${w.item.name}</option>`).join('')
+
+    const { map, weapon1, weapon2 } = await Dialog.wait({
         title:"Twin Takedown",
         content: `
+            <div style="display: flex; justify-content: space-between;">
+                <div>
+                    <h3>First Attack</h3>
+                    <select id="fob1" autofocus>
+                        ${weaponOptions}
+                    </select>
+                </div>
+                <div>
+                    <h3>Second Attack</h3>
+                    <select id="fob2">
+                        ${weaponOptions2}
+                    </select>
+                </div>
+            </div>
+            <hr>
             <h3>Multiple Attack Penalty</h3>
                 <select id="map">
                 <option value=0>No MAP</option>
@@ -99,7 +117,11 @@ async function twinTakedown(actor) {
                 ok: {
                     label: "Attack",
                     icon: "<i class='fa-solid fa-hand-fist'></i>",
-                    callback: (html) => { return { map: parseInt(html[0].querySelector("#map").value)} }
+                    callback: (html) => { return {
+                        map: parseInt(html[0].querySelector("#map").value),
+                        weapon1: parseInt($(html[0]).find("#fob1").val()),
+                        weapon2: parseInt($(html[0]).find("#fob2").val()),
+                    } }
                 },
                 cancel: {
                     label: "Cancel",
@@ -115,14 +137,9 @@ async function twinTakedown(actor) {
     if ( map === undefined ) { return; }
     const map2 = map === 2 ? map : map + 1;
 
-    let primary = weapons[0].item.isMelee ? weapons[0] : weapons[0].altUsages[0] ;
-    let secondary = weapons[1].item.isMelee ? weapons[1] : weapons[1].altUsages[0] ;
-    if (primary.item.system.traits.value.includes("agile")) {
-        primary = weapons[1].item.isMelee ? weapons[1] : weapons[1].altUsages[0] ;
-        secondary = weapons[0].item.isMelee ? weapons[0] : weapons[0].altUsages[0] ;
-    }
 
-    combinedDamage("Twin Takedown", primary, secondary, [], map, map2);
+
+    combinedDamage("Twin Takedown", weapons[weapon1], weapons[weapon2], [], map, map2);
 }
 
 async function rangerLink(actor) {
