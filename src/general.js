@@ -367,6 +367,16 @@ async function targetIsOffGuard(actor) {
     return await actor.createEmbeddedDocuments("Item", [o]);
 }
 
+async function onOffNPCVision() {
+    let value = await Dialog.confirm({
+                title: "Scene Vision",
+                content: "Do you want to enabled/disabled?<hr><p>Yes -> Enable vision</p><p>No -> Disable vision</p>",
+            });
+    if (value === undefined || value === null) {return}
+
+    game.scenes.viewed.tokens.filter(t=>t?.actor?.isOfType('npc')).forEach(t=>t.update({'sight.enabled': value}))
+}
+
 Hooks.once("init", () => {
     game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
@@ -374,5 +384,6 @@ Hooks.once("init", () => {
         "explorationActivity": explorationActivity,
         "doffPartyArmor": doffPartyArmor,
         "targetIsOffGuard": targetIsOffGuard,
+        "onOffNPCVision": onOffNPCVision,
     })
 });

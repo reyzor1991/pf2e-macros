@@ -1,3 +1,6 @@
+### Version 0.1.6
+- Disable/Enable NPC Vision
+
 ### Version 0.1.5
 - Double slice - second attack for agile
 
