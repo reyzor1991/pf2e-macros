@@ -74,6 +74,9 @@ async function flurryOfBlows(actor) {
             for (const child of html.parent().parent().children()) {
                 child.style.cssText += 'box-shadow: 0 0 15px yellow;';
             }
+            setTimeout(()=> {
+                document.getElementById('fob1').showPicker();
+            },0)
         },
         default: "ok"
     },{},{width: 500});

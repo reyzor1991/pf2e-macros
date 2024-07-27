@@ -377,6 +377,105 @@ async function onOffNPCVision() {
     game.scenes.viewed.tokens.filter(t=>t?.actor?.isOfType('npc')).forEach(t=>t.update({'sight.enabled': value}))
 }
 
+async function counteract(actor) {
+    if (!actor) {
+        ui.notifications.info('Select token before using this macro.');
+        return;
+    }
+
+    if (!actor.itemTypes.spellcastingEntry.length) {
+        ui.notifications.info('Actor not have spellcasting for counteracting.');
+        return
+    }
+
+    let options = actor.itemTypes.spellcastingEntry.map((w,i)=>`<option value=${i}>${w.name}</option>`).join('')
+
+    const { dc, cl, tl, idx } = await Dialog.wait({
+        title: "Counteract",
+        content: `
+            <p class="">
+                <strong>DC</strong>
+                <input class='dc' type="number" value='10' min=0 style="width: 5ch;">
+            </p>
+            <p class="">
+                <strong>Counteraction level</strong>
+                <input class='cl' type="number" value=1 min=0 max=10 style="width: 5ch;">
+            </p>
+            <p class="">
+                <strong>Target level</strong>
+                <input class='tl' type="number" value=1 min=0 max=10 style="width: 5ch;">
+            </p>
+            <p class="">
+                <strong>Spellcasting</strong>
+                <select id="fob1" autofocus>
+                    ${options}
+                </select>
+            </p>
+        `,
+        buttons: {
+            ok: {
+                label: "Counteract",
+                icon: "<i class='fa-solid fa-hand'></i>",
+                callback: (html) => {
+                    return {
+                        dc: Number(html.find('.dc').val()) ?? 0,
+                        cl: Number(html.find('.cl').val()) ?? 0,
+                        tl: Number(html.find('.tl').val()) ?? 0,
+                        idx: Number(html.find("#fob1").val()),
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                icon: "<i class='fa-solid fa-ban'></i>",
+            }
+        },
+        default: "ok"
+    }, {}, { width: 300 });
+    if (!dc||!tl||!cl) { return }
+
+    if (tl-cl>=4) {
+        await counteractFailMessage()
+    } else {
+        let res = await actor.itemTypes.spellcastingEntry[idx].statistic.roll({dc})
+        console.log(res)
+        let degreeOfSuccess = res.degreeOfSuccess
+        if ((tl-cl)===3 || (tl-cl)===2) {
+            if (degreeOfSuccess === 3) {
+                await counteractSuccessMessage()
+            } else {
+                await counteractFailMessage()
+            }
+        } else if ((tl-cl)===1 || (tl-cl)===0) {
+            if (degreeOfSuccess === 3 || degreeOfSuccess === 2) {
+                await counteractSuccessMessage()
+            } else {
+                await counteractFailMessage()
+            }
+        } else {
+            if (degreeOfSuccess === 0) {
+                await counteractFailMessage()
+            } else {
+                await counteractSuccessMessage()
+            }
+        }
+    }
+}
+
+async function counteractFailMessage() {
+    await ChatMessage.create({
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+        content: `Counteract was failed`
+    });
+}
+
+async function counteractSuccessMessage() {
+    await ChatMessage.create({
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+        content: `Counteract was success`
+    });
+}
+
 Hooks.once("init", () => {
     game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
@@ -385,5 +484,6 @@ Hooks.once("init", () => {
         "doffPartyArmor": doffPartyArmor,
         "targetIsOffGuard": targetIsOffGuard,
         "onOffNPCVision": onOffNPCVision,
+        "counteract": counteract,
     })
 });

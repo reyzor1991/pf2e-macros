@@ -1,3 +1,7 @@
+### Version 0.1.8
+- Fix css
+- add fast counteract (client side)
+
 ### Version 0.1.7
 - Twin Takedown - possibility to select weapons
 
