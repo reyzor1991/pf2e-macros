@@ -267,7 +267,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     } finally {
         Hooks.off('preCreateChatMessage', hookId);
     }
-};
+}
 
 const TO_AVERAGE_DMG = {
     'd4': 3,
@@ -275,10 +275,6 @@ const TO_AVERAGE_DMG = {
     'd8': 5,
     'd10': 6,
     'd12': 7,
-}
-
-function extractNotes(rollNotes, selectors) {
-    return selectors.flatMap((s) => (rollNotes[s] ?? []).map((n) => n.clone()));
 }
 
 function hasPrecisionDamage(damage) {
@@ -375,11 +371,11 @@ function hasEffect(actor, eff) {
 
 function hasOption(message, opt) {
     return message?.flags?.pf2e?.context?.options?.includes(opt);
-};
+}
 
 function isGM() {
     return game.user.isGM;
-};
+}
 
 function hasPermissions(item) {
   return 3 === item?.ownership[game.user.id] || isGM();
@@ -401,6 +397,8 @@ const setupSocket = () => {
     socketlibSocket.register("decreaseConditionForActorId", decreaseConditionForActorId);
     socketlibSocket.register("removeEffectFromActorId", removeEffectFromActorId);
     socketlibSocket.register("applyDamageById", applyDamageById);
+    socketlibSocket.register("gmCounteract_step1", gmCounteract_step1);
+    socketlibSocket.register("gmCounteract_step2", gmCounteract_step2);
   }
   return !!globalThis.socketlib;
 };
@@ -597,11 +595,11 @@ async function applyDamage(actor, token, formula) {
 
 function actorFeat(actor, feat) {
     return actor?.itemTypes?.feat?.find((c => feat === c.slug))
-};
+}
 
 function actorAction(actor, action) {
     return actor?.itemTypes?.action?.find((c => action === c.slug))
-};
+}
 
 function getMap() {
     return `<hr><h3>Multiple Attack Penalty</h3>

@@ -1,13 +1,25 @@
 async function scareToDeath(actor) {
-    if (!actor) { ui.notifications.info("Please select 1 token"); return; }
+    if (!actor) {
+        ui.notifications.info("Please select 1 token");
+        return;
+    }
     const feat = actorFeat(actor, "scare-to-death");
     if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Scare to Death!`);
         return;
     }
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`); return; }
-    if (!distanceIsCorrect(_token, game.user.targets.first(), 30)) { ui.notifications.info(`Target should be in 30ft radius`); return; }
-    if (game.user.targets.first().actor?.itemTypes?.effect?.find(c => `scare-to-death-immunity-${actor.id}` === c.slug)) { ui.notifications.info(`Target has immunity to Scare to Death from ${actor.name}`); return }
+    if (game.user.targets.size != 1) {
+        ui.notifications.info(`Need to select 1 token as target`);
+        return;
+    }
+    if (!distanceIsCorrect(_token, game.user.targets.first(), 30)) {
+        ui.notifications.info(`Target should be in 30ft radius`);
+        return;
+    }
+    if (game.user.targets.first().actor?.itemTypes?.effect?.find(c => `scare-to-death-immunity-${actor.id}` === c.slug)) {
+        ui.notifications.info(`Target has immunity to Scare to Death from ${actor.name}`);
+        return
+    }
 
     const extraRollOptions = ["action:scare-to-death", "emotion", "fear", "incapacitation", "general", "skill"];
     const traits = ["emotion", "fear", "incapacitation", "general", "skill"];
@@ -27,7 +39,17 @@ async function scareToDeath(actor) {
         }));
     }
 
-    const result = await actor.skills['intimidation'].roll({ skipDialog: rollSkipDialog(event), modifiers, origin: null, dc, traits, title, item: feat, target: game.user.targets.first().actor, extraRollOptions });
+    const result = await actor.skills['intimidation'].roll({
+        skipDialog: rollSkipDialog(event),
+        modifiers,
+        origin: null,
+        dc,
+        traits,
+        title,
+        item: feat,
+        target: game.user.targets.first().actor,
+        extraRollOptions
+    });
 
     await addImmunity(_token, game.user.targets.first().actor);
 
@@ -58,7 +80,9 @@ async function scareToDeath(actor) {
 }
 
 function shareLanguage(actor, target) {
-    if (target?.itemTypes?.condition?.find(c => "deafened" === c.slug)) { return false }
+    if (target?.itemTypes?.condition?.find(c => "deafened" === c.slug)) {
+        return false
+    }
 
     return (target.system.traits.languages.value ?? []).some(item => actor?.system.traits.languages.value.includes(item))
 }
@@ -69,8 +93,8 @@ async function addImmunity(_token, target) {
         name: `Scare to Death Immunity (${_token.actor.name})`,
         img: `${_token.document.texture.src}`,
         system: {
-            tokenIcon: { show: true },
-            duration: { value: '1', unit: 'minutes', sustained: false, expiry: 'turn-start' },
+            tokenIcon: {show: true},
+            duration: {value: '1', unit: 'minutes', sustained: false, expiry: 'turn-start'},
             rules: [],
             slug: `scare-to-death-immunity-${_token.actor.id}`
         },
@@ -86,7 +110,10 @@ const defDCMap = {
 }
 
 async function aid(actor) {
-    if (game.user.targets.size === 0) { ui.notifications.info(`Need to select target to apply Aid effect`);return; }
+    if (game.user.targets.size === 0) {
+        ui.notifications.info(`Need to select target to apply Aid effect`);
+        return;
+    }
     let target = game.user.targets.first().actor;
 
     let defDC = defDCMap[game.settings.get(moduleName, "defAidDC")];
@@ -100,7 +127,7 @@ async function aid(actor) {
         return `<option value="${s.slug}" data-skill='false'>${s.label}</option>`
     })
 
-    const { id, isSkill, dc } = await Dialog.wait({
+    const {id, isSkill, dc} = await Dialog.wait({
         title: "Aid",
         content: `
             <p ${styles}>
@@ -132,15 +159,21 @@ async function aid(actor) {
             }
         },
         default: "ok"
-    }, {}, { width: 600 });
+    }, {}, {width: 600});
 
-    if (!id) { return }
+    if (!id) {
+        return
+    }
 
     let roll;
     let rank = 0;
     if (isSkill) {
         rank = id === 'perception' ? actor.perception.rank : actor.skills[id].rank;
-        roll = await actor.getStatistic(id).roll({ skipDialog: rollSkipDialog(event), dc, extraRollOptions: [`action:aid:${id}`, 'action:aid'] })
+        roll = await actor.getStatistic(id).roll({
+            skipDialog: rollSkipDialog(event),
+            dc,
+            extraRollOptions: [`action:aid:${id}`, 'action:aid']
+        })
 
         if (
             id === 'diplomacy'
@@ -153,13 +186,13 @@ async function aid(actor) {
         }
     } else {
         let weapon = weapons.find(w => w.slug === id)
-        roll = await weapon?.roll({ event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid'] })
+        roll = await weapon?.roll({event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid']})
         rank = weapon?.options?.includes("proficiency:trained")
             ? 1
             : weapon?.options?.includes("proficiency:expert") ? 2
-            : weapon?.options?.includes("proficiency:master") ? 3
-            : weapon?.options?.includes("proficiency:legendary") ? 4
-            : 0
+                : weapon?.options?.includes("proficiency:master") ? 3
+                    : weapon?.options?.includes("proficiency:legendary") ? 4
+                        : 0
 
     }
 
@@ -171,7 +204,7 @@ async function aid(actor) {
         effectId = `Compendium.${moduleName}.effects.Item.L1hIpxQ7GSKecbg8`;
     } else if (roll?.options?.degreeOfSuccess === 3) {
         effectId = `Compendium.${moduleName}.effects.Item.FNg7DnPqAJUHa7M3`//+2
-         if (rank === 4 || (rank === 3 && hasHelpFeat)) {
+        if (rank === 4 || (rank === 3 && hasHelpFeat)) {
             effectId = `Compendium.${moduleName}.effects.Item.YflHqtJFA40JQULG`//+4
         } else if (rank === 3 || (rank === 2 && hasHelpFeat)) {
             effectId = `Compendium.${moduleName}.effects.Item.I2ybp2bragN3affJ`//+3
@@ -179,7 +212,7 @@ async function aid(actor) {
     }
 
     if (effectId) {
-        if (actor.items.find(a=>a.sourceId === 'Compendium.pf2e.equipment-srd.Item.XyoYrGEAhJ3iCahe')?.isInvested) {//The Publican
+        if (actor.items.find(a => a.sourceId === 'Compendium.pf2e.equipment-srd.Item.XyoYrGEAhJ3iCahe')?.isInvested) {//The Publican
             let effObj = (await fromUuid(effectId)).toObject()
             effObj.system.rules[0].value += 1;
 
@@ -192,7 +225,9 @@ async function aid(actor) {
 }
 
 async function explorationActivity(actor) {
-    if (!actor) { ui.notifications.info(`Select your token before using this macro`); }
+    if (!actor) {
+        ui.notifications.info(`Select your token before using this macro`);
+    }
 
     const actions = [
         {
@@ -275,7 +310,7 @@ async function explorationActivity(actor) {
                 if (!actor.itemTypes.action.find(a => a.sourceId === sourceId)) {//need to add
                     await actor.createEmbeddedDocuments("Item", [(await fromUuid(sourceId)).toObject()])
                 }
-                let curId =  actor.itemTypes.action.find(a => a.sourceId === sourceId)?.id;
+                let curId = actor.itemTypes.action.find(a => a.sourceId === sourceId)?.id;
                 if (button.hasClass('active')) {
                     exploration = exploration.filter(i => i !== curId);
                     button.removeClass('active')
@@ -283,7 +318,7 @@ async function explorationActivity(actor) {
                     exploration.push(curId)
                     button.addClass('active')
                 }
-                await actor.update({ "system.exploration": exploration });
+                await actor.update({"system.exploration": exploration});
                 ui.notifications.info("Exploration activities were changed");
             };
 
@@ -297,56 +332,56 @@ async function explorationActivity(actor) {
             },
         }
         ,
-    }, { popOut: true, resizable: true, width: 450 }).render(true);
+    }, {popOut: true, resizable: true, width: 450}).render(true);
 }
 
 async function doffPartyArmor() {
     await Promise.all(
-        game.actors.party.members.map(a=>a.itemTypes.armor.find(i=>i.isEquipped))
-            .filter(b=>b)
+        game.actors.party.members.map(a => a.itemTypes.armor.find(i => i.isEquipped))
+            .filter(b => b)
             .map(async (i) => {
                 await i.actor.changeCarryType(i, {carryType: 'worn'});
             })
     );
 
-    ChatMessage.create({ content: 'Party Armor was doff' });
+    ChatMessage.create({content: 'Party Armor was doff'});
 }
 
 const OFF_GUARD_TARGET_EFF = {
-  "name": " is Off-guard",
-  "type": "effect",
-  "effects": [],
-  "system": {
-    "description": {
-      "gm": "",
-      "value": ""
-    },
-    "rules": [
-      {
-        "key": "EphemeralEffect",
-        "selectors": [
-          "attack-roll",
-          "damage"
+    "name": " is Off-guard",
+    "type": "effect",
+    "effects": [],
+    "system": {
+        "description": {
+            "gm": "",
+            "value": ""
+        },
+        "rules": [
+            {
+                "key": "EphemeralEffect",
+                "selectors": [
+                    "attack-roll",
+                    "damage"
+                ],
+                "predicate": [],
+                "uuid": "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg"
+            }
         ],
-        "predicate": [],
-        "uuid": "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg"
-      }
-    ],
-    "slug": "target-is-off-guard",
-    "traits": {
-      "otherTags": [],
-      "value": []
+        "slug": "target-is-off-guard",
+        "traits": {
+            "otherTags": [],
+            "value": []
+        },
+        "level": {"value": 1},
+        "duration": {
+            "value": -1,
+            "unit": "unlimited",
+            "expiry": null,
+            "sustained": false
+        },
+        "tokenIcon": {"show": true},
     },
-    "level": { "value": 1 },
-    "duration": {
-      "value": -1,
-      "unit": "unlimited",
-      "expiry": null,
-      "sustained": false
-    },
-    "tokenIcon": { "show": true },
-  },
-  "img": "icons/skills/melee/strike-blade-scimitar-gray-red.webp"
+    "img": "icons/skills/melee/strike-blade-scimitar-gray-red.webp"
 }
 
 async function targetIsOffGuard(actor) {
@@ -362,19 +397,21 @@ async function targetIsOffGuard(actor) {
 
     let o = foundry.utils.deepClone(OFF_GUARD_TARGET_EFF);
     o.name = target.name + o.name
-    o.system.rules[0].predicate.push("target:signature:"+target.signature)
+    o.system.rules[0].predicate.push("target:signature:" + target.signature)
 
     return await actor.createEmbeddedDocuments("Item", [o]);
 }
 
 async function onOffNPCVision() {
     let value = await Dialog.confirm({
-                title: "Scene Vision",
-                content: "Do you want to enabled/disabled?<hr><p>Yes -> Enable vision</p><p>No -> Disable vision</p>",
-            });
-    if (value === undefined || value === null) {return}
+        title: "Scene Vision",
+        content: "Do you want to enabled/disabled?<hr><p>Yes -> Enable vision</p><p>No -> Disable vision</p>",
+    });
+    if (value === undefined || value === null) {
+        return
+    }
 
-    game.scenes.viewed.tokens.filter(t=>t?.actor?.isOfType('npc')).forEach(t=>t.update({'sight.enabled': value}))
+    game.scenes.viewed.tokens.filter(t => t?.actor?.isOfType('npc')).forEach(t => t.update({'sight.enabled': value}))
 }
 
 async function counteract(actor) {
@@ -388,9 +425,9 @@ async function counteract(actor) {
         return
     }
 
-    let options = actor.itemTypes.spellcastingEntry.map((w,i)=>`<option value=${i}>${w.name}</option>`).join('')
+    let options = actor.itemTypes.spellcastingEntry.map((w, i) => `<option value=${i}>${w.name}</option>`).join('')
 
-    const { dc, cl, tl, idx } = await Dialog.wait({
+    const {dc, cl, tl, idx} = await Dialog.wait({
         title: "Counteract",
         content: `
             <p class="">
@@ -431,22 +468,43 @@ async function counteract(actor) {
             }
         },
         default: "ok"
-    }, {}, { width: 300 });
-    if (!dc||!tl||!cl) { return }
+    }, {}, {width: 300});
+    if (!dc || !tl || !cl) {
+        return
+    }
 
-    if (tl-cl>=4) {
+    await counteractRoll(actor, dc, cl, tl, idx);
+}
+
+async function counteractRoll(actor, dc, cl, tl, idx, fixedValue = undefined) {
+    if (tl - cl >= 4) {
         await counteractFailMessage()
     } else {
-        let res = await actor.itemTypes.spellcastingEntry[idx].statistic.roll({dc})
-        console.log(res)
+        let res = undefined
+        if (fixedValue) {
+            res = await game.pf2e.Check.roll(
+                new game.pf2e.CheckModifier('counteract', {
+                    modifiers: [
+                        new game.pf2e.Modifier({
+                            label: "Fixed value",
+                            modifier: fixedValue,
+                            type: "circumstance"
+                        })
+                    ]
+                }),
+                {actor, type: "skill-check", dc: {value: dc}}
+            );
+        } else {
+            res = await actor.itemTypes.spellcastingEntry[idx].statistic.roll({dc})
+        }
         let degreeOfSuccess = res.degreeOfSuccess
-        if ((tl-cl)===3 || (tl-cl)===2) {
+        if ((tl - cl) === 3 || (tl - cl) === 2) {
             if (degreeOfSuccess === 3) {
                 await counteractSuccessMessage()
             } else {
                 await counteractFailMessage()
             }
-        } else if ((tl-cl)===1 || (tl-cl)===0) {
+        } else if ((tl - cl) === 1 || (tl - cl) === 0) {
             if (degreeOfSuccess === 3 || degreeOfSuccess === 2) {
                 await counteractSuccessMessage()
             } else {
@@ -460,6 +518,126 @@ async function counteract(actor) {
             }
         }
     }
+}
+
+async function gmCounteract(actor) {
+    if (!actor) {
+        ui.notifications.info('Select token before using this macro.');
+        return;
+    }
+
+    const {isFixed, fixedValue} = await Dialog.wait({
+        title: "Counteract",
+        content: `
+            <p class="">
+                <strong>Is value fixed?</strong>
+                <input class='isFixed' type="checkbox"">
+            </p>
+            <p class="">
+                <strong>Value</strong>
+                <input class='fixedValue' type="number" value='0' min=0 style="width: 5ch;">
+            </p>
+        `,
+        buttons: {
+            ok: {
+                label: "Counteract",
+                icon: "<i class='fa-solid fa-hand'></i>",
+                callback: (html) => {
+                    return {
+                        isFixed: html.find('.isFixed').prop("checked"),
+                        fixedValue: !html.find('.isFixed').prop("checked") ? undefined : Number(html.find('.fixedValue').val()) ?? 0,
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                icon: "<i class='fa-solid fa-ban'></i>",
+            }
+        },
+        default: "ok"
+    }, {}, {width: 300});
+    if (isFixed === undefined) {
+        return
+    }
+
+    if (!isFixed && !actor.itemTypes.spellcastingEntry.length) {
+        ui.notifications.info('Actor not have spellcasting for counteracting.');
+        return
+    }
+
+    if (game.user.isGM) {
+        await gmCounteract_step1(actor.uuid, isFixed, fixedValue, game.user.id)
+    } else {
+        socketlibSocket._sendRequest("gmCounteract_step1", [actor.uuid, isFixed, fixedValue, game.user.id], 0);
+    }
+}
+
+async function gmCounteract_step1(actorUuid, isFixed, fixedValue, userId) {
+    let actor = await fromUuid(actorUuid)
+
+    let options = isFixed ? '' : actor.itemTypes.spellcastingEntry.map((w, i) => `<option value=${i}>${w.name}</option>`).join('')
+
+    let spellcast = isFixed ? '' : `
+        <p class="">
+            <strong>Spellcasting</strong>
+            <select id="fob1" autofocus>
+                ${options}
+            </select>
+        </p>
+    `
+
+    const {dc, cl, tl, idx} = await Dialog.wait({
+        title: "Counteract",
+        content: `
+        <p class="">
+            <strong>DC</strong>
+            <input class='dc' type="number" value='10' min=0 style="width: 5ch;">
+        </p>
+        <p class="">
+            <strong>Counteraction level</strong>
+            <input class='cl' type="number" value=1 min=0 max=10 style="width: 5ch;">
+        </p>
+        <p class="">
+            <strong>Target level</strong>
+            <input class='tl' type="number" value=1 min=0 max=10 style="width: 5ch;">
+        </p>
+        ${spellcast}
+    `,
+        buttons: {
+            ok: {
+                label: "Counteract",
+                icon: "<i class='fa-solid fa-hand'></i>",
+                callback: (html) => {
+                    return {
+                        dc: Number(html.find('.dc').val()) ?? 0,
+                        cl: Number(html.find('.cl').val()) ?? 0,
+                        tl: Number(html.find('.tl').val()) ?? 0,
+                        idx: Number(html.find("#fob1").val()),
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                icon: "<i class='fa-solid fa-ban'></i>",
+            }
+        },
+        default: "ok"
+    }, {}, {width: 300});
+
+    if (!dc) {
+        return
+    }
+
+    if (game.user.isGM) {
+        await gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue)
+    } else {
+        socketlibSocket.executeForUsers("gmCounteract_step2", [userId], actorUuid, dc, cl, tl, idx, fixedValue);
+    }
+}
+
+async function gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue) {
+    let actor = await fromUuid(actorUuid)
+    await counteractRoll(actor, dc, cl, tl, idx, fixedValue)
 }
 
 async function counteractFailMessage() {
@@ -485,5 +663,6 @@ Hooks.once("init", () => {
         "targetIsOffGuard": targetIsOffGuard,
         "onOffNPCVision": onOffNPCVision,
         "counteract": counteract,
+        "gmCounteract": gmCounteract,
     })
 });

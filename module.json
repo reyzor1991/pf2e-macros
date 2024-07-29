@@ -2,7 +2,7 @@
   "id": "pf2e-macros",
   "title": "PF2e Macros",
   "description": "",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "authors": [
     {
       "name": "Reyzor",
@@ -61,7 +61,7 @@
   "socket": true,
   "compatibility": {
     "minimum": "11",
-    "verified": "12.329"
+    "verified": "12.330"
   },
   "url": "https://github.com/reyzor1991",
   "manifest": "https://www.dropbox.com/scl/fi/6iqgochhz8qd5kh8e3bi1/module.json?rlkey=4tbyatafnrd3q1rtpxrctwgxs&dl=1",
@@ -74,7 +74,7 @@
         "manifest": "https://github.com/foundryvtt/pf2e/releases/latest/download/system.json",
         "compatibility": {
           "minimum": "5.3.2",
-          "verified": "6.0.4"
+          "verified": "6.1.3"
         }
       }
     ],
