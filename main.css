@@ -1,54 +1,55 @@
 .column-flurry,
 .column-hunted-shot {
-  float: left;
-  width: 50%;
-  padding: 10px;
+    float: left;
+    width: 50%;
+    padding: 10px;
 }
 
 .row-flurry:after,
 .row-hunted-shot:after {
-  content: "";
-  display: table;
-  clear: both;
+    content: "";
+    display: table;
+    clear: both;
 }
 
 .first-flurry {
-  box-shadow: 0 0 12px #0cf043;
+    box-shadow: 0 0 12px #0cf043;
 }
 
 .second-flurry {
-  box-shadow: 0 0 12px #0eaaf2;
+    box-shadow: 0 0 12px #0eaaf2;
 }
 
 .pf2e-exploration-activity-list {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 8px;
-  max-height: 105px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
+    max-height: 105px;
 }
 
 .pf2e-exploration-activity-list > span {
-  margin: 1px auto;
-  width: 140px;
-  height: fit-content;
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 50%);
-  text-shadow: none;
-  border: #000;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
-  background: #424242;
+    margin: 1px auto;
+    width: 140px;
+    height: fit-content;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 50%);
+    text-shadow: none;
+    border: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    background: #424242;
 }
+
 .pf2e-exploration-activity-list > span.active {
-  background: #5e0000;
+    background: #5e0000;
 }
 
 .pf2e-exploration-activity-list > span > img {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 .chat-message .message-content .damage-roll .dice-result .instance {
@@ -56,5 +57,9 @@
 }
 
 #fob1, #fob2 {
-  max-width: 160px;
+    max-width: 160px;
+}
+
+.weapon-row {
+    padding: 5px;
 }

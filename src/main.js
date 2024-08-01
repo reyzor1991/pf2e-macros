@@ -6,9 +6,16 @@ let DamageInstance = undefined;
 let ArithmeticExpression = undefined;
 let InstancePool = undefined;
 
-function eventSkipped(event, isDamage=false) {
+const DEFAULT_FAVORITE = [
+    {id: 'double-slice-1', label: 'Double Slice First Weapon', value: ''},
+    {id: 'double-slice-2', label: 'Double Slice Second Weapon', value: ''},
+    {id: 'flurry-of-blows-1', label: 'Flurry of Blows First Attack', value: ''},
+    {id: 'flurry-of-blows-2', label: 'Flurry of Blows Second Attack', value: ''},
+]
+
+function eventSkipped(event, isDamage = false) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': isDamage ? game.user.flags.pf2e.settings.showDamageDialogs:game.user.flags.pf2e.settings.showCheckDialogs})
+        ? new KeyboardEvent('keydown', {'shiftKey': isDamage ? game.user.flags.pf2e.settings.showDamageDialogs : game.user.flags.pf2e.settings.showCheckDialogs})
         : event;
 }
 
@@ -22,19 +29,19 @@ function rollSkipDialog(event) {
 
 function xdyAutoRoll(roll) {
     return game.modules.get('xdy-pf2e-workbench')?.active
-    && ((
-        ["all", "players"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
-        && roll.roller.id === game.user?.id && !game.user?.isGM
-    )
-    || (
-        ["all", "gm"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
-        && roll.roller.id === game.user?.id && game.user?.isGM
-    ))
-    && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
+        && ((
+                ["all", "players"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
+                && roll.roller.id === game.user?.id && !game.user?.isGM
+            )
+            || (
+                ["all", "gm"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
+                && roll.roller.id === game.user?.id && game.user?.isGM
+            ))
+        && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
 }
 
 Hooks.once("init", () => {
-    DamageRoll = CONFIG.Dice.rolls.find( r => r.name === "DamageRoll" );
+    DamageRoll = CONFIG.Dice.rolls.find(r => r.name === "DamageRoll");
 
     DamageInstance = CONFIG.Dice.rolls.find((r) => r.name === "DamageInstance");
     ArithmeticExpression = CONFIG.Dice.termTypes.ArithmeticExpression;
@@ -70,8 +77,81 @@ Hooks.once("init", () => {
         default: false,
         type: Boolean,
     });
+
+    game.settings.register(moduleName, "useFavoriteWeapons", {
+        name: "Use favorite weapons",
+        scope: "client",
+        config: true,
+        default: false,
+        type: Boolean,
+    });
+
+    game.settings.register(moduleName, "favoriteWeapons", {
+        scope: "client",
+        config: false,
+        default: DEFAULT_FAVORITE,
+        type: Array,
+    });
 });
 
+class FavoriteWeapons extends FormApplication {
+    constructor(options = {}) {
+        super(options);
+    }
+
+    getFavoriteWeapons() {
+        return foundry.utils.mergeObject(foundry.utils.deepClone(DEFAULT_FAVORITE),
+            game.settings.get(moduleName, "favoriteWeapons")
+        );
+    }
+
+    async getData() {
+        return foundry.utils.mergeObject(super.getData(), {
+            weapons: this.getFavoriteWeapons()
+        });
+    }
+
+    static get defaultOptions() {
+        return foundry.utils.mergeObject(super.defaultOptions, {
+            title: "Favorite weapons",
+            id: `${moduleName}-favorite-weapons`,
+            classes: [moduleName],
+            template: `modules/${moduleName}/templates/weapons.hbs`,
+            width: 500,
+            height: 'auto',
+            closeOnSubmit: true,
+            submitOnChange: false,
+            resizable: true,
+            dragDrop: [],
+        });
+    }
+
+    activateListeners($html) {
+        super.activateListeners($html);
+    }
+
+    async _updateObject(_event, data) {
+        let checkData = this.getFavoriteWeapons();
+        for (let w in data) {
+            checkData.find(c=>c.id===w).value = data[w]
+        }
+        game.settings.set(moduleName, "favoriteWeapons", checkData)
+    }
+}
+
+Hooks.on("renderSettingsConfig", (app, html) => {
+    const target = html.find(`[data-category="${moduleName}"]`);
+
+    if (target.find(`.${moduleName}-btn-favorite`).length === 0) {
+        let syncBtn = document.createElement("div");
+        syncBtn.classList.add("form-group", "submenu", `${moduleName}-btn-favorite`);
+        syncBtn.innerHTML = `<button type="button"> <i class="	fas fa-swords"></i> <label>Configure favorite weapons</label> </button>`;
+        syncBtn.onclick = function () {
+            new FavoriteWeapons().render(true)
+        };
+        target.find(".form-group").first().before(syncBtn);
+    }
+});
 
 const dcByLevel = new Map([
     [-1, 13],
@@ -122,8 +202,9 @@ async function fistAttack(message) {
 async function combinedDamage(name, primary, secondary, options, map, map2) {
     let onlyOnePrecision = false;
     const damages = [];
+
     function PD(cm) {
-        if ( cm.user.id === game.userId && cm.isDamageRoll) {
+        if (cm.user.id === game.userId && cm.isDamageRoll) {
             damages.push(cm);
             return false;
         }
@@ -135,14 +216,14 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
-        const primaryMessage = await primary.variants[map].roll({ 'event': eventSkipped(event) });
+        const primaryMessage = await primary.variants[map].roll({'event': eventSkipped(event)});
         const primaryDegreeOfSuccess = primaryMessage.options.degreeOfSuccess;
 
         if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
 
-        if (primaryMessage && primaryMessage?.flags?.pf2e?.modifiers?.find(a=>a.slug === "aid" && a.enabled)) {
+        if (primaryMessage && primaryMessage?.flags?.pf2e?.modifiers?.find(a => a.slug === "aid" && a.enabled)) {
             const eff = hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
             if (eff) {
                 await deleteItem(eff)
@@ -157,7 +238,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             secondOpts.push("twin-feint-second-attack")
         }
 
-        const secondaryMessage = await secondary.variants[map2].roll({ 'event': eventSkipped(event), options: secondOpts});
+        const secondaryMessage = await secondary.variants[map2].roll({
+            'event': eventSkipped(event),
+            options: secondOpts
+        });
         const secondaryDegreeOfSuccess = secondaryMessage.options.degreeOfSuccess;
 
         if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
@@ -168,8 +252,12 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         const sOpt = [...options, "skip-handling-message"];
 
         if (!xdyAutoRoll(primaryMessage)) {
-            if ( primaryDegreeOfSuccess === 2 ) { await primary.damage({event: eventSkipped(event, true), options: fOpt}); }
-            if ( primaryDegreeOfSuccess === 3 ) { await primary.critical({event: eventSkipped(event, true), options: fOpt}); }
+            if (primaryDegreeOfSuccess === 2) {
+                await primary.damage({event: eventSkipped(event, true), options: fOpt});
+            }
+            if (primaryDegreeOfSuccess === 3) {
+                await primary.critical({event: eventSkipped(event, true), options: fOpt});
+            }
         }
 
         if (options.includes("twin-feint")) {
@@ -190,8 +278,12 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         }
 
         if (!xdyAutoRoll(secondaryMessage)) {
-            if ( secondaryDegreeOfSuccess === 2 ) { await secondary.damage({event: eventSkipped(event, true), options: sOpt}); }
-            if ( secondaryDegreeOfSuccess === 3 ) { await secondary.critical({event: eventSkipped(event, true), options: sOpt}); }
+            if (secondaryDegreeOfSuccess === 2) {
+                await secondary.damage({event: eventSkipped(event, true), options: sOpt});
+            }
+            if (secondaryDegreeOfSuccess === 3) {
+                await secondary.critical({event: eventSkipped(event, true), options: sOpt});
+            }
         }
 
         if (options.includes("twin-feint")) {
@@ -211,15 +303,15 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             return;
         }
 
-        if ( (primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
+        if ((primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
             let m = damages[0].toObject();
-            m.flags.pf2e.context.options=m.flags.pf2e.context.options.filter(e=>e!="skip-handling-message");
+            m.flags.pf2e.context.options = m.flags.pf2e.context.options.filter(e => e != "skip-handling-message");
             ChatMessage.createDocuments([m]);
             return;
         }
 
-        const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a=>a.rolls[0]));
-        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e=>e != 'skip-handling-message');
+        const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]));
+        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e => e != 'skip-handling-message');
         const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
         const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
         const flavor = `<strong>${name} Total Damage</strong>`
@@ -289,9 +381,9 @@ function createNewDamageRolls(onlyOnePrecision, damages) {
 }
 
 function combineDamages(damages) {
-    let groups = Object.values(Object.groupBy(damages.map(a=>a.instances).flat(), ({ options }) => options.flavor))
+    let groups = Object.values(Object.groupBy(damages.map(a => a.instances).flat(), ({options}) => options.flavor))
 
-    let newInstances = groups.map(g=> {
+    let newInstances = groups.map(g => {
         if (g[0]?.options?.flavor?.includes('persistent')) {
             return g
         } else if (g.length === 1) {
@@ -299,9 +391,9 @@ function combineDamages(damages) {
         } else {
             return DamageInstance.fromTerms([ArithmeticExpression.fromData({
                 operator: '+',
-                operands: g.map(a=>a.toJSON().terms[0]),
-                 evaluated: true
-             })], foundry.utils.deepClone(g[0].head.toJSON().options));
+                operands: g.map(a => a.toJSON().terms[0]),
+                evaluated: true
+            })], foundry.utils.deepClone(g[0].head.toJSON().options));
         }
     }).flat()
 
@@ -309,16 +401,16 @@ function combineDamages(damages) {
 }
 
 function createDataDamageOnlyOnePrecision(damages) {
-    let f = damages[0].options?.damage?.damage?.modifiers?.filter(a=>a.damageCategory==="precision" && a.enabled)?.map(a=>a.modifier)?.reduce((a, b) => a + b, 0) ?? 0;
-    const fR = damages[0].options?.damage?.damage?.dice?.filter(a=>a.category==="precision" && a.enabled).map(a=>a.diceNumber*TO_AVERAGE_DMG[a.dieSize])?.reduce((a, b) => a + b, 0) ?? 0;
+    let f = damages[0].options?.damage?.damage?.modifiers?.filter(a => a.damageCategory === "precision" && a.enabled)?.map(a => a.modifier)?.reduce((a, b) => a + b, 0) ?? 0;
+    const fR = damages[0].options?.damage?.damage?.dice?.filter(a => a.category === "precision" && a.enabled).map(a => a.diceNumber * TO_AVERAGE_DMG[a.dieSize])?.reduce((a, b) => a + b, 0) ?? 0;
     const fRMod = damages[0].options.degreeOfSuccess === 3 ? 2 : 1;
 
-    let s = damages[1].options?.damage?.damage?.modifiers?.filter(a=>a.damageCategory==="precision" && a.enabled)?.map(a=>a.modifier)?.reduce((a, b) => a + b, 0) ?? 0;
-    const sR = damages[1].options?.damage?.damage?.dice?.filter(a=>a.category==="precision" && a.enabled).map(a=>a.diceNumber*TO_AVERAGE_DMG[a.dieSize])?.reduce((a, b) => a + b, 0) ?? 0;
+    let s = damages[1].options?.damage?.damage?.modifiers?.filter(a => a.damageCategory === "precision" && a.enabled)?.map(a => a.modifier)?.reduce((a, b) => a + b, 0) ?? 0;
+    const sR = damages[1].options?.damage?.damage?.dice?.filter(a => a.category === "precision" && a.enabled).map(a => a.diceNumber * TO_AVERAGE_DMG[a.dieSize])?.reduce((a, b) => a + b, 0) ?? 0;
     const sRMod = damages[1].options.degreeOfSuccess === 3 ? 2 : 1;
 
     let damageIdx = 0;
-    if (((f+fR) * fRMod) > ((s+sR) * sRMod)) {
+    if (((f + fR) * fRMod) > ((s + sR) * sRMod)) {
         //delete from 2
         damageIdx = 1;
     }
@@ -378,219 +470,221 @@ function isGM() {
 }
 
 function hasPermissions(item) {
-  return 3 === item?.ownership[game.user.id] || isGM();
+    return 3 === item?.ownership[game.user.id] || isGM();
 }
 
 async function setEffectToActorId(actorId, effUuid, level = undefined, optionalData) {
-  await setEffectToActor(await fromUuid(actorId), effUuid, level, optionalData);
+    await setEffectToActor(await fromUuid(actorId), effUuid, level, optionalData);
 }
 
 const setupSocket = () => {
-  if (globalThis.socketlib) {
-    socketlibSocket = globalThis.socketlib.registerModule(moduleName);
-    socketlibSocket.register("setEffectToActorId", setEffectToActorId);
-    socketlibSocket.register("removeConditionFromActorId", removeConditionFromActorId);
-    socketlibSocket.register("rollAllRecoveryById", rollAllRecoveryById);
-    socketlibSocket.register("deleteItemById", deleteItemById);
-    socketlibSocket.register("addItemToActorId", addItemToActorId);
-    socketlibSocket.register("increaseConditionForActorId", increaseConditionForActorId);
-    socketlibSocket.register("decreaseConditionForActorId", decreaseConditionForActorId);
-    socketlibSocket.register("removeEffectFromActorId", removeEffectFromActorId);
-    socketlibSocket.register("applyDamageById", applyDamageById);
-    socketlibSocket.register("gmCounteract_step1", gmCounteract_step1);
-    socketlibSocket.register("gmCounteract_step2", gmCounteract_step2);
-  }
-  return !!globalThis.socketlib;
+    if (globalThis.socketlib) {
+        socketlibSocket = globalThis.socketlib.registerModule(moduleName);
+        socketlibSocket.register("setEffectToActorId", setEffectToActorId);
+        socketlibSocket.register("removeConditionFromActorId", removeConditionFromActorId);
+        socketlibSocket.register("rollAllRecoveryById", rollAllRecoveryById);
+        socketlibSocket.register("deleteItemById", deleteItemById);
+        socketlibSocket.register("addItemToActorId", addItemToActorId);
+        socketlibSocket.register("increaseConditionForActorId", increaseConditionForActorId);
+        socketlibSocket.register("decreaseConditionForActorId", decreaseConditionForActorId);
+        socketlibSocket.register("removeEffectFromActorId", removeEffectFromActorId);
+        socketlibSocket.register("applyDamageById", applyDamageById);
+        socketlibSocket.register("gmCounteract_step1", gmCounteract_step1);
+        socketlibSocket.register("gmCounteract_step2", gmCounteract_step2);
+    }
+    return !!globalThis.socketlib;
 };
 
 Hooks.once("setup", function () {
-  if (!setupSocket()) console.error("Error: Unable to set up socket lib");
+    if (!setupSocket()) console.error("Error: Unable to set up socket lib");
 });
 
 async function setEffectToActor(
-  actor,
-  effUuid,
-  level = undefined,
-  optionalData = { name: undefined, icon: undefined, origin: undefined, duplication: false }
+    actor,
+    effUuid,
+    level = undefined,
+    optionalData = {name: undefined, icon: undefined, origin: undefined, duplication: false}
 ) {
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("setEffectToActorId", [actor.uuid, effUuid, level, optionalData], 0);
-    return;
-  }
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("setEffectToActorId", [actor.uuid, effUuid, level, optionalData], 0);
+        return;
+    }
 
-  let source = await fromUuid(effUuid);
-  let withBa = hasEffectBySourceId(actor, effUuid);
-  if (withBa && withBa.system.badge) {
-    withBa.update({
-      "system.badge.value": (withBa.system.badge.value += 1),
-    });
-  } else if (!withBa || optionalData?.duplication) {
-    source = source.toObject();
-    if (optionalData?.name) {
-      source.name = optionalData.name;
+    let source = await fromUuid(effUuid);
+    let withBa = hasEffectBySourceId(actor, effUuid);
+    if (withBa && withBa.system.badge) {
+        withBa.update({
+            "system.badge.value": (withBa.system.badge.value += 1),
+        });
+    } else if (!withBa || optionalData?.duplication) {
+        source = source.toObject();
+        if (optionalData?.name) {
+            source.name = optionalData.name;
+        }
+        if (optionalData?.icon) {
+            source.img = optionalData.icon;
+        }
+        source.flags = foundry.utils.mergeObject(source.flags ?? {}, {core: {sourceId: effUuid}});
+        if (level) {
+            source.system.level = {value: level};
+        }
+        if (optionalData?.origin) {
+            source.system.context = foundry.utils.mergeObject(source.system.context ?? {}, {
+                origin: optionalData?.origin,
+            });
+        }
+        await actor.createEmbeddedDocuments("Item", [source]);
     }
-    if (optionalData?.icon) {
-      source.img = optionalData.icon;
-    }
-    source.flags = foundry.utils.mergeObject(source.flags ?? {}, { core: { sourceId: effUuid } });
-    if (level) {
-      source.system.level = { value: level };
-    }
-    if (optionalData?.origin) {
-      source.system.context = foundry.utils.mergeObject(source.system.context ?? {}, {
-        origin: optionalData?.origin,
-      });
-    }
-    await actor.createEmbeddedDocuments("Item", [source]);
-  }
 }
 
 function hasFeatBySourceId(actor, eff) {
-  return actor?.itemTypes?.feat?.find((c) => eff === c.sourceId);
+    return actor?.itemTypes?.feat?.find((c) => eff === c.sourceId);
 }
 
 function hasEffectBySourceId(actor, eff) {
-  return actor?.itemTypes?.effect?.find((c) => eff === c.sourceId);
+    return actor?.itemTypes?.effect?.find((c) => eff === c.sourceId);
 }
 
 
 function distanceIsCorrect(firstT, secondT, distance) {
-  return (
-    (firstT instanceof Token ? firstT : firstT.object).distanceTo(
-      secondT instanceof Token ? secondT : secondT.object
-    ) <= distance
-  );
+    return (
+        (firstT instanceof Token ? firstT : firstT.object).distanceTo(
+            secondT instanceof Token ? secondT : secondT.object
+        ) <= distance
+    );
 }
 
 async function removeConditionFromActorId(actorId, condition, forceRemove = false) {
-  await removeConditionFromActor(await fromUuid(actorId), condition, forceRemove);
+    await removeConditionFromActor(await fromUuid(actorId), condition, forceRemove);
 }
 
 async function removeConditionFromActor(actor, condition, forceRemove = false) {
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("removeConditionFromActorId", [actor.uuid, condition, forceRemove], 0);
-    return;
-  }
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("removeConditionFromActorId", [actor.uuid, condition, forceRemove], 0);
+        return;
+    }
 
-  await actor.decreaseCondition(condition, { forceRemove: forceRemove });
+    await actor.decreaseCondition(condition, {forceRemove: forceRemove});
 }
 
 async function rollAllRecoveryById(actorUUID) {
-  await rollAllRecovery(await fromUuid(actorUUID));
+    await rollAllRecovery(await fromUuid(actorUUID));
 }
 
 async function rollAllRecovery(actor) {
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("rollAllRecoveryById", [actor.uuid], 0);
-    return;
-  }
-  const list = actor.itemTypes.condition.filter((a) => a.slug === "persistent-damage");
-  for (const element of list) {
-    element.rollRecovery();
-  }
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("rollAllRecoveryById", [actor.uuid], 0);
+        return;
+    }
+    const list = actor.itemTypes.condition.filter((a) => a.slug === "persistent-damage");
+    for (const element of list) {
+        element.rollRecovery();
+    }
 }
 
 async function deleteItemById(itemUuid) {
-  await deleteItem(await fromUuid(itemUuid));
+    await deleteItem(await fromUuid(itemUuid));
 }
 
 async function deleteItem(item) {
-  if (!hasPermissions(item)) {
-    socketlibSocket._sendRequest("deleteItemById", [item.uuid], 0);
-  } else {
-    await item.delete();
-  }
+    if (!hasPermissions(item)) {
+        socketlibSocket._sendRequest("deleteItemById", [item.uuid], 0);
+    } else {
+        await item.delete();
+    }
 }
 
 async function increaseConditionForActorId(actorId, condition, value = undefined) {
-  await increaseConditionForActor(await fromUuid(actorId), condition, value);
+    await increaseConditionForActor(await fromUuid(actorId), condition, value);
 }
 
 async function increaseConditionForActor(actor, condition, value = undefined) {
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("increaseConditionForActorId", [actor.uuid, condition, value], 0);
-    return;
-  }
-
-  let activeCondition = undefined;
-  const valueObj = {};
-  if (value) {
-    activeCondition = hasCondition(actor, condition);
-    if (activeCondition && activeCondition?.value >= value) {
-      return;
-    } else if (activeCondition) {
-      valueObj["value"] = value - activeCondition.value;
-    } else {
-      valueObj["value"] = value;
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("increaseConditionForActorId", [actor.uuid, condition, value], 0);
+        return;
     }
-  }
 
-  await actor.increaseCondition(condition, valueObj);
+    let activeCondition = undefined;
+    const valueObj = {};
+    if (value) {
+        activeCondition = hasCondition(actor, condition);
+        if (activeCondition && activeCondition?.value >= value) {
+            return;
+        } else if (activeCondition) {
+            valueObj["value"] = value - activeCondition.value;
+        } else {
+            valueObj["value"] = value;
+        }
+    }
+
+    await actor.increaseCondition(condition, valueObj);
 }
 
 async function decreaseConditionForActorId(actorId, condition, value = undefined) {
-  await decreaseConditionForActor(await fromUuid(actorId), condition, value);
+    await decreaseConditionForActor(await fromUuid(actorId), condition, value);
 }
 
 async function decreaseConditionForActor(actor, condition, value = undefined) {
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("decreaseConditionForActorId", [actor.uuid, condition, value], 0);
-    return;
-  }
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("decreaseConditionForActorId", [actor.uuid, condition, value], 0);
+        return;
+    }
 
-  let activeCondition = hasCondition(actor, condition);
-  if (!activeCondition) {
-    return;
-  }
+    let activeCondition = hasCondition(actor, condition);
+    if (!activeCondition) {
+        return;
+    }
 
-  for (let i = 0; i < value; i++) {
-    await actor.decreaseCondition(condition);
-  }
+    for (let i = 0; i < value; i++) {
+        await actor.decreaseCondition(condition);
+    }
 }
 
 async function addItemToActorId(actorUuid, item) {
-  await addItemToActor(await fromUuid(actorUuid), item);
+    await addItemToActor(await fromUuid(actorUuid), item);
 }
 
 async function addItemToActor(actor, item) {
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("addItemToActorId", [actor.uuid, item], 0);
-    return;
-  }
-  await actor.createEmbeddedDocuments("Item", [item]);
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("addItemToActorId", [actor.uuid, item], 0);
+        return;
+    }
+    await actor.createEmbeddedDocuments("Item", [item]);
 }
 
 async function removeEffectFromActorId(actor, effect) {
-  await removeEffectFromActor(await fromUuid(actorId), effect);
+    await removeEffectFromActor(await fromUuid(actorId), effect);
 }
 
 async function removeEffectFromActor(actor, effect) {
-  if (!actor) { return }
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("removeEffectFromActorId", [actor.uuid, effect], 0);
-    return;
-  }
+    if (!actor) {
+        return
+    }
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("removeEffectFromActorId", [actor.uuid, effect], 0);
+        return;
+    }
 
-  let eff = actor.itemTypes.effect.find((a) => a.flags?.core?.sourceId === effect);
-  if (eff) {
-    await eff.delete();
-  }
+    let eff = actor.itemTypes.effect.find((a) => a.flags?.core?.sourceId === effect);
+    if (eff) {
+        await eff.delete();
+    }
 }
 
 async function applyDamageById(actorUUID, tokenUUID, formula) {
-  await applyDamage(await fromUuid(actorUUID), await fromUuid(tokenUUID), formula);
+    await applyDamage(await fromUuid(actorUUID), await fromUuid(tokenUUID), formula);
 }
 
 async function applyDamage(actor, token, formula) {
-  if (!hasPermissions(actor)) {
-    socketlibSocket._sendRequest("applyDamageById", [actor.uuid, token.uuid, formula], 0);
-    return;
-  }
+    if (!hasPermissions(actor)) {
+        socketlibSocket._sendRequest("applyDamageById", [actor.uuid, token.uuid, formula], 0);
+        return;
+    }
 
-  const roll = new DamageRoll(parseFormula(actor, formula));
-  await roll.evaluate({ async: true });
-  actor.applyDamage({ damage: roll, token });
-  roll.toMessage({ speaker: { alias: actor.name } });
+    const roll = new DamageRoll(parseFormula(actor, formula));
+    await roll.evaluate({async: true});
+    actor.applyDamage({damage: roll, token});
+    roll.toMessage({speaker: {alias: actor.name}});
 }
 
 function actorFeat(actor, feat) {
@@ -608,4 +702,16 @@ function getMap() {
                 <option value=1>MAP -5(-4 for agile)</option>
                 <option value=2>MAP -10(-8 for agile)</option>
             </select><hr>`
+}
+
+function favoriteWeapon(macro) {
+    return game.settings.get(moduleName, "favoriteWeapons").find(c => c.id === macro)?.value;
+}
+
+function selectIf(favorite, item, fn=undefined) {
+    if (!game.settings.get(moduleName, "useFavoriteWeapons")) {return}
+    if (!item || !favorite) {
+        return fn ? fn() : ''
+    }
+    return favorite === item.name || favorite === item.id || favorite === item.slug ? 'selected' : ""
 }

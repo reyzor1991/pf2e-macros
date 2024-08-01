@@ -1,0 +1,18 @@
+{{@log root}}
+<form autocomplete="off" onsubmit="event.preventDefault();">
+    <div class="scrollable">
+        <div class="weapon-row flexrow">
+            <label>Name of macro</label>
+            <label>Slug/Id/Name of weapon</label>
+        </div>
+        {{#each weapons}}
+            <div class="weapon-row flexrow">
+                <label>{{this.label}}</label>
+                <input type="text" name="{{this.id}}" value="{{this.value}}"/>
+            </div>
+        {{/each}}
+    </div>
+    <footer>
+        <button type="submit"><i class="fas fa-save"></i> Save Changes</button>
+    </footer>
+</form>

@@ -37,10 +37,16 @@ async function flurryOfBlows(actor) {
     }
 
     let weaponOptions = '';
+    let weaponOptions2 = '';
     const hasRangedDesc = weapons.some(w=>w?.options?.includes("ranged") );
+
+    let f1 = favoriteWeapon("flurry-of-blows-1")
+    let f2 = favoriteWeapon("flurry-of-blows-2")
+
     for ( const w of weapons ) {
         const isRanged = !hasRangedDesc ? '' :w?.options?.includes("ranged") ? " (Ranged Usage)" : ' (Melee Usage)';
-        weaponOptions += `<option value=${w.item.id} data-ranged="${!!w?.options?.includes("ranged")}" data-slug="${w.item.slug}">${w.item.name}${isRanged}</option>`
+        weaponOptions += `<option value=${w.item.id} ${selectIf(f1, w.item)} data-ranged="${!!w?.options?.includes("ranged")}" data-slug="${w.item.slug}">${w.item.name}${isRanged}</option>`
+        weaponOptions2 += `<option value=${w.item.id} ${selectIf(f2, w.item)} data-ranged="${!!w?.options?.includes("ranged")}" data-slug="${w.item.slug}">${w.item.name}${isRanged}</option>`
     }
 
     const { weapon1, weapon2, map } = await Dialog.wait({
@@ -50,7 +56,7 @@ async function flurryOfBlows(actor) {
                 ${weaponOptions}
             </select></div><div class="column-flurry second-flurry"><h3>Second Attack</h3>
             <select id="fob2">
-                ${weaponOptions}
+                ${weaponOptions2}
             </select></div></div>${getMap()}
         `,
         buttons: {
@@ -75,7 +81,7 @@ async function flurryOfBlows(actor) {
                 child.style.cssText += 'box-shadow: 0 0 15px yellow;';
             }
             setTimeout(()=> {
-                document.getElementById('fob1').showPicker();
+                // document.getElementById('fob1').showPicker();
             },0)
         },
         default: "ok"
