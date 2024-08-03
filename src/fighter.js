@@ -50,7 +50,9 @@ async function doubleSlice(actor) {
     let weaponOptions2 = '';
     for (const [i, value] of weapons.entries()) {
         weaponOptions += `<option value=${i} ${selectIf(f1, value[0].item)}>${value[1]}</option>`
-        weaponOptions2 += `<option value=${i} ${selectIf(f2, value[0].item, ()=>{return i === 1 || value[0].item?.traits.has('agile') ? 'selected' : ''})}>${value[1]}</option>`
+        weaponOptions2 += `<option value=${i} ${selectIf(f2, value[0].item, () => {
+            return i === 1 || value[0].item?.traits.has('agile') ? 'selected' : ''
+        })}>${value[1]}</option>`
     }
 
     const {weapon1, weapon2, map} = await Dialog.wait({
@@ -133,10 +135,8 @@ async function knockdown(actor) {
 
     const weapons = knockdownWeapons(actor);
 
-    let weaponOptions = '';
-    for (const w of weapons) {
-        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
-    }
+    let f1 = favoriteWeapon("slam-down")
+    let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
     const {currentWeapon, map} = await Dialog.wait({
         title: "Knockdown/Slam Down",
@@ -227,10 +227,8 @@ async function dazingBlow(actor) {
 
     const weapons = actor.system.actions.filter(h => h.ready && h.item?.isMelee);
 
-    let weaponOptions = '';
-    for (const w of weapons) {
-        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
-    }
+    let f1 = favoriteWeapon("dazing-blow")
+    let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
     const {currentWeapon, map} = await Dialog.wait({
         title: "Dazing Blow",
@@ -325,13 +323,11 @@ async function snaggingStrike(actor) {
 
     const weapons = actor.system.actions.filter(h => h.ready && h.item?.isMelee);
 
-    let weaponOptions = '';
-    for (const w of weapons) {
-        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
-    }
+    let f1 = favoriteWeapon("snagging-strike")
+    let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
     const {currentWeapon, map} = await Dialog.wait({
-        title: "Dazing Blow",
+        title: "Snagging Strike",
         content: `
             <div><div><h3>Attack</h3><select id="fob1" autofocus>
                 ${weaponOptions}
@@ -407,10 +403,8 @@ async function certainStrike(actor) {
         return;
     }
 
-    let weaponOptions = '';
-    for (const w of weapons) {
-        weaponOptions += `<option value=${w.item.id}>${w.item.name}</option>`
-    }
+    let f1 = favoriteWeapon("certain-strike")
+    let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
     const {currentWeapon, map} = await Dialog.wait({
         title: "Certain Strike",

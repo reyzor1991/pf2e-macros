@@ -12,13 +12,14 @@ async function accidentalShot(actor) {
         return;
     }
 
+    let f1 = favoriteWeapon("accidental-shot")
     const weapons = accidentalShotWeapons(actor);
     if (weapons.length === 0) {
         ui.notifications.warn(`${actor.name} doesn't have correct weapon`);
         return;
     }
 
-    let weaponOptions = weapons.map(w=>`<option value=${w.item.id}>${w.item.name}</option>`).join('');
+    let weaponOptions = weapons.map(w=>`<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
     const { currentWeapon, map } = await Dialog.wait({
         title: "Accidental Shot",

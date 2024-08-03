@@ -1,3 +1,6 @@
+### Version 0.2.1
+- Add favorite weapons to macros
+
 ### Version 0.2.0
 - Add favorite weapons to macros
 

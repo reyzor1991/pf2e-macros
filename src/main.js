@@ -11,6 +11,14 @@ const DEFAULT_FAVORITE = [
     {id: 'double-slice-2', label: 'Double Slice Second Weapon', value: ''},
     {id: 'flurry-of-blows-1', label: 'Flurry of Blows First Attack', value: ''},
     {id: 'flurry-of-blows-2', label: 'Flurry of Blows Second Attack', value: ''},
+    {id: 'accidental-shot', label: 'Accidental Shot', value: ''},
+    {id: 'certain-strike', label: 'Certain Strike', value: ''},
+    {id: 'dazing-blow', label: 'Dazing Blow', value: ''},
+    {id: 'hunted-shot', label: 'Hunted Shot', value: ''},
+    {id: 'slam-down', label: 'Slam down', value: ''},
+    {id: 'snagging-strike', label: 'Snagging Strike', value: ''},
+    {id: 'twin-takedown-1', label: 'Twin Takedown First Weapon', value: ''},
+    {id: 'twin-takedown-2', label: 'Twin Takedown Second Weapon', value: ''},
 ]
 
 function eventSkipped(event, isDamage = false) {
