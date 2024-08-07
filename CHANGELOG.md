@@ -1,4 +1,4 @@
-### Version 0.2.2-6
+### Version 0.2.2-7
 - Small fixes
 
 ### Version 0.2.1

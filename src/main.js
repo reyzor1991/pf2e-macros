@@ -282,7 +282,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         }
 
         if (primaryDegreeOfSuccess === 2 || primaryDegreeOfSuccess === 3) {
-            await until(() => damages.length > 1);
+            await until(() => damages.length >= 1);
             sSize += 1;
         }
 
