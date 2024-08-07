@@ -358,6 +358,20 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         const originF = damages[0]?.flags?.pf2e?.origin;
         const originS = damages[0]?.flags?.pf2e?.origin;
 
+        let criticalItems = [];
+        if (primaryDegreeOfSuccess === 3) {
+            criticalItems.push({
+                actor: primary.item.actor.uuid,
+                uuid: primary.item.uuid,
+            })
+        }
+        if (secondaryDegreeOfSuccess === 3) {
+            criticalItems.push({
+                actor: secondary.item.actor.uuid,
+                uuid: secondary.item.uuid,
+            })
+        }
+
         let messageData = {
             flags: {
                 pf2e: {
@@ -374,7 +388,8 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
                             token: target?.token?.uuid
                         },
                     },
-                    modifiers: [...new Set(mods)]
+                    modifiers: [...new Set(mods)],
+                    criticalItems,
                 }
             },
             rolls,
