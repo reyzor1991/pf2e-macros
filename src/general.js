@@ -8,7 +8,7 @@ async function scareToDeath(actor) {
         ui.notifications.warn(`${actor.name} does not have Scare to Death!`);
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -100,7 +100,7 @@ async function addImmunity(_token, target) {
         },
     };
     await addItemToActor(target, exampleImmunityEffect);
-};
+}
 
 const defDCMap = {
     'remaster': 15,
@@ -565,7 +565,7 @@ async function gmCounteract(actor) {
         return
     }
 
-    if (game.user.isGM) {
+    if (isGM()) {
         await gmCounteract_step1(actor.uuid, isFixed, fixedValue, game.user.id)
     } else {
         socketlibSocket._sendRequest("gmCounteract_step1", [actor.uuid, isFixed, fixedValue, game.user.id], 0);
@@ -628,7 +628,7 @@ async function gmCounteract_step1(actorUuid, isFixed, fixedValue, userId) {
         return
     }
 
-    if (game.user.isGM) {
+    if (isGM()) {
         await gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue)
     } else {
         socketlibSocket.executeForUsers("gmCounteract_step2", [userId], actorUuid, dc, cl, tl, idx, fixedValue);

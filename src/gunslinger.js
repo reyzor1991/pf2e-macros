@@ -19,7 +19,7 @@ function swordAndPistolWeapons(actor) {
 
 async function pairedShots(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
     if ( !actorFeat(actor, "paired-shots") ) {
         ui.notifications.warn(`${actor.name} does not have Paired Shots!`);
@@ -27,7 +27,7 @@ async function pairedShots(actor) {
     }
 
     const weapons = pairedShotsWeapons(actor);
-    if (weapons.length != 2) {
+    if (weapons.length !== 2) {
         ui.notifications.warn(`${actor.name} needs two weapons, each of which can be either a loaded one-handed firearm or loaded one‑handed crossbow.'`);
         return;
     }
@@ -73,7 +73,7 @@ async function pairedShots(actor) {
 
 async function pistolerosChallenge(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
     if ( !actorFeat(actor, "pistoleros-challenge") ) {
         ui.notifications.warn(`${actor.name} does not have Pistolero's Challenge!`);
         return;
@@ -115,7 +115,7 @@ async function pistolerosChallenge(actor) {
 
 async function swordAndPistol(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
     if ( !actorFeat(actor, "sword-and-pistol") ) {
         ui.notifications.warn(`${actor.name} does not have Sword and Pistol!`);
         return;

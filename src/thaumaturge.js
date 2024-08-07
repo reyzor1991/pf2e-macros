@@ -5,7 +5,7 @@ async function rootToLife(actor) {
         ui.notifications.warn(`${actor.name} does not have Root to Life!`);
         return;
     }
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
     if (!distanceIsCorrect(_token, game.user.targets.first(), 5)) { ui.notifications.info(`Target should be adjacent`);return; }
 
     const { action } = await Dialog.wait({

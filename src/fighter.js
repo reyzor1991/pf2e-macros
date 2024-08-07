@@ -27,7 +27,7 @@ async function doubleSlice(actor) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -120,7 +120,7 @@ async function knockdown(actor) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -211,7 +211,7 @@ async function dazingBlow(actor) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -306,7 +306,7 @@ async function snaggingStrike(actor) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -386,7 +386,7 @@ async function certainStrike(actor) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -446,7 +446,7 @@ async function certainStrike(actor) {
         options: ["press", "item:trait:press"]
     });
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
-    if (primaryDegreeOfSuccess != 1) {
+    if (primaryDegreeOfSuccess !== 1) {
         return
     }
 
@@ -553,7 +553,7 @@ async function swipe(token) {
         ui.notifications.warn(`${actor.name} does not have Swipe!`);
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -604,8 +604,8 @@ async function swipe(token) {
     let hasSweep = weapon?.item?.traits?.has('sweep')
 
     let reach = actor.getReach({action: "attack", weapon: weapon.item})
-    let additionalTargets = token.scene.tokens.filter(t => t.actor != actor)
-        .filter(t => t != target)
+    let additionalTargets = token.scene.tokens.filter(t => t.actor !== actor)
+        .filter(t => t !== target)
         .filter(t => actor.isEnemyOf(t.actor))
         .filter(t => t._object.distanceTo(token) <= reach)
         .filter(t => t._object.distanceTo(target._object) <= 5);
@@ -644,7 +644,7 @@ async function swipe(token) {
             return;
         }
         additionalTarget = additionalTargets.find(t => t.id === currentToken)
-    } else if (additionalTargets.length == 1) {
+    } else if (additionalTargets.length === 1) {
         additionalTarget = additionalTargets[0]
     }
 
@@ -753,7 +753,7 @@ async function whirlwindStrike(token) {
     let reach = actor.getReach({action, weapon})
 
     let enemies = token.scene.tokens.map(t => t.object)
-        .filter(t => t != token && t.actor)
+        .filter(t => t !== token && t.actor)
         .filter(t => !actor.isAllyOf(t.actor))
         .filter(t => distanceIsCorrect(t, token, reach))
 

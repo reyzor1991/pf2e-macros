@@ -19,11 +19,11 @@ function flurryOfBlowsWeapons(actor) {
     }
 
     return weapons;
-};
+}
 
 async function flurryOfBlows(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
     if ( !actorAction(actor, "flurry-of-blows") && !actorFeat(actor, "flurry-of-blows" ) ) {
         ui.notifications.warn(`${actor.name} does not have Flurry of Blows!`);
@@ -114,7 +114,6 @@ function getWeapon(actor, id, isRanged, slug) {
     } else {
         return _w.find( w => w.item.slug === slug )
     }
-    return null;
 }
 
 Hooks.once("init", () => {

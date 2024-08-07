@@ -5,7 +5,7 @@ function accidentalShotWeapons(actor) {
 
 async function accidentalShot(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
     if (!actorAction(actor, "accidental-shot")) {
         ui.notifications.warn(`${actor.name} does not have Accidental Shot!`);
@@ -46,7 +46,7 @@ async function accidentalShot(actor) {
     });
 
     if ( map === undefined ) { return; }
-    if ( currentWeapon === undefined || map === undefined ) { return; }
+    if ( currentWeapon === undefined ) { return; }
 
     await setEffectToActor(actor, 'Compendium.pf2e.spell-effects.Item.fpGDAz2v5PG0zUSl')
 

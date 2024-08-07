@@ -21,6 +21,10 @@ const DEFAULT_FAVORITE = [
     {id: 'twin-takedown-2', label: 'Twin Takedown Second Weapon', value: ''},
 ]
 
+function isV12() {
+    return game.release.generation > 11
+}
+
 function eventSkipped(event, isDamage = false) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
         ? new KeyboardEvent('keydown', {'shiftKey': isDamage ? game.user.flags.pf2e.settings.showDamageDialogs : game.user.flags.pf2e.settings.showCheckDialogs})
@@ -141,7 +145,7 @@ class FavoriteWeapons extends FormApplication {
     async _updateObject(_event, data) {
         let checkData = this.getFavoriteWeapons();
         for (let w in data) {
-            checkData.find(c=>c.id===w).value = data[w]
+            checkData.find(c => c.id === w).value = data[w]
         }
         game.settings.set(moduleName, "favoriteWeapons", checkData)
     }
@@ -207,12 +211,20 @@ async function fistAttack(message) {
     }
 }
 
+function until(conditionFunction) {
+    const poll = resolve => {
+        if (conditionFunction()) resolve();
+        else setTimeout(_ => poll(resolve), 400);
+    }
+    return new Promise(poll);
+}
+
 async function combinedDamage(name, primary, secondary, options, map, map2) {
     let onlyOnePrecision = false;
     const damages = [];
 
     function PD(cm) {
-        if (cm.user.id === game.userId && cm.isDamageRoll) {
+        if ((cm.author.id || cm.user.id) === game.userId && cm.isDamageRoll) {
             damages.push(cm);
             return false;
         }
@@ -255,6 +267,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
+        let sSize = 1;
 
         const fOpt = [...options, "skip-handling-message"];
         const sOpt = [...options, "skip-handling-message"];
@@ -266,6 +279,11 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             if (primaryDegreeOfSuccess === 3) {
                 await primary.critical({event: eventSkipped(event, true), options: fOpt});
             }
+        }
+
+        if (primaryDegreeOfSuccess === 2 || primaryDegreeOfSuccess === 3) {
+            await until(() => damages.length > 1);
+            sSize += 1;
         }
 
         if (options.includes("twin-feint")) {
@@ -294,15 +312,24 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             }
         }
 
+        if (secondaryDegreeOfSuccess === 2 || secondaryDegreeOfSuccess === 3) {
+            await until(() => damages.length === sSize);
+        }
+
         if (options.includes("twin-feint")) {
             await removeEffectFromActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`);
         }
 
         if (damages.length === 0) {
-            ChatMessage.create({
-                type: CONST.CHAT_MESSAGE_TYPES.OOC,
+            let mData = {
                 content: "Both attacks missed"
-            });
+            };
+            if (isV12()) {
+                mData.style = CONST.CHAT_MESSAGE_STYLES.OOC;
+            } else {
+                mData.type = CONST.CHAT_MESSAGE_TYPES.OOC;
+            }
+            ChatMessage.create(mData);
             Hooks.off('preCreateChatMessage', hookId);
             console.log('primaryDegreeOfSuccess')
             console.log(primaryDegreeOfSuccess)
@@ -313,13 +340,13 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
 
         if ((primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
             let m = damages[0].toObject();
-            m.flags.pf2e.context.options = m.flags.pf2e.context.options.filter(e => e != "skip-handling-message");
+            m.flags.pf2e.context.options = m.flags.pf2e.context.options.filter(e => e !== "skip-handling-message");
             ChatMessage.createDocuments([m]);
             return;
         }
 
         const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]));
-        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e => e != 'skip-handling-message');
+        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e => e !== 'skip-handling-message');
         const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
         const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
         const flavor = `<strong>${name} Total Damage</strong>`
@@ -351,10 +378,13 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
                 }
             },
             rolls,
-            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
             flavor,
             speaker: ChatMessage.getSpeaker(),
         };
+
+        if (!isV12()) {
+            messageData.type = CONST.CHAT_MESSAGE_TYPES.ROLL;
+        }
 
         if (originF && originS && originF === originS) {
             messageData.flags.pf2e.origin = originF;
@@ -474,7 +504,7 @@ function hasOption(message, opt) {
 }
 
 function isGM() {
-    return game.user.isGM;
+    return game.user.isGM && game.user === game.users.activeGM;
 }
 
 function hasPermissions(item) {
@@ -716,8 +746,10 @@ function favoriteWeapon(macro) {
     return game.settings.get(moduleName, "favoriteWeapons").find(c => c.id === macro)?.value;
 }
 
-function selectIf(favorite, item, fn=undefined) {
-    if (!game.settings.get(moduleName, "useFavoriteWeapons")) {return}
+function selectIf(favorite, item, fn = undefined) {
+    if (!game.settings.get(moduleName, "useFavoriteWeapons")) {
+        return
+    }
     if (!item || !favorite) {
         return fn ? fn() : ''
     }

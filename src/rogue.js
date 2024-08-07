@@ -9,7 +9,7 @@ function twinFeintWeapons(actor) {
 
 async function twinFeint(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
-    if (game.user.targets.size != 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
+    if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
     if ( !actorAction(actor, "twin-feint") && !actorFeat(actor, "twin-feint") ) {
         ui.notifications.warn(`${actor.name} does not have Twin Feint!`);
@@ -17,7 +17,7 @@ async function twinFeint(actor) {
     }
 
     const weapons = twinFeintWeapons(actor);
-    if (weapons.length != 2) {
+    if (weapons.length !== 2) {
         ui.notifications.warn(`${actor.name} needs only 2 melee weapons can be equipped at a time.'`);
         return;
     }

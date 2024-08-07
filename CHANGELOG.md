@@ -1,3 +1,6 @@
+### Version 0.2.2-4
+- Small fixes
+
 ### Version 0.2.1
 - Add favorite weapons to macros
 

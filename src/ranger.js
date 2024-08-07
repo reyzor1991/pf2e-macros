@@ -12,7 +12,7 @@ async function huntedShot(actor) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -85,7 +85,7 @@ async function twinTakedown(actor) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
@@ -171,7 +171,7 @@ async function twinTakedown(actor) {
 }
 
 async function rangerLink(actor) {
-    if (!game.user.isGM) {
+    if (!isGM()) {
         ui.notifications.info(`Only GM can run script`);
         return
     }
@@ -179,16 +179,16 @@ async function rangerLink(actor) {
         ui.notifications.info(`Need to select Actor`);
         return
     }
-    if ("ranger" != actor?.class?.slug) {
+    if ("ranger" !== actor?.class?.slug) {
         ui.notifications.info(`Actor should be Ranger`);
         return
     }
-    if (game.user.targets.size != 1) {
+    if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select 1 token of animal companion as target`);
         return
     }
     const target = game.user.targets.first().actor;
-    if ("animal-companion" != target?.class?.slug) {
+    if ("animal-companion" !== target?.class?.slug) {
         ui.notifications.info(`Need to select 1 token of animal companion as target`);
         return
     }
