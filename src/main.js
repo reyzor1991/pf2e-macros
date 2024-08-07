@@ -504,11 +504,11 @@ function hasOption(message, opt) {
 }
 
 function isGM() {
-    return game.user.isGM && game.user === game.users.activeGM;
+    return game.user === game.users.activeGM;
 }
 
 function hasPermissions(item) {
-    return 3 === item?.ownership[game.user.id] || isGM();
+    return 3 === item?.ownership[game.user.id] || game.user.isGM;
 }
 
 async function setEffectToActorId(actorId, effUuid, level = undefined, optionalData) {

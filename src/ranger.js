@@ -171,7 +171,7 @@ async function twinTakedown(actor) {
 }
 
 async function rangerLink(actor) {
-    if (!isGM()) {
+    if (!game.user.isGM) {
         ui.notifications.info(`Only GM can run script`);
         return
     }
