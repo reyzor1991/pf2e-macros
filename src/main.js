@@ -345,7 +345,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             return;
         }
 
-        const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]));
+        const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]), damages[0].target);
         const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e => e !== 'skip-handling-message');
         const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
         const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
@@ -426,15 +426,29 @@ function hasPrecisionDamage(damage) {
     return damage._formula.includes('precision')
 }
 
-function createNewDamageRolls(onlyOnePrecision, damages) {
+function createNewDamageRolls(onlyOnePrecision, damages, target) {
     if (onlyOnePrecision && hasPrecisionDamage(damages[0]) && hasPrecisionDamage(damages[1])) {
         return createDataDamageOnlyOnePrecision(damages)
     }
-    return combineDamages(damages);
+    return combineDamages(damages, target);
 }
 
-function combineDamages(damages) {
-    let groups = Object.values(Object.groupBy(damages.map(a => a.instances).flat(), ({options}) => options.flavor))
+function combineDamages(damages, target) {
+    let materials = damages.map(a => a.instances.map(a => [...a.materials]).flat()).flat()
+
+    let handleMaterial = true;
+
+    if (materials.length && target?.actor) {
+        handleMaterial = materials.some(m => {
+            return target.actor.attributes.immunities.find(a => a.type === m)
+                || target.actor.attributes.resistances.find(a => a.type === m)
+                || target.actor.attributes.weaknesses.find(a => a.type === m)
+        })
+    }
+
+    let groups = handleMaterial
+        ? Object.values(Object.groupBy(damages.map(a => a.instances).flat(), ({options}) => options.flavor))
+        : Object.values(Object.groupBy(damages.map(a => a.instances).flat(), (e) => e.type));
 
     let newInstances = groups.map(g => {
         if (g[0]?.options?.flavor?.includes('persistent')) {
@@ -442,11 +456,18 @@ function combineDamages(damages) {
         } else if (g.length === 1) {
             return DamageInstance.fromData(g[0].toJSON())
         } else {
+            let mainOptions = foundry.utils.deepClone(g[0].head.toJSON().options)
+            let subOptions = foundry.utils.deepClone(g[1].head.toJSON().options)
+            if (subOptions.crit && !mainOptions.crit) {
+                mainOptions.crit = subOptions.crit;
+            }
+            mainOptions.flavor = [...new Set(`${mainOptions.flavor},${subOptions.flavor}`.split(','))].join(',')
+
             return DamageInstance.fromTerms([ArithmeticExpression.fromData({
                 operator: '+',
                 operands: g.map(a => a.toJSON().terms[0]),
                 evaluated: true
-            })], foundry.utils.deepClone(g[0].head.toJSON().options));
+            })], foundry.utils.deepClone(mainOptions));
         }
     }).flat()
 
