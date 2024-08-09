@@ -59,7 +59,7 @@ async function twinFeint(actor) {
         secondary =  actor.system.actions.find( w => w.item.id === weapons[0].item.id );
     }
 
-    combinedDamage("Twin Feint", primary, secondary, ["twin-feint"], map, map);
+    combinedDamage("Twin Feint", primary, secondary, ["twin-feint"], map, map2);
 }
 
 Hooks.once("init", () => {

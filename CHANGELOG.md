@@ -1,3 +1,6 @@
+### Version 0.3.0
+- Fix Twin Feint map
+
 ### Version 0.2.2-8
 - Small fixes
 
