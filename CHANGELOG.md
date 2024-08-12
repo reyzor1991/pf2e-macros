@@ -1,3 +1,6 @@
+### Version 0.3.1
+- Fix Target Off-guard
+
 ### Version 0.3.0
 - Fix Twin Feint map
 
