@@ -1,3 +1,6 @@
+### Version 0.4.1
+- Fix Flurry of blows
+
 ### Version 0.4.0
 - Fix flat checks for macro
 
