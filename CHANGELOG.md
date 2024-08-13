@@ -1,3 +1,6 @@
+### Version 0.4.0
+- Fix flat checks for macro
+
 ### Version 0.3.1
 - Fix Target Off-guard
 

@@ -222,6 +222,7 @@ function until(conditionFunction) {
 async function combinedDamage(name, primary, secondary, options, map, map2) {
     let onlyOnePrecision = false;
     const damages = [];
+    const attacks = [];
 
     function PD(cm) {
         if ((cm.author.id || cm.user.id) === game.userId && cm.isDamageRoll) {
@@ -230,14 +231,24 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         }
     }
 
+    function PRoll(cm) {
+        if ((cm.author.id || cm.user.id) === game.userId && !cm.isDamageRoll && cm.isRoll && cm.flags?.pf2e?.origin && cm.flags?.pf2e?.context) {
+            attacks.push(cm);
+        }
+    }
+
     let hookId = Hooks.on('preCreateChatMessage', PD);
+    let hookIdRoll = Hooks.on('preCreateChatMessage', PRoll);
 
     try {
         if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
         const primaryMessage = await primary.variants[map].roll({'event': eventSkipped(event)});
-        const primaryDegreeOfSuccess = primaryMessage.options.degreeOfSuccess;
+        const primaryDegreeOfSuccess =
+            attacks[0]?.flags?.pf2e?.flatCheck?.result === 'fail'
+                ? 0
+                : (primaryMessage?.options?.degreeOfSuccess || 0);
 
         if (options.includes("double-slice-second") && !primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
@@ -262,7 +273,10 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             'event': eventSkipped(event),
             options: secondOpts
         });
-        const secondaryDegreeOfSuccess = secondaryMessage.options.degreeOfSuccess;
+        const secondaryDegreeOfSuccess =
+            attacks[1]?.flags?.pf2e?.flatCheck?.result === 'fail'
+                ? 0
+                : (secondaryMessage?.options?.degreeOfSuccess || 0);
 
         if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
@@ -331,6 +345,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
             }
             ChatMessage.create(mData);
             Hooks.off('preCreateChatMessage', hookId);
+            Hooks.off('preCreateChatMessage', hookIdRoll);
             console.log('primaryDegreeOfSuccess')
             console.log(primaryDegreeOfSuccess)
             console.log('secondaryDegreeOfSuccess')
@@ -406,11 +421,13 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
         }
 
         Hooks.off('preCreateChatMessage', hookId);
+        Hooks.off('preCreateChatMessage', hookIdRoll);
         await ChatMessage.create(messageData);
     } catch (error) {
         console.log(error)
     } finally {
         Hooks.off('preCreateChatMessage', hookId);
+        Hooks.off('preCreateChatMessage', hookIdRoll);
     }
 }
 
