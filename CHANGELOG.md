@@ -1,3 +1,6 @@
+### Version 0.4.2
+- Fix adding crit items to message
+
 ### Version 0.4.1
 - Fix Flurry of blows
 

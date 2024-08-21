@@ -2,7 +2,7 @@
   "id": "pf2e-macros",
   "title": "PF2e Macros",
   "description": "",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "authors": [
     {
       "name": "Reyzor",
@@ -66,6 +66,9 @@
   "url": "https://github.com/reyzor1991",
   "manifest": "https://www.dropbox.com/scl/fi/6iqgochhz8qd5kh8e3bi1/module.json?rlkey=4tbyatafnrd3q1rtpxrctwgxs&dl=1",
   "download": "https://www.dropbox.com/scl/fi/wuybfq918qn0v0fqmvrnx/pf2e-macros.zip?rlkey=je3f1vtkz30u2ebdc9xdplsf4&dl=1",
+  "changelog": "https://github.com/reyzor1991/pf2e-macros/blob/master/CHANGELOG.md",
+  "readme": "https://github.com/reyzor1991/pf2e-macros/blob/master/README.md",
+  "bugs": "https://github.com/reyzor1991/pf2e-macros/issues",
   "relationships": {
     "systems": [
       {

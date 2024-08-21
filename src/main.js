@@ -371,7 +371,7 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
 
         const target = damages[0].target;
         const originF = damages[0]?.flags?.pf2e?.origin;
-        const originS = damages[0]?.flags?.pf2e?.origin;
+        const originS = damages[1]?.flags?.pf2e?.origin;
 
         let criticalItems = [];
         if (primaryDegreeOfSuccess === 3) {
