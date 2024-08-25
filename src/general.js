@@ -662,11 +662,11 @@ async function effectConditionInfo(actor) {
     let target = game.user.targets.first().actor;
 
     let content = '';
-    let effects = target.itemTypes.effect.filter(a=>!a.system.unidentified).map(e=>e.name)
+    let effects = target.itemTypes.effect.filter(a => !a.system.unidentified).map(e => e.name)
     if (effects.length > 0) {
         content += `Target is under effects:<br>${effects.join('<br>')}`
     }
-    let conds = game.user.targets.first().actor.itemTypes.condition.filter(a=>!a.flags.pf2e?.grantedBy?.id).map(e=>e.name)
+    let conds = game.user.targets.first().actor.itemTypes.condition.filter(a => !a.flags.pf2e?.grantedBy?.id).map(e => e.name)
     if (conds.length > 0) {
         if (content) {
             content += '<br><br>'
@@ -682,6 +682,65 @@ async function effectConditionInfo(actor) {
     })
 }
 
+async function repairParty(actor) {
+    if (!actor) {
+        ui.notifications.info(`Select your token before using this macro`);
+        return;
+    }
+    let party = actor.parties.first()
+    if (!party) {
+        ui.notifications.info(`${actor.name} is not a member of party`);
+        return
+    }
+
+    let items = party.members
+        .map(a => [...a.itemTypes.weapon, ...a.itemTypes.armor, ...a.itemTypes.shield])
+        .flat()
+        .filter(i => i.system.hp.value != i.system.hp.max);
+
+    if (items.length === 0) {
+        ui.notifications.info(`Party has no items for repair`);
+        return
+    }
+
+    let repairOptions = items.map(i => `<option value=${i.uuid}>${i.name}</option>`).join('');
+
+    const {uuid} = await Dialog.wait({
+        title: "",
+        content: `
+            <div >
+                <h3>Select item for repairing</h3>
+                <select id="fob1" autofocus>
+                    ${repairOptions}
+                </select>
+            </div>
+            <br>
+        `,
+        buttons: {
+            ok: {
+                label: "Repair",
+                icon: "<i class='fa-solid fa-hand-fist'></i>",
+                callback: (html) => {
+                    return {
+                        uuid: html[0].querySelector("#fob1").value,
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                icon: "<i class='fa-solid fa-ban'></i>",
+            }
+        },
+        default: "ok"
+    });
+
+    if (uuid === undefined) {
+        return;
+    }
+
+    game.pf2e.actions.repair({uuid})
+}
+
 Hooks.once("init", () => {
     game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
@@ -693,5 +752,6 @@ Hooks.once("init", () => {
         "counteract": counteract,
         "gmCounteract": gmCounteract,
         "effectConditionInfo": effectConditionInfo,
+        "repairParty": repairParty,
     })
 });
