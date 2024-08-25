@@ -654,6 +654,34 @@ async function counteractSuccessMessage() {
     });
 }
 
+async function effectConditionInfo(actor) {
+    if (game.user.targets.size !== 1) {
+        ui.notifications.info(`Need to select target to run macro`);
+        return;
+    }
+    let target = game.user.targets.first().actor;
+
+    let content = '';
+    let effects = target.itemTypes.effect.filter(a=>!a.system.unidentified).map(e=>e.name)
+    if (effects.length > 0) {
+        content += `Target is under effects:<br>${effects.join('<br>')}`
+    }
+    let conds = game.user.targets.first().actor.itemTypes.condition.filter(a=>!a.flags.pf2e?.grantedBy?.id).map(e=>e.name)
+    if (conds.length > 0) {
+        if (content) {
+            content += '<br><br>'
+        }
+        content += `Target is under conditions:<br>${conds.join('<br>')}`
+    }
+    if (!content) {
+        content = 'Target is not under any effect/condition'
+    }
+    ChatMessage.create({
+        content,
+        whisper: [game.userId]
+    })
+}
+
 Hooks.once("init", () => {
     game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "scareToDeath": scareToDeath,
@@ -664,5 +692,6 @@ Hooks.once("init", () => {
         "onOffNPCVision": onOffNPCVision,
         "counteract": counteract,
         "gmCounteract": gmCounteract,
+        "effectConditionInfo": effectConditionInfo,
     })
 });

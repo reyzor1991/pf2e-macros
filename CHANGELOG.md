@@ -1,3 +1,6 @@
+### Version 0.4.3
+- Show info about target effect/condition
+
 ### Version 0.4.2
 - Fix adding crit items to message
 
