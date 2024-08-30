@@ -703,7 +703,7 @@ async function repairParty(actor) {
         return
     }
 
-    let repairOptions = items.map(i => `<option value=${i.uuid}>${i.name}</option>`).join('');
+    let repairOptions = items.map(i => `<option value=${i.uuid}>${i.name} - ${i.actor.name} - ${i.system.hp.value}/${i.system.hp.max} HP</option>`).join('');
 
     const {uuid} = await Dialog.wait({
         title: "",

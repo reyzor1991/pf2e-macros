@@ -1,3 +1,6 @@
+### Version 0.4.5
+- Repair for party - add name of actor & value/max hp
+
 ### Version 0.4.4
 - Repair for party macro
 
