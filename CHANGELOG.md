@@ -1,3 +1,6 @@
+### Version 0.5.0
+- Add Two-Element Infusion
+
 ### Version 0.4.5
 - Repair for party - add name of actor & value/max hp
 
