@@ -1,11 +1,15 @@
 import {defDCMap, moduleName} from "../const.js";
 import {
+    actorFeat,
     addItemToActor,
-    distanceIsCorrect, eventSkipped,
+    distanceIsCorrect,
+    eventSkipped,
     hasFeatBySourceId,
     increaseConditionForActor,
-    rollSkipDialog, setEffectToActor,
-    shareLanguage, veryHardDCByLvl
+    rollSkipDialog,
+    setEffectToActor,
+    shareLanguage,
+    veryHardDCByLvl
 } from "../lib.js";
 import {socketlibSocket} from "../hooks/setup.js";
 
@@ -249,8 +253,8 @@ export async function aid(actor) {
         return `<option value="${s.slug}" data-skill='false'>${s.label}</option>`
     })
 
-    const {id, isSkill, dc} = await Dialog.wait({
-        title: "Aid",
+    const {id, isSkill, dc} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Aid"},
         content: `
             <p ${styles}>
                 <strong>Skill or Attack</strong>
@@ -263,23 +267,22 @@ export async function aid(actor) {
                 <input class='dc' type="number" value='${defDC}' min="0" style="width: 5ch;">
             </p>
         `,
-        buttons: {
-            ok: {
-                label: "Aid",
-                icon: "<i class='fa-solid fa-hand'></i>",
-                callback: (html) => {
-                    return {
-                        id: html.find("#actions").val(),
-                        isSkill: html.find("#actions").find('option:selected').data('skill'),
-                        dc: parseInt(html.find('.dc').val()) ?? defDC
-                    }
+        buttons: [{
+            action: "ok", label: "Use", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+
+                    id: $(form).find("#actions").val(),
+                    isSkill: $(form).find("#actions").find('option:selected').data('skill'),
+                    dc: parseInt($(form).find('.dc').val()) ?? defDC
                 }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
+
             }
-        },
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
         default: "ok"
     }, {}, {width: 600});
 
@@ -421,40 +424,42 @@ export async function explorationActivity(actor) {
     }).join("");
 
     let content = `<div class="pf2e-exploration-activity-list">${buttons}</div>`
-    new Dialog({
-        title: `Exploration Activities (${actor.name})`,
-        default: "close",
-        render: (html) => {
-            const action = async (event) => {
-                let button = $(event.currentTarget);
-                let sourceId = button.data().id;
-                let exploration = actor.system.exploration ?? [];
-                if (!actor.itemTypes.action.find(a => a.sourceId === sourceId)) {//need to add
-                    await actor.createEmbeddedDocuments("Item", [(await fromUuid(sourceId)).toObject()])
+    let d = new foundry.applications.api.DialogV2({
+            window: {title: `Exploration Activities (${actor.name})`},
+            default: "close",
+            content,
+            buttons: [
+                {
+                    action: "close",
+                    label: "Close",
+                    icon: "<i class='fa-solid fa-times'></i>",
                 }
-                let curId = actor.itemTypes.action.find(a => a.sourceId === sourceId)?.id;
-                if (button.hasClass('active')) {
-                    exploration = exploration.filter(i => i !== curId);
-                    button.removeClass('active')
-                } else {
-                    exploration.push(curId)
-                    button.addClass('active')
-                }
-                await actor.update({"system.exploration": exploration});
-                ui.notifications.info("Exploration activities were changed");
-            };
+            ],
+        }, {popOut: true, resizable: true, width: 450}
+    );
+    d.addEventListener('render', (e) => {
+        const action = async (event) => {
+            let button = $(event.currentTarget);
+            let sourceId = button.data().id;
+            let exploration = actor.system.exploration ?? [];
+            if (!actor.itemTypes.action.find(a => a.sourceId === sourceId)) {//need to add
+                await actor.createEmbeddedDocuments("Item", [(await fromUuid(sourceId)).toObject()])
+            }
+            let curId = actor.itemTypes.action.find(a => a.sourceId === sourceId)?.id;
+            if (button.hasClass('active')) {
+                exploration = exploration.filter(i => i !== curId);
+                button.removeClass('active')
+            } else {
+                exploration.push(curId)
+                button.addClass('active')
+            }
+            await actor.update({"system.exploration": exploration});
+            ui.notifications.info("Exploration activities were changed");
+        };
 
-            html.find(".pf2e-exploration-activity-list span").on('click', action)
-        },
-        content,
-        buttons: {
-            close: {
-                icon: `<i class="fas fa-times"></i>`,
-                label: 'Close',
-            },
-        }
-        ,
-    }, {popOut: true, resizable: true, width: 450}).render(true);
+        $(e.target.element).find(".pf2e-exploration-activity-list span").on('click', action)
+    });
+    d.render(true);
 }
 
 export async function doffPartyArmor() {
@@ -488,9 +493,9 @@ export async function targetIsOffGuard(actor) {
 }
 
 export async function onOffNPCVision() {
-    let value = await Dialog.confirm({
-        title: "Scene Vision",
-        content: "Do you want to enabled/disabled?<hr><p>Yes -> Enable vision</p><p>No -> Disable vision</p>",
+    let value = await foundry.applications.api.DialogV2.confirm({
+        window:{title: "Scene Vision"},
+        content: "Do you want to enabled/disabled?<p>Yes -> Enable vision</p><p>No -> Disable vision</p>",
     });
     if (value === undefined || value === null) {
         return
@@ -656,6 +661,12 @@ export async function repairParty(actor) {
         .map(a => [...a.itemTypes.weapon, ...a.itemTypes.armor, ...a.itemTypes.shield])
         .flat()
         .filter(i => i.system.hp.value != i.system.hp.max);
+
+    items.push(
+        ...party.itemTypes.weapon,
+        ...party.itemTypes.armor,
+        ...party.itemTypes.shield
+    )
 
     if (items.length === 0) {
         ui.notifications.info(`Party has no items for repair`);

@@ -1,4 +1,12 @@
-import {actorAction, eventSkipped, favoriteWeapon, getMap, selectIf, xdyAutoRoll} from "../lib.js";
+import {
+    actorAction,
+    baseAttackWeaponForm,
+    eventSkipped,
+    favoriteWeapon,
+    selectIf,
+    setEffectToActor,
+    xdyAutoRoll
+} from "../lib.js";
 
 function accidentalShotWeapons(actor) {
     return actor.system.actions
@@ -23,36 +31,14 @@ export async function accidentalShot(actor) {
 
     let weaponOptions = weapons.map(w=>`<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
-    const { currentWeapon, map } = await Dialog.wait({
-        title: "Accidental Shot",
-        content: `
-            <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div></div>${getMap()}
-        `,
-        buttons: {
-                ok: {
-                    label: "Attack",
-                    icon: "<i class='fa-solid fa-hand-fist'></i>",
-                    callback: (html) => { return { currentWeapon: [html[0].querySelector("#fob1").value], map: parseInt(html[0].querySelector("#map").value)} }
-                },
-                cancel: {
-                    label: "Cancel",
-                    icon: "<i class='fa-solid fa-ban'></i>",
-                }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
-        },
-        default: "ok"
-    });
+    const { currentWeapon, map } = await baseAttackWeaponForm("Accidental Shot", weaponOptions);
 
     if ( map === undefined ) { return; }
     if ( currentWeapon === undefined ) { return; }
 
     await setEffectToActor(actor, 'Compendium.pf2e.spell-effects.Item.fpGDAz2v5PG0zUSl')
 
-    const primary =  actor.system.actions.find( w => w.item.id === currentWeapon[0] );
+    const primary =  weapons.find( w => w.item.id === currentWeapon );
 
     const damages = [];
     function PD(cm) {

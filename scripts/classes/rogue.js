@@ -1,4 +1,4 @@
-import {actorAction, actorFeat, combinedDamage, getMap} from "../lib.js";
+import {actorAction, actorFeat, baseMapForm, combinedDamage, getMap} from "../lib.js";
 
 function twinFeintWeapons(actor) {
     return actor.system.actions
@@ -30,40 +30,18 @@ export async function twinFeint(actor) {
         return;
     }
 
-    const {map} = await Dialog.wait({
-        title: "Twin Feint",
-        content: `
-            ${getMap()}
-        `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {map: parseInt(html[0].querySelector("#map").value)}
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
-        },
-        default: "ok"
-    });
+    const {map} = await baseMapForm("Twin Feint");
 
     if (map === undefined) {
         return;
     }
     const map2 = map === 2 ? map : map + 1;
 
-    let primary = actor.system.actions.find(w => w.item.id === weapons[0].item.id);
-    let secondary = actor.system.actions.find(w => w.item.id === weapons[1].item.id);
+    let primary = weapons[0];
+    let secondary = weapons[1];
     if (primary.item.system.traits.value.includes("agile")) {
-        primary = actor.system.actions.find(w => w.item.id === weapons[1].item.id);
-        secondary = actor.system.actions.find(w => w.item.id === weapons[0].item.id);
+        primary = weapons[1];
+        secondary = weapons[0];
     }
 
     await combinedDamage("Twin Feint", primary, secondary, ["twin-feint"], map, map2);

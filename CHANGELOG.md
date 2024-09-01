@@ -1,3 +1,6 @@
+### Version 0.6.1
+- Migration to forms v2
+
 ### Version 0.6.0
 - Migration to forms v2
 

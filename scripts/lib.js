@@ -654,5 +654,5 @@ export function shareLanguage(actor, target) {
         return false
     }
 
-    return (target.system.traits.languages.value ?? []).some(item => actor?.system.traits.languages.value.includes(item))
+    return (target.system.details.languages.value ?? []).some(item => actor?.system.details.languages.value.includes(item))
 }

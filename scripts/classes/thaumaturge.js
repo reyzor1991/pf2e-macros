@@ -1,5 +1,6 @@
 import {moduleName} from "../const.js";
 import {
+    actorFeat,
     deleteItem,
     distanceIsCorrect,
     hasEffectBySourceId,
@@ -27,8 +28,8 @@ export async function rootToLife(actor) {
         return;
     }
 
-    const {action} = await Dialog.wait({
-        title: "Root to Life",
+    const {action} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Root to Life"},
         content: `
             <h3>Actions</h3>
             <select id="map">
@@ -36,19 +37,17 @@ export async function rootToLife(actor) {
                 <option value=2>2 Action</option>
             </select><hr>
         `,
-        buttons: {
-            ok: {
-                label: "Use",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {action: parseInt(html[0].querySelector("#map").value)}
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
+        buttons: [{
+            action: "ok", label: "Use", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {action: parseInt($(form).find("#map").val())}
+
             }
-        },
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
         default: "ok"
     });
     if (action === undefined) {

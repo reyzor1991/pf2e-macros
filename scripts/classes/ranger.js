@@ -1,4 +1,12 @@
-import {actorAction, actorFeat, combinedDamage, favoriteWeapon, getMap, selectIf} from "../lib.js";
+import {
+    actorAction,
+    actorFeat,
+    baseAttackWeaponForm,
+    combinedDamage,
+    favoriteWeapon,
+    getMap,
+    selectIf
+} from "../lib.js";
 
 function huntedShotWeapons(actor) {
     return actor.system.actions
@@ -42,42 +50,15 @@ export async function huntedShot(actor) {
     let f1 = favoriteWeapon("hunted-shot")
     let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
-    const {currentWeapon, map} = await Dialog.wait({
-        title: "Hunted Shot",
-        content: `
-            <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div></div>${getMap()}
-        `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        currentWeapon: [html[0].querySelector("#fob1").value],
-                        map: parseInt(html[0].querySelector("#map").value)
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
-        },
-        default: "ok"
-    });
+    const {currentWeapon, map} = await baseAttackWeaponForm("Hunted Shot", weaponOptions);
 
     if (currentWeapon === undefined || map === undefined) {
         return;
     }
     const map2 = map === 2 ? map : map + 1;
 
-    let primary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
-    let secondary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
+    let primary = weapons.find(w => w.item.id === currentWeapon);
+    let secondary = weapons.find(w => w.item.id === currentWeapon);
 
     await combinedDamage("Hunted Shot", primary, secondary, [], map, map2);
 }
@@ -115,8 +96,8 @@ export async function twinTakedown(actor) {
         })}>${value.item.name}</option>`
     }
 
-    const {map, weapon1, weapon2} = await Dialog.wait({
-        title: "Twin Takedown",
+    const {weapon1, weapon2, map} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Twin Takedown"},
         content: `
             <div style="display: flex; justify-content: space-between;">
                 <div>
@@ -134,26 +115,20 @@ export async function twinTakedown(actor) {
             </div>
             ${getMap()}
         `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        map: parseInt(html[0].querySelector("#map").value),
-                        weapon1: parseInt($(html[0]).find("#fob1").val()),
-                        weapon2: parseInt($(html[0]).find("#fob2").val()),
-                    }
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+                    weapon1: $(form).find("#fob1").val(),
+                    weapon2: $(form).find("#fob2").val(),
+                    map: parseInt($(form).find("#map").val()),
                 }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
             }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
-        },
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
         default: "ok"
     });
 
