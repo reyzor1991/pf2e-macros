@@ -1,0 +1,22 @@
+<form autocomplete="off" onsubmit="event.preventDefault();">
+    <div class="scrollable">
+        <div class="table">
+            <div class="row heading">
+                <div class="cell">Item</div>
+                <div class="cell">Owner</div>
+                <div class="cell">HP</div>
+                <div class="cell"></div>
+            </div>
+            {{#each items}}
+                <div class="row heading">
+                    <div class="cell">{{this.item}}</div>
+                    <div class="cell">{{this.owner}}</div>
+                    <div class="cell">{{this.hp}}</div>
+                    <div class="cell">
+                        <i class="fa-solid fa-hammer repair-item" data-uuid="{{this.uuid}}"></i>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+</form>

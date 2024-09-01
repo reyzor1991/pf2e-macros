@@ -12,6 +12,7 @@ import {
     veryHardDCByLvl
 } from "../lib.js";
 import {socketlibSocket} from "../hooks/setup.js";
+import {RepairForm} from "../forms/repair.js";
 
 async function addImmunity(_token, target) {
     const exampleImmunityEffect = {
@@ -114,7 +115,7 @@ async function counteractRoll(actor, dc, cl, tl, idx, fixedValue = undefined) {
     if (tl - cl >= 4) {
         await counteractFailMessage()
     } else {
-        let res = undefined
+        let res;
         if (fixedValue) {
             res = await game.pf2e.Check.roll(
                 new game.pf2e.CheckModifier('counteract', {
@@ -291,7 +292,7 @@ export async function aid(actor) {
     }
 
     let roll;
-    let rank = 0;
+    let rank;
     if (isSkill) {
         rank = id === 'perception' ? actor.perception.rank : actor.skills[id].rank;
         roll = await actor.getStatistic(id).roll({
@@ -494,7 +495,7 @@ export async function targetIsOffGuard(actor) {
 
 export async function onOffNPCVision() {
     let value = await foundry.applications.api.DialogV2.confirm({
-        window:{title: "Scene Vision"},
+        window: {title: "Scene Vision"},
         content: "Do you want to enabled/disabled?<p>Yes -> Enable vision</p><p>No -> Disable vision</p>",
     });
     if (value === undefined || value === null) {
@@ -659,54 +660,21 @@ export async function repairParty(actor) {
 
     let items = party.members
         .map(a => [...a.itemTypes.weapon, ...a.itemTypes.armor, ...a.itemTypes.shield])
-        .flat()
-        .filter(i => i.system.hp.value != i.system.hp.max);
+        .flat();
 
     items.push(
         ...party.itemTypes.weapon,
         ...party.itemTypes.armor,
         ...party.itemTypes.shield
-    )
+    );
+
+    items = items.filter(i => i.system.hp.value !== i.system.hp.max)
 
     if (items.length === 0) {
         ui.notifications.info(`Party has no items for repair`);
         return
     }
 
-    let repairOptions = items.map(i => `<option value=${i.uuid}>${i.name} - ${i.actor.name} - ${i.system.hp.value}/${i.system.hp.max} HP</option>`).join('');
-
-    const {uuid} = await Dialog.wait({
-        title: "",
-        content: `
-            <div >
-                <h3>Select item for repairing</h3>
-                <select id="fob1" autofocus>
-                    ${repairOptions}
-                </select>
-            </div>
-            <br>
-        `,
-        buttons: {
-            ok: {
-                label: "Repair",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        uuid: html[0].querySelector("#fob1").value,
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        default: "ok"
-    });
-
-    if (uuid === undefined) {
-        return;
-    }
-
-    game.pf2e.actions.repair({uuid})
+    new RepairForm(actor, items)
+        .render(true)
 }

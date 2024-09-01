@@ -1,3 +1,6 @@
+### Version 0.6.2
+- Change Repair form
+
 ### Version 0.6.1
 - Migration to forms v2
 
