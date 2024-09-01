@@ -1,4 +1,156 @@
-async function scareToDeath(actor) {
+import {defDCMap, moduleName} from "../const.js";
+import {
+    addItemToActor,
+    distanceIsCorrect, eventSkipped,
+    hasFeatBySourceId,
+    increaseConditionForActor,
+    rollSkipDialog, setEffectToActor,
+    shareLanguage, veryHardDCByLvl
+} from "../lib.js";
+import {socketlibSocket} from "../hooks/setup.js";
+
+async function addImmunity(_token, target) {
+    const exampleImmunityEffect = {
+        type: 'effect',
+        name: `Scare to Death Immunity (${_token.actor.name})`,
+        img: `${_token.document.texture.src}`,
+        system: {
+            tokenIcon: {show: true},
+            duration: {value: '1', unit: 'minutes', sustained: false, expiry: 'turn-start'},
+            rules: [],
+            slug: `scare-to-death-immunity-${_token.actor.id}`
+        },
+    };
+    await addItemToActor(target, exampleImmunityEffect);
+}
+
+export async function gmCounteract_step1(actorUuid, isFixed, fixedValue, userId) {
+    let actor = await fromUuid(actorUuid)
+
+    let options = isFixed ? '' : actor.itemTypes.spellcastingEntry.map((w, i) => `<option value=${i}>${w.name}</option>`).join('')
+
+    let spellcast = isFixed ? '' : `
+        <p class="">
+            <strong>Spellcasting</strong>
+            <select id="fob1" autofocus>
+                ${options}
+            </select>
+        </p>
+    `
+
+    const {dc, cl, tl, idx} = await Dialog.wait({
+        title: "Counteract",
+        content: `
+        <p class="">
+            <strong>DC</strong>
+            <input class='dc' type="number" value='10' min=0 style="width: 5ch;">
+        </p>
+        <p class="">
+            <strong>Counteraction level</strong>
+            <input class='cl' type="number" value=1 min=0 max=10 style="width: 5ch;">
+        </p>
+        <p class="">
+            <strong>Target level</strong>
+            <input class='tl' type="number" value=1 min=0 max=10 style="width: 5ch;">
+        </p>
+        ${spellcast}
+    `,
+        buttons: {
+            ok: {
+                label: "Counteract",
+                icon: "<i class='fa-solid fa-hand'></i>",
+                callback: (html) => {
+                    return {
+                        dc: Number(html.find('.dc').val()) ?? 0,
+                        cl: Number(html.find('.cl').val()) ?? 0,
+                        tl: Number(html.find('.tl').val()) ?? 0,
+                        idx: Number(html.find("#fob1").val()),
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                icon: "<i class='fa-solid fa-ban'></i>",
+            }
+        },
+        default: "ok"
+    }, {}, {width: 300});
+
+    if (!dc) {
+        return
+    }
+
+    if (isGM()) {
+        await gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue)
+    } else {
+        socketlibSocket.executeForUsers("gmCounteract_step2", [userId], actorUuid, dc, cl, tl, idx, fixedValue);
+    }
+}
+
+export async function gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue) {
+    let actor = await fromUuid(actorUuid)
+    await counteractRoll(actor, dc, cl, tl, idx, fixedValue)
+}
+
+async function counteractFailMessage() {
+    await ChatMessage.create({
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+        content: `Counteract was failed`
+    });
+}
+
+async function counteractSuccessMessage() {
+    await ChatMessage.create({
+        type: CONST.CHAT_MESSAGE_TYPES.OTHER,
+        content: `Counteract was success`
+    });
+}
+
+async function counteractRoll(actor, dc, cl, tl, idx, fixedValue = undefined) {
+    if (tl - cl >= 4) {
+        await counteractFailMessage()
+    } else {
+        let res = undefined
+        if (fixedValue) {
+            res = await game.pf2e.Check.roll(
+                new game.pf2e.CheckModifier('counteract', {
+                    modifiers: [
+                        new game.pf2e.Modifier({
+                            label: "Fixed value",
+                            modifier: fixedValue,
+                            type: "circumstance"
+                        })
+                    ]
+                }),
+                {actor, type: "skill-check", dc: {value: dc}}
+            );
+        } else {
+            res = await actor.itemTypes.spellcastingEntry[idx].statistic.roll({dc})
+        }
+        let degreeOfSuccess = res.degreeOfSuccess
+        if ((tl - cl) === 3 || (tl - cl) === 2) {
+            if (degreeOfSuccess === 3) {
+                await counteractSuccessMessage()
+            } else {
+                await counteractFailMessage()
+            }
+        } else if ((tl - cl) === 1 || (tl - cl) === 0) {
+            if (degreeOfSuccess === 3 || degreeOfSuccess === 2) {
+                await counteractSuccessMessage()
+            } else {
+                await counteractFailMessage()
+            }
+        } else {
+            if (degreeOfSuccess === 0) {
+                await counteractFailMessage()
+            } else {
+                await counteractSuccessMessage()
+            }
+        }
+    }
+}
+
+export async function scareToDeath(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -54,9 +206,9 @@ async function scareToDeath(actor) {
     await addImmunity(_token, game.user.targets.first().actor);
 
     if (result.degreeOfSuccess === 1) {
-        increaseConditionForActor(game.user.targets.first().actor, "frightened", 1);
+        await increaseConditionForActor(game.user.targets.first().actor, "frightened", 1);
     } else if (result.degreeOfSuccess === 2) {
-        increaseConditionForActor(game.user.targets.first().actor, "frightened", 2);
+        await increaseConditionForActor(game.user.targets.first().actor, "frightened", 2);
     } else if (result.degreeOfSuccess === 3) {
         const actorDC = actor?.getStatistic('intimidation')?.dc
         const cfResult = await game.user.targets.first().actor.saves.fortitude.roll({
@@ -79,37 +231,7 @@ async function scareToDeath(actor) {
     }
 }
 
-function shareLanguage(actor, target) {
-    if (target?.itemTypes?.condition?.find(c => "deafened" === c.slug)) {
-        return false
-    }
-
-    return (target.system.traits.languages.value ?? []).some(item => actor?.system.traits.languages.value.includes(item))
-}
-
-async function addImmunity(_token, target) {
-    const exampleImmunityEffect = {
-        type: 'effect',
-        name: `Scare to Death Immunity (${_token.actor.name})`,
-        img: `${_token.document.texture.src}`,
-        system: {
-            tokenIcon: {show: true},
-            duration: {value: '1', unit: 'minutes', sustained: false, expiry: 'turn-start'},
-            rules: [],
-            slug: `scare-to-death-immunity-${_token.actor.id}`
-        },
-    };
-    await addItemToActor(target, exampleImmunityEffect);
-}
-
-const defDCMap = {
-    'remaster': 15,
-    'old': 20,
-    'homebrew10': 10,
-    'homebrew13': 13,
-}
-
-async function aid(actor) {
+export async function aid(actor) {
     if (game.user.targets.size === 0) {
         ui.notifications.info(`Need to select target to apply Aid effect`);
         return;
@@ -224,7 +346,7 @@ async function aid(actor) {
     }
 }
 
-async function explorationActivity(actor) {
+export async function explorationActivity(actor) {
     if (!actor) {
         ui.notifications.info(`Select your token before using this macro`);
     }
@@ -335,7 +457,7 @@ async function explorationActivity(actor) {
     }, {popOut: true, resizable: true, width: 450}).render(true);
 }
 
-async function doffPartyArmor() {
+export async function doffPartyArmor() {
     await Promise.all(
         game.actors.party.members.map(a => a.itemTypes.armor.find(i => i.isEquipped))
             .filter(b => b)
@@ -347,44 +469,7 @@ async function doffPartyArmor() {
     ChatMessage.create({content: 'Party Armor was doff'});
 }
 
-const OFF_GUARD_TARGET_EFF = {
-    "name": " is Off-guard",
-    "type": "effect",
-    "effects": [],
-    "system": {
-        "description": {
-            "gm": "",
-            "value": ""
-        },
-        "rules": [
-            {
-                "key": "EphemeralEffect",
-                "selectors": [
-                    "attack-roll",
-                    "damage"
-                ],
-                "predicate": [],
-                "uuid": "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg"
-            }
-        ],
-        "slug": "target-is-off-guard",
-        "traits": {
-            "otherTags": [],
-            "value": []
-        },
-        "level": {"value": 1},
-        "duration": {
-            "value": -1,
-            "unit": "unlimited",
-            "expiry": null,
-            "sustained": false
-        },
-        "tokenIcon": {"show": true},
-    },
-    "img": "icons/skills/melee/strike-blade-scimitar-gray-red.webp"
-}
-
-async function targetIsOffGuard(actor) {
+export async function targetIsOffGuard(actor) {
     if (!actor) {
         ui.notifications.info(`Select your token before using this macro`);
         return;
@@ -402,7 +487,7 @@ async function targetIsOffGuard(actor) {
     return await actor.createEmbeddedDocuments("Item", [o]);
 }
 
-async function onOffNPCVision() {
+export async function onOffNPCVision() {
     let value = await Dialog.confirm({
         title: "Scene Vision",
         content: "Do you want to enabled/disabled?<hr><p>Yes -> Enable vision</p><p>No -> Disable vision</p>",
@@ -414,7 +499,7 @@ async function onOffNPCVision() {
     game.scenes.viewed.tokens.filter(t => t?.actor?.isOfType('npc')).forEach(t => t.update({'sight.enabled': value}))
 }
 
-async function counteract(actor) {
+export async function counteract(actor) {
     if (!actor) {
         ui.notifications.info('Select token before using this macro.');
         return;
@@ -476,51 +561,7 @@ async function counteract(actor) {
     await counteractRoll(actor, dc, cl, tl, idx);
 }
 
-async function counteractRoll(actor, dc, cl, tl, idx, fixedValue = undefined) {
-    if (tl - cl >= 4) {
-        await counteractFailMessage()
-    } else {
-        let res = undefined
-        if (fixedValue) {
-            res = await game.pf2e.Check.roll(
-                new game.pf2e.CheckModifier('counteract', {
-                    modifiers: [
-                        new game.pf2e.Modifier({
-                            label: "Fixed value",
-                            modifier: fixedValue,
-                            type: "circumstance"
-                        })
-                    ]
-                }),
-                {actor, type: "skill-check", dc: {value: dc}}
-            );
-        } else {
-            res = await actor.itemTypes.spellcastingEntry[idx].statistic.roll({dc})
-        }
-        let degreeOfSuccess = res.degreeOfSuccess
-        if ((tl - cl) === 3 || (tl - cl) === 2) {
-            if (degreeOfSuccess === 3) {
-                await counteractSuccessMessage()
-            } else {
-                await counteractFailMessage()
-            }
-        } else if ((tl - cl) === 1 || (tl - cl) === 0) {
-            if (degreeOfSuccess === 3 || degreeOfSuccess === 2) {
-                await counteractSuccessMessage()
-            } else {
-                await counteractFailMessage()
-            }
-        } else {
-            if (degreeOfSuccess === 0) {
-                await counteractFailMessage()
-            } else {
-                await counteractSuccessMessage()
-            }
-        }
-    }
-}
-
-async function gmCounteract(actor) {
+export async function gmCounteract(actor) {
     if (!actor) {
         ui.notifications.info('Select token before using this macro.');
         return;
@@ -572,89 +613,7 @@ async function gmCounteract(actor) {
     }
 }
 
-async function gmCounteract_step1(actorUuid, isFixed, fixedValue, userId) {
-    let actor = await fromUuid(actorUuid)
-
-    let options = isFixed ? '' : actor.itemTypes.spellcastingEntry.map((w, i) => `<option value=${i}>${w.name}</option>`).join('')
-
-    let spellcast = isFixed ? '' : `
-        <p class="">
-            <strong>Spellcasting</strong>
-            <select id="fob1" autofocus>
-                ${options}
-            </select>
-        </p>
-    `
-
-    const {dc, cl, tl, idx} = await Dialog.wait({
-        title: "Counteract",
-        content: `
-        <p class="">
-            <strong>DC</strong>
-            <input class='dc' type="number" value='10' min=0 style="width: 5ch;">
-        </p>
-        <p class="">
-            <strong>Counteraction level</strong>
-            <input class='cl' type="number" value=1 min=0 max=10 style="width: 5ch;">
-        </p>
-        <p class="">
-            <strong>Target level</strong>
-            <input class='tl' type="number" value=1 min=0 max=10 style="width: 5ch;">
-        </p>
-        ${spellcast}
-    `,
-        buttons: {
-            ok: {
-                label: "Counteract",
-                icon: "<i class='fa-solid fa-hand'></i>",
-                callback: (html) => {
-                    return {
-                        dc: Number(html.find('.dc').val()) ?? 0,
-                        cl: Number(html.find('.cl').val()) ?? 0,
-                        tl: Number(html.find('.tl').val()) ?? 0,
-                        idx: Number(html.find("#fob1").val()),
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        default: "ok"
-    }, {}, {width: 300});
-
-    if (!dc) {
-        return
-    }
-
-    if (isGM()) {
-        await gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue)
-    } else {
-        socketlibSocket.executeForUsers("gmCounteract_step2", [userId], actorUuid, dc, cl, tl, idx, fixedValue);
-    }
-}
-
-async function gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue) {
-    let actor = await fromUuid(actorUuid)
-    await counteractRoll(actor, dc, cl, tl, idx, fixedValue)
-}
-
-async function counteractFailMessage() {
-    await ChatMessage.create({
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-        content: `Counteract was failed`
-    });
-}
-
-async function counteractSuccessMessage() {
-    await ChatMessage.create({
-        type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-        content: `Counteract was success`
-    });
-}
-
-async function effectConditionInfo(actor) {
+export async function effectConditionInfo(_actor) {
     if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select target to run macro`);
         return;
@@ -682,7 +641,7 @@ async function effectConditionInfo(actor) {
     })
 }
 
-async function repairParty(actor) {
+export async function repairParty(actor) {
     if (!actor) {
         ui.notifications.info(`Select your token before using this macro`);
         return;
@@ -740,18 +699,3 @@ async function repairParty(actor) {
 
     game.pf2e.actions.repair({uuid})
 }
-
-Hooks.once("init", () => {
-    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
-        "scareToDeath": scareToDeath,
-        "aid": aid,
-        "explorationActivity": explorationActivity,
-        "doffPartyArmor": doffPartyArmor,
-        "targetIsOffGuard": targetIsOffGuard,
-        "onOffNPCVision": onOffNPCVision,
-        "counteract": counteract,
-        "gmCounteract": gmCounteract,
-        "effectConditionInfo": effectConditionInfo,
-        "repairParty": repairParty,
-    })
-});

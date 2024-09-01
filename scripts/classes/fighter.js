@@ -1,3 +1,22 @@
+import {moduleName} from "../const.js";
+import {
+    actorAction,
+    actorFeat,
+    applyDamage,
+    baseAttackWeaponForm,
+    combinedDamage, distanceIsCorrect,
+    eventSkipped,
+    favoriteWeapon,
+    getMap,
+    hasFeatBySourceId,
+    increaseConditionForActor,
+    rollSkipDialog,
+    selectIf,
+    setEffectToActor,
+    xdyAutoRoll
+} from "../lib.js";
+import {DamageRoll} from "../hooks/init.js";
+
 function doubleSliceWeapons(actor) {
     let weapons = actor.system.actions
         .filter(h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed")
@@ -22,7 +41,15 @@ function doubleSliceWeapons(actor) {
     return weapons
 }
 
-async function doubleSlice(actor) {
+function knockdownWeapons(actor) {
+    return actor.system.actions.filter(h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed")
+        && (
+            (h.item?.isHeld && h.visible) || actor.isOfType('npc')
+        )
+    );
+}
+
+export async function doubleSlice(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -55,42 +82,38 @@ async function doubleSlice(actor) {
         })}>${value[1]}</option>`
     }
 
-    const {weapon1, weapon2, map} = await Dialog.wait({
-        title: "Double Slice",
+    const {weapon1, weapon2, map} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Double Slice"},
+        width: 550,
         content: `
-        <div class="row-flurry"><div class="column-flurry first-flurry"><h3>First Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div><div class="column-flurry second-flurry"><h3>Second Attack</h3>
-            <select id="fob2">
-                ${weaponOptions2}
-            </select></div></div><hr>
-            <h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            <div class="v2-row">
+                <label>First Attack</label>
+                <select id="fob1" autofocus>
+                    ${weaponOptions}
+                </select>
+    
+                <label>Second Attack</label>
+                <select id="fob2">
+                    ${weaponOptions2}
+                </select>
+            </div>
+            
+            ${getMap()}
         `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        map: parseInt(html[0].querySelector("#map").value),
-                        weapon1: $(html[0]).find("#fob1").val(),
-                        weapon2: $(html[0]).find("#fob2").val(),
-                    }
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+                    map: parseInt($(form).find("#map").val()),
+                    weapon1: parseInt($(form).find("#fob1").val()),
+                    weapon2: parseInt($(form).find("#fob2").val()),
                 }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
             }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
-        },
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
         default: "ok"
     });
     if (weapon1 === undefined || weapon2 === undefined || map === undefined) {
@@ -104,18 +127,10 @@ async function doubleSlice(actor) {
     let primary = weapons[weapon1][0];
     let secondary = weapons[weapon2][0];
 
-    combinedDamage("Double Slice", primary, secondary, ["double-slice-second"], map, map);
+    await combinedDamage("Double Slice", primary, secondary, ["double-slice-second"], map, map);
 }
 
-function knockdownWeapons(actor) {
-    return actor.system.actions.filter(h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed")
-        && (
-            (h.item?.isHeld && h.visible) || actor.isOfType('npc')
-        )
-    );
-}
-
-async function knockdown(actor) {
+export async function knockdown(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -138,39 +153,12 @@ async function knockdown(actor) {
     let f1 = favoriteWeapon("slam-down")
     let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
-    const {currentWeapon, map} = await Dialog.wait({
-        title: "Knockdown/Slam Down",
-        content: `
-            <div class="row-hunted-shot"><div class="column-hunted-shot first-hunted-shot"><h3>First Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div></div>${getMap()}
-        `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        currentWeapon: [html[0].querySelector("#fob1").value],
-                        map: parseInt(html[0].querySelector("#map").value)
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
-        },
-        default: "ok"
-    });
+    const {currentWeapon, map} = await baseAttackWeaponForm("Slam Down", weaponOptions)
 
     if (currentWeapon === undefined || map === undefined) {
         return;
     }
-    let primary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
+    let primary = actor.system.actions.find(w => w.item.id === currentWeapon);
 
     const primaryMessage = await primary.variants[map].roll({event: eventSkipped(event)});
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
@@ -206,7 +194,7 @@ async function knockdown(actor) {
     }
 }
 
-async function dazingBlow(actor) {
+export async function dazingBlow(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -230,36 +218,12 @@ async function dazingBlow(actor) {
     let f1 = favoriteWeapon("dazing-blow")
     let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
-    const {currentWeapon, map} = await Dialog.wait({
-        title: "Dazing Blow",
-        content: `
-            <div><div><h3>Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div></div>${getMap()}
-        `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        currentWeapon: [html[0].querySelector("#fob1").value],
-                        map: parseInt(html[0].querySelector("#map").value)
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        default: "ok"
-    });
+    const {currentWeapon, map} = await baseAttackWeaponForm("Dazing Blow", weaponOptions)
 
     if (currentWeapon === undefined || map === undefined) {
         return;
     }
-    let primary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
+    let primary = actor.system.actions.find(w => w.item.id === currentWeapon);
 
     if (!primary.item.actor.rollOptions?.["all"]?.["dazing-blow"]) {
         await primary.item.actor.toggleRollOption("all", "dazing-blow")
@@ -281,8 +245,8 @@ async function dazingBlow(actor) {
         }
     }
 
-    if (primary.item.actor.rollOptions?.["all"]?.["dazing-blow"]) {
-        await primary.item.actor.toggleRollOption("all", "dazing-blow")
+    if (actor.rollOptions?.["all"]?.["dazing-blow"]) {
+        await actor.toggleRollOption("all", "dazing-blow")
     }
 
     const cfResult = await game.user.targets.first().actor.saves.fortitude.roll({
@@ -301,7 +265,7 @@ async function dazingBlow(actor) {
     await increaseConditionForActor(game.user.targets.first().actor, "stunned", 3 - cfResult.degreeOfSuccess);
 }
 
-async function snaggingStrike(actor) {
+export async function snaggingStrike(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -311,7 +275,8 @@ async function snaggingStrike(actor) {
         return;
     }
 
-    if (!actorFeat(actor, "snagging-strike") && !actorAction(actor, "snagging-strike")) {
+    let feat = actorFeat(actor, "snagging-strike");
+    if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Snagging Strike!`);
         return;
     }
@@ -326,36 +291,12 @@ async function snaggingStrike(actor) {
     let f1 = favoriteWeapon("snagging-strike")
     let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
-    const {currentWeapon, map} = await Dialog.wait({
-        title: "Snagging Strike",
-        content: `
-            <div><div><h3>Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div></div>${getMap()}
-        `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        currentWeapon: [html[0].querySelector("#fob1").value],
-                        map: parseInt(html[0].querySelector("#map").value)
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        default: "ok"
-    });
+    const {currentWeapon, map} = await baseAttackWeaponForm("Snagging Strike", weaponOptions)
 
     if (currentWeapon === undefined || map === undefined) {
         return;
     }
-    let primary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
+    let primary = actor.system.actions.find(w => w.item.id === currentWeapon);
 
     const primaryMessage = await primary.variants[map].roll({event: eventSkipped(event)});
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
@@ -373,15 +314,20 @@ async function snaggingStrike(actor) {
         }
     }
 
-    await setEffectToActor(game.user.targets.first().actor, `Compendium.${moduleName}.effects.Item.YsNqG4OocHoErbc9`, feat.level, {
-        origin: {
-            actor: actor?.uuid,
-            item: feat.uuid
+    await setEffectToActor(
+        game.user.targets.first().actor,
+        `Compendium.${moduleName}.effects.Item.YsNqG4OocHoErbc9`,
+        feat.level,
+        {
+            origin: {
+                actor: actor?.uuid,
+                item: feat.uuid
+            }
         }
-    })
+    )
 }
 
-async function certainStrike(actor) {
+export async function certainStrike(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -406,40 +352,12 @@ async function certainStrike(actor) {
     let f1 = favoriteWeapon("certain-strike")
     let weaponOptions = weapons.map(w => `<option value=${w.item.id} ${selectIf(f1, w.item)}>${w.item.name}</option>`).join('');
 
-    const {currentWeapon, map} = await Dialog.wait({
-        title: "Certain Strike",
-        content: `
-            <div><div><h3>Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div></div><hr><h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
-        `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        currentWeapon: [html[0].querySelector("#fob1").value],
-                        map: parseInt(html[0].querySelector("#map").value)
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        default: "ok"
-    });
+    const {currentWeapon, map} = await baseAttackWeaponForm("Certain Strike", weaponOptions)
 
     if (currentWeapon === undefined || map === undefined) {
         return;
     }
-    let primary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
+    let primary = actor.system.actions.find(w => w.item.id === currentWeapon);
 
     const primaryMessage = await primary.variants[map].roll({
         event: eventSkipped(event),
@@ -449,7 +367,6 @@ async function certainStrike(actor) {
     if (primaryDegreeOfSuccess !== 1) {
         return
     }
-
 
     const damages = [];
 
@@ -540,7 +457,7 @@ async function certainStrike(actor) {
     }
 }
 
-async function swipe(token) {
+export async function swipe(token) {
     ui.notifications.info("Not ready yet");
     return;
 
@@ -560,7 +477,7 @@ async function swipe(token) {
     let target = game.user.targets.first().document;
 
     const weapons = actor.system.actions
-        .filter(h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed") && h.item.group != "shield");
+        .filter(h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed") && h.item.group !== "shield");
     if (weapons.length === 0) {
         ui.notifications.warn(`${actor.name} doesn't have correct weapon`);
         return;
@@ -655,7 +572,7 @@ async function swipe(token) {
         target: target._object,
         options: ['sweep-bonus'],
         createMessage: true,
-        callback: (roll, outcome, message, event) => {
+        callback: (roll, outcome, message, _event) => {
             targetMessage = message.toJSON();
         }
     });
@@ -700,7 +617,7 @@ async function swipe(token) {
     }
 }
 
-async function whirlwindStrike(token) {
+export async function whirlwindStrike(token) {
     let actor = token?.actor;
     if (!actor) {
         ui.notifications.info("Please select 1 token");
@@ -716,34 +633,8 @@ async function whirlwindStrike(token) {
 
     let weaponOptions = weapons.map((w, i) => `<option value=${i}>${w.item.name}</option>`).join('')
 
-    const {currentWeapon, map} = await Dialog.wait({
-        title: "Whirlwind Strike",
-        content: `
-            <div><div><h3>Weapon</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div></div>${getMap()}
-        `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        currentWeapon: html[0].querySelector("#fob1").value,
-                        map: parseInt(html[0].querySelector("#map").value)
-                    }
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
-            }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px green;';
-        },
-        default: "ok"
-    });
+    const {currentWeapon, map} = await baseAttackWeaponForm("Whirlwind Strike", weaponOptions)
+
     if (currentWeapon === undefined || map === undefined) {
         return;
     }
@@ -767,15 +658,3 @@ async function whirlwindStrike(token) {
         enemy.setTarget(false);
     }
 }
-
-Hooks.once("init", () => {
-    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
-        "doubleSlice": doubleSlice,
-        "knockdown": knockdown,
-        "dazingBlow": dazingBlow,
-        "snaggingStrike": snaggingStrike,
-        "certainStrike": certainStrike,
-        "swipe": swipe,
-        "whirlwindStrike": whirlwindStrike,
-    })
-});

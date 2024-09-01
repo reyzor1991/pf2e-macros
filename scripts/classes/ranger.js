@@ -1,3 +1,5 @@
+import {actorAction, actorFeat, combinedDamage, favoriteWeapon, getMap, selectIf} from "../lib.js";
+
 function huntedShotWeapons(actor) {
     return actor.system.actions
         .filter(
@@ -5,9 +7,19 @@ function huntedShotWeapons(actor) {
                 (h.visible && "0" === h?.item?.reload && (h.item?.ammo || h.item?.isThrowable)) || actor.isOfType('npc')
             )
         );
-};
+}
 
-async function huntedShot(actor) {
+function twinTakedownWeapons(actor) {
+    return actor.system.actions
+        .filter(h => h.ready && (h.item?.isMelee || (h?.item?.isRanged && h.altUsages[0]?.options?.includes('melee'))) && !h.item?.system?.traits?.value?.includes("unarmed")
+            && (
+                (h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1)
+                || actor.isOfType('npc')
+            )
+        );
+}
+
+export async function huntedShot(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -67,20 +79,10 @@ async function huntedShot(actor) {
     let primary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
     let secondary = actor.system.actions.find(w => w.item.id === currentWeapon[0]);
 
-    combinedDamage("Hunted Shot", primary, secondary, [], map, map2);
-};
+    await combinedDamage("Hunted Shot", primary, secondary, [], map, map2);
+}
 
-function twinTakedownWeapons(actor) {
-    return actor.system.actions
-        .filter(h => h.ready && (h.item?.isMelee || (h?.item?.isRanged && h.altUsages[0]?.options?.includes('melee'))) && !h.item?.system?.traits?.value?.includes("unarmed")
-            && (
-                (h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1)
-                || actor.isOfType('npc')
-            )
-        );
-};
-
-async function twinTakedown(actor) {
+export async function twinTakedown(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -130,13 +132,7 @@ async function twinTakedown(actor) {
                     </select>
                 </div>
             </div>
-            <hr>
-            <h3>Multiple Attack Penalty</h3>
-                <select id="map">
-                <option value=0>No MAP</option>
-                <option value=1>MAP -5(-4 for agile)</option>
-                <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>
+            ${getMap()}
         `,
         buttons: {
             ok: {
@@ -167,10 +163,10 @@ async function twinTakedown(actor) {
     const map2 = map === 2 ? map : map + 1;
 
 
-    combinedDamage("Twin Takedown", weapons[weapon1], weapons[weapon2], [], map, map2);
+    await combinedDamage("Twin Takedown", weapons[weapon1], weapons[weapon2], [], map, map2);
 }
 
-async function rangerLink(actor) {
+export async function rangerLink(actor) {
     if (!game.user.isGM) {
         ui.notifications.info(`Only GM can run script`);
         return
@@ -198,11 +194,3 @@ async function rangerLink(actor) {
 
     ui.notifications.info(`Ranger and Animal Companion were linked`);
 }
-
-Hooks.once("init", () => {
-    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
-        "huntedShot": huntedShot,
-        "twinTakedown": twinTakedown,
-        "rangerLink": rangerLink,
-    })
-});

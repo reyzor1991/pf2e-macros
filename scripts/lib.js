@@ -1,37 +1,18 @@
-const moduleName = "pf2e-macros";
+import {socketlibSocket} from "./hooks/setup.js";
+import {dcByLevel, moduleName, TO_AVERAGE_DMG} from "./const.js";
+import {ArithmeticExpression, DamageInstance, DamageRoll, InstancePool} from "./hooks/init.js";
 
-let socketlibSocket = undefined;
-let DamageRoll = undefined;
-let DamageInstance = undefined;
-let ArithmeticExpression = undefined;
-let InstancePool = undefined;
-
-const DEFAULT_FAVORITE = [
-    {id: 'double-slice-1', label: 'Double Slice First Weapon', value: ''},
-    {id: 'double-slice-2', label: 'Double Slice Second Weapon', value: ''},
-    {id: 'flurry-of-blows-1', label: 'Flurry of Blows First Attack', value: ''},
-    {id: 'flurry-of-blows-2', label: 'Flurry of Blows Second Attack', value: ''},
-    {id: 'accidental-shot', label: 'Accidental Shot', value: ''},
-    {id: 'certain-strike', label: 'Certain Strike', value: ''},
-    {id: 'dazing-blow', label: 'Dazing Blow', value: ''},
-    {id: 'hunted-shot', label: 'Hunted Shot', value: ''},
-    {id: 'slam-down', label: 'Slam down', value: ''},
-    {id: 'snagging-strike', label: 'Snagging Strike', value: ''},
-    {id: 'twin-takedown-1', label: 'Twin Takedown First Weapon', value: ''},
-    {id: 'twin-takedown-2', label: 'Twin Takedown Second Weapon', value: ''},
-]
-
-function isV12() {
+export function isV12() {
     return game.release.generation > 11
 }
 
-function eventSkipped(event, isDamage = false) {
+export function eventSkipped(event, isDamage = false) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
         ? new KeyboardEvent('keydown', {'shiftKey': isDamage ? game.user.flags.pf2e.settings.showDamageDialogs : game.user.flags.pf2e.settings.showCheckDialogs})
         : event;
 }
 
-function rollSkipDialog(event) {
+export function rollSkipDialog(event) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
         ? true
         : (
@@ -39,7 +20,7 @@ function rollSkipDialog(event) {
         );
 }
 
-function xdyAutoRoll(roll) {
+export function xdyAutoRoll(roll) {
     return game.modules.get('xdy-pf2e-workbench')?.active
         && ((
                 ["all", "players"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
@@ -52,151 +33,44 @@ function xdyAutoRoll(roll) {
         && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
 }
 
-Hooks.once("init", () => {
-    DamageRoll = CONFIG.Dice.rolls.find(r => r.name === "DamageRoll");
-
-    DamageInstance = CONFIG.Dice.rolls.find((r) => r.name === "DamageInstance");
-    ArithmeticExpression = CONFIG.Dice.termTypes.ArithmeticExpression;
-    InstancePool = CONFIG.Dice.termTypes.InstancePool;
-
-    game.settings.register(moduleName, "skipRollDialogMacro", {
-        name: "Skip RollDialog for macros",
-        hint: "Skipping RollDialog for macros which used for combined damage",
-        scope: "world",
-        config: true,
-        default: true,
-        type: Boolean,
-    });
-
-    game.settings.register(moduleName, "defAidDC", {
-        name: "Default Aid DC (macro)",
-        scope: "world",
-        config: true,
-        default: 'remaster',
-        choices: {
-            'remaster': 'DC is 15',
-            'old': 'DC is 20',
-            'homebrew10': 'DC is 10',
-            'homebrew13': 'DC is 13',
-        },
-        type: String,
-    });
-
-    game.settings.register(moduleName, "aidWeaponTop", {
-        name: "Show weapon above skills",
-        scope: "world",
-        config: true,
-        default: false,
-        type: Boolean,
-    });
-
-    game.settings.register(moduleName, "useFavoriteWeapons", {
-        name: "Use favorite weapons",
-        scope: "client",
-        config: true,
-        default: false,
-        type: Boolean,
-    });
-
-    game.settings.register(moduleName, "favoriteWeapons", {
-        scope: "client",
-        config: false,
-        default: DEFAULT_FAVORITE,
-        type: Array,
-    });
-});
-
-class FavoriteWeapons extends FormApplication {
-    constructor(options = {}) {
-        super(options);
-    }
-
-    getFavoriteWeapons() {
-        return foundry.utils.mergeObject(foundry.utils.deepClone(DEFAULT_FAVORITE),
-            game.settings.get(moduleName, "favoriteWeapons")
-        );
-    }
-
-    async getData() {
-        return foundry.utils.mergeObject(super.getData(), {
-            weapons: this.getFavoriteWeapons()
-        });
-    }
-
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            title: "Favorite weapons",
-            id: `${moduleName}-favorite-weapons`,
-            classes: [moduleName],
-            template: `modules/${moduleName}/templates/weapons.hbs`,
-            width: 500,
-            height: 'auto',
-            closeOnSubmit: true,
-            submitOnChange: false,
-            resizable: true,
-            dragDrop: [],
-        });
-    }
-
-    activateListeners($html) {
-        super.activateListeners($html);
-    }
-
-    async _updateObject(_event, data) {
-        let checkData = this.getFavoriteWeapons();
-        for (let w in data) {
-            checkData.find(c => c.id === w).value = data[w]
-        }
-        game.settings.set(moduleName, "favoriteWeapons", checkData)
-    }
+export function veryHardDCByLvl(lvl) {
+    return (dcByLevel.get(lvl) ?? 50) + 5;
 }
 
-Hooks.on("renderSettingsConfig", (app, html) => {
-    const target = html.find(`[data-category="${moduleName}"]`);
-
-    if (target.find(`.${moduleName}-btn-favorite`).length === 0) {
-        let syncBtn = document.createElement("div");
-        syncBtn.classList.add("form-group", "submenu", `${moduleName}-btn-favorite`);
-        syncBtn.innerHTML = `<button type="button"> <i class="	fas fa-swords"></i> <label>Configure favorite weapons</label> </button>`;
-        syncBtn.onclick = function () {
-            new FavoriteWeapons().render(true)
-        };
-        target.find(".form-group").first().before(syncBtn);
+export function until(conditionFunction) {
+    const poll = resolve => {
+        if (conditionFunction()) resolve();
+        else setTimeout(_ => poll(resolve), 400);
     }
-});
+    return new Promise(poll);
+}
 
-const dcByLevel = new Map([
-    [-1, 13],
-    [0, 14],
-    [1, 15],
-    [2, 16],
-    [3, 18],
-    [4, 19],
-    [5, 20],
-    [6, 22],
-    [7, 23],
-    [8, 24],
-    [9, 26],
-    [10, 27],
-    [11, 28],
-    [12, 30],
-    [13, 31],
-    [14, 32],
-    [15, 34],
-    [16, 35],
-    [17, 36],
-    [18, 38],
-    [19, 39],
-    [20, 40],
-    [21, 42],
-    [22, 44],
-    [23, 46],
-    [24, 48],
-    [25, 50],
-]);
+function hasEffect(actor, eff) {
+    return actor?.itemTypes?.effect?.find((c => eff === c.slug))
+}
 
-function veryHardDCByLvl(lvl) {
-    return (dcByLevel.get(lvl) ?? 50) + 5;
+function hasOption(message, opt) {
+    return message?.flags?.pf2e?.context?.options?.includes(opt);
+}
+
+export function isGM() {
+    return game.user === game.users.activeGM;
+}
+
+export function hasPermissions(item) {
+    return 3 === item?.ownership[game.user.id] || game.user.isGM;
+}
+
+export async function setEffectToActorId(actorId, effUuid, level = undefined, optionalData) {
+    await setEffectToActor(await fromUuid(actorId), effUuid, level, optionalData);
+}
+
+export function hasFeatBySourceId(actor, eff) {
+    return actor?.itemTypes?.feat?.find((c) => eff === c.sourceId);
+}
+
+export function hasEffectBySourceId(actor, eff) {
+    return actor?.itemTypes?.effect?.find((c) => eff === c.sourceId);
 }
 
 async function gravityWeapon(message) {
@@ -211,15 +85,7 @@ async function fistAttack(message) {
     }
 }
 
-function until(conditionFunction) {
-    const poll = resolve => {
-        if (conditionFunction()) resolve();
-        else setTimeout(_ => poll(resolve), 400);
-    }
-    return new Promise(poll);
-}
-
-async function combinedDamage(name, primary, secondary, options, map, map2) {
+export async function combinedDamage(name, primary, secondary, options, map, map2) {
     let onlyOnePrecision = false;
     const damages = [];
     const attacks = [];
@@ -431,14 +297,6 @@ async function combinedDamage(name, primary, secondary, options, map, map2) {
     }
 }
 
-const TO_AVERAGE_DMG = {
-    'd4': 3,
-    'd6': 4,
-    'd8': 5,
-    'd10': 6,
-    'd12': 7,
-}
-
 function hasPrecisionDamage(damage) {
     return damage._formula.includes('precision')
 }
@@ -548,49 +406,7 @@ function deletePrecisionFrom(json, isCrit) {
     return json
 }
 
-function hasEffect(actor, eff) {
-    return actor?.itemTypes?.effect?.find((c => eff === c.slug))
-}
-
-function hasOption(message, opt) {
-    return message?.flags?.pf2e?.context?.options?.includes(opt);
-}
-
-function isGM() {
-    return game.user === game.users.activeGM;
-}
-
-function hasPermissions(item) {
-    return 3 === item?.ownership[game.user.id] || game.user.isGM;
-}
-
-async function setEffectToActorId(actorId, effUuid, level = undefined, optionalData) {
-    await setEffectToActor(await fromUuid(actorId), effUuid, level, optionalData);
-}
-
-const setupSocket = () => {
-    if (globalThis.socketlib) {
-        socketlibSocket = globalThis.socketlib.registerModule(moduleName);
-        socketlibSocket.register("setEffectToActorId", setEffectToActorId);
-        socketlibSocket.register("removeConditionFromActorId", removeConditionFromActorId);
-        socketlibSocket.register("rollAllRecoveryById", rollAllRecoveryById);
-        socketlibSocket.register("deleteItemById", deleteItemById);
-        socketlibSocket.register("addItemToActorId", addItemToActorId);
-        socketlibSocket.register("increaseConditionForActorId", increaseConditionForActorId);
-        socketlibSocket.register("decreaseConditionForActorId", decreaseConditionForActorId);
-        socketlibSocket.register("removeEffectFromActorId", removeEffectFromActorId);
-        socketlibSocket.register("applyDamageById", applyDamageById);
-        socketlibSocket.register("gmCounteract_step1", gmCounteract_step1);
-        socketlibSocket.register("gmCounteract_step2", gmCounteract_step2);
-    }
-    return !!globalThis.socketlib;
-};
-
-Hooks.once("setup", function () {
-    if (!setupSocket()) console.error("Error: Unable to set up socket lib");
-});
-
-async function setEffectToActor(
+export async function setEffectToActor(
     actor,
     effUuid,
     level = undefined,
@@ -628,16 +444,7 @@ async function setEffectToActor(
     }
 }
 
-function hasFeatBySourceId(actor, eff) {
-    return actor?.itemTypes?.feat?.find((c) => eff === c.sourceId);
-}
-
-function hasEffectBySourceId(actor, eff) {
-    return actor?.itemTypes?.effect?.find((c) => eff === c.sourceId);
-}
-
-
-function distanceIsCorrect(firstT, secondT, distance) {
+export function distanceIsCorrect(firstT, secondT, distance) {
     return (
         (firstT instanceof Token ? firstT : firstT.object).distanceTo(
             secondT instanceof Token ? secondT : secondT.object
@@ -645,11 +452,11 @@ function distanceIsCorrect(firstT, secondT, distance) {
     );
 }
 
-async function removeConditionFromActorId(actorId, condition, forceRemove = false) {
+export async function removeConditionFromActorId(actorId, condition, forceRemove = false) {
     await removeConditionFromActor(await fromUuid(actorId), condition, forceRemove);
 }
 
-async function removeConditionFromActor(actor, condition, forceRemove = false) {
+export async function removeConditionFromActor(actor, condition, forceRemove = false) {
     if (!hasPermissions(actor)) {
         socketlibSocket._sendRequest("removeConditionFromActorId", [actor.uuid, condition, forceRemove], 0);
         return;
@@ -658,11 +465,11 @@ async function removeConditionFromActor(actor, condition, forceRemove = false) {
     await actor.decreaseCondition(condition, {forceRemove: forceRemove});
 }
 
-async function rollAllRecoveryById(actorUUID) {
+export async function rollAllRecoveryById(actorUUID) {
     await rollAllRecovery(await fromUuid(actorUUID));
 }
 
-async function rollAllRecovery(actor) {
+export async function rollAllRecovery(actor) {
     if (!hasPermissions(actor)) {
         socketlibSocket._sendRequest("rollAllRecoveryById", [actor.uuid], 0);
         return;
@@ -673,11 +480,11 @@ async function rollAllRecovery(actor) {
     }
 }
 
-async function deleteItemById(itemUuid) {
+export async function deleteItemById(itemUuid) {
     await deleteItem(await fromUuid(itemUuid));
 }
 
-async function deleteItem(item) {
+export async function deleteItem(item) {
     if (!hasPermissions(item)) {
         socketlibSocket._sendRequest("deleteItemById", [item.uuid], 0);
     } else {
@@ -685,11 +492,11 @@ async function deleteItem(item) {
     }
 }
 
-async function increaseConditionForActorId(actorId, condition, value = undefined) {
+export async function increaseConditionForActorId(actorId, condition, value = undefined) {
     await increaseConditionForActor(await fromUuid(actorId), condition, value);
 }
 
-async function increaseConditionForActor(actor, condition, value = undefined) {
+export async function increaseConditionForActor(actor, condition, value = undefined) {
     if (!hasPermissions(actor)) {
         socketlibSocket._sendRequest("increaseConditionForActorId", [actor.uuid, condition, value], 0);
         return;
@@ -711,31 +518,15 @@ async function increaseConditionForActor(actor, condition, value = undefined) {
     await actor.increaseCondition(condition, valueObj);
 }
 
-async function decreaseConditionForActorId(actorId, condition, value = undefined) {
-    await decreaseConditionForActor(await fromUuid(actorId), condition, value);
+function hasCondition(actor, con) {
+    return actor?.itemTypes?.condition?.find((c) => con === c.slug);
 }
 
-async function decreaseConditionForActor(actor, condition, value = undefined) {
-    if (!hasPermissions(actor)) {
-        socketlibSocket._sendRequest("decreaseConditionForActorId", [actor.uuid, condition, value], 0);
-        return;
-    }
-
-    let activeCondition = hasCondition(actor, condition);
-    if (!activeCondition) {
-        return;
-    }
-
-    for (let i = 0; i < value; i++) {
-        await actor.decreaseCondition(condition);
-    }
-}
-
-async function addItemToActorId(actorUuid, item) {
+export async function addItemToActorId(actorUuid, item) {
     await addItemToActor(await fromUuid(actorUuid), item);
 }
 
-async function addItemToActor(actor, item) {
+export async function addItemToActor(actor, item) {
     if (!hasPermissions(actor)) {
         socketlibSocket._sendRequest("addItemToActorId", [actor.uuid, item], 0);
         return;
@@ -743,7 +534,7 @@ async function addItemToActor(actor, item) {
     await actor.createEmbeddedDocuments("Item", [item]);
 }
 
-async function removeEffectFromActorId(actor, effect) {
+export async function removeEffectFromActorId(actor, effect) {
     await removeEffectFromActor(await fromUuid(actorId), effect);
 }
 
@@ -762,11 +553,11 @@ async function removeEffectFromActor(actor, effect) {
     }
 }
 
-async function applyDamageById(actorUUID, tokenUUID, formula) {
+export async function applyDamageById(actorUUID, tokenUUID, formula) {
     await applyDamage(await fromUuid(actorUUID), await fromUuid(tokenUUID), formula);
 }
 
-async function applyDamage(actor, token, formula) {
+export async function applyDamage(actor, token, formula) {
     if (!hasPermissions(actor)) {
         socketlibSocket._sendRequest("applyDamageById", [actor.uuid, token.uuid, formula], 0);
         return;
@@ -778,28 +569,77 @@ async function applyDamage(actor, token, formula) {
     roll.toMessage({speaker: {alias: actor.name}});
 }
 
-function actorFeat(actor, feat) {
+export function actorFeat(actor, feat) {
     return actor?.itemTypes?.feat?.find((c => feat === c.slug))
 }
 
-function actorAction(actor, action) {
+export function actorAction(actor, action) {
     return actor?.itemTypes?.action?.find((c => action === c.slug))
 }
 
-function getMap() {
-    return `<hr><h3>Multiple Attack Penalty</h3>
+export function getMap() {
+    return `<label>Multiple Attack Penalty</label>
                 <select id="map">
                 <option value=0>No MAP</option>
                 <option value=1>MAP -5(-4 for agile)</option>
                 <option value=2>MAP -10(-8 for agile)</option>
-            </select><hr>`
+            </select><br/>`
 }
 
-function favoriteWeapon(macro) {
+export async function baseAttackWeaponForm(title, weaponOptions) {
+    return await foundry.applications.api.DialogV2.wait({
+        window: {title},
+        content: `
+            <labelr>Weapon</labelr>
+            <select id="fob1" autofocus>
+                ${weaponOptions}
+            </select>
+            ${getMap()}
+        `,
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+                    map: parseInt($(form).find("#map").val()),
+                    currentWeapon: $(form).find("#fob1").val(),
+                }
+            }
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
+        default: "ok"
+    });
+}
+
+export async function baseMapForm(title) {
+    return await foundry.applications.api.DialogV2.wait({
+        window: {title},
+        content: `
+            ${getMap()}
+        `,
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+                    map: parseInt($(form).find("#map").val()),
+                }
+            }
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
+        default: "ok"
+    });
+}
+
+export function favoriteWeapon(macro) {
     return game.settings.get(moduleName, "favoriteWeapons").find(c => c.id === macro)?.value;
 }
 
-function selectIf(favorite, item, fn = undefined) {
+export function selectIf(favorite, item, fn = undefined) {
     if (!game.settings.get(moduleName, "useFavoriteWeapons")) {
         return
     }
@@ -807,4 +647,12 @@ function selectIf(favorite, item, fn = undefined) {
         return fn ? fn() : ''
     }
     return favorite === item.name || favorite === item.id || favorite === item.slug ? 'selected' : ""
+}
+
+export function shareLanguage(actor, target) {
+    if (target?.itemTypes?.condition?.find(c => "deafened" === c.slug)) {
+        return false
+    }
+
+    return (target.system.traits.languages.value ?? []).some(item => actor?.system.traits.languages.value.includes(item))
 }

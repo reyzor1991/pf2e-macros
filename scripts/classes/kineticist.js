@@ -1,4 +1,34 @@
-async function twoElementInfusion(actor) {
+import {actorFeat, getMap, until} from "../lib.js";
+import {DamageRoll} from "../hooks/init.js";
+
+async function getDataEBRoll(eb, element) {
+    let e = eb.configs.find(e => e.element === element);
+
+    if (e.damageTypes.length === 1) {
+        return e.damageTypes[0].value
+    } else {
+        return await foundry.applications.api.DialogV2.confirm({
+            window: {title: "Select Damage Type"},
+            content: `
+            <div>
+                <h3>Damage Type for ${game.i18n.localize(e.label)}</h3>
+                <select id="dt">
+                    ${e.damageTypes.map(dt => `<option value=${dt.value}>${dt.label}</option>`).join("")}
+                </select>
+            </div>
+            <br>
+        `,
+            yes: {
+                action: "ok", label: "Select", icon: "<i class='fa-solid fa-hand-fist'></i>",
+                callback: (event, button, form) => {
+                    return $(form).find("#dt").val()
+                }
+            }
+        });
+    }
+}
+
+export async function twoElementInfusion(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -7,7 +37,6 @@ async function twoElementInfusion(actor) {
         ui.notifications.info(`Need to select 1 token as target`);
         return;
     }
-    let target = game.user.targets.first()
 
     const feat = actorFeat(actor, "two-element-infusion");
     if (!feat) {
@@ -23,37 +52,32 @@ async function twoElementInfusion(actor) {
 
     let elements = eb.configs.map(e => `<option value=${e.element}>${game.i18n.localize(e.label)}</option>`).join("")
 
-    let {el1, el2, mapIncreases, melee} = await Dialog.confirm({
-        title: "Select Elements",
+    let {el1, el2, mapIncreases, melee} = await foundry.applications.api.DialogV2.confirm({
+        window: {title: "Select Elements"},
         content: `
-            <div>
-                <div>
-                    <h3>First Element</h3>
-                    <select id="el1">
-                        ${elements}
-                    </select>
-                </div>
-                <div>
-                    <h3>Second Element</h3>
-                    <select id="el2">
-                        ${elements}
-                    </select>
-                </div>
-                <div>
-                    <h3>Is range?</h3>
-                    <input type="checkbox" id="melee">
-                </div>
-            </div>
+            <label>First Element</label>
+            <select id="el1">
+                ${elements}
+            </select>
+            <label>Second Element</label>
+            <select id="el2">
+                ${elements}
+            </select>
+            <label>Is range?</label>
+            <input type="checkbox" id="melee">
             ${getMap()}
         `,
-        yes: (html) => {
-            return {
-                el1: html.find("#el1")?.val(),
-                el2: html.find("#el2")?.val(),
-                mapIncreases: html.find("#map")?.val(),
-                melee: !html.find('#melee').prop("checked")
+        yes: {
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+                    el1: $(form).find("#el1").val(),
+                    el2: $(form).find("#el2").val(),
+                    mapIncreases: parseInt($(form).find("#map")?.val()),
+                    melee: !$(form).find('#melee').prop("checked")
+                }
             }
-        }
+        },
     });
     if (!el1 || !el2) {
         return
@@ -142,33 +166,3 @@ async function twoElementInfusion(actor) {
         Hooks.off('preCreateChatMessage', hookId);
     }
 }
-
-async function getDataEBRoll(eb, element) {
-    let e = eb.configs.find(e => e.element === element);
-
-    if (e.damageTypes.length === 1) {
-        return e.damageTypes[0].value
-    } else {
-        return await Dialog.confirm({
-            title: "Select Damage Type",
-            content: `
-            <div>
-                <h3>Damage Type for ${game.i18n.localize(e.label)}</h3>
-                <select id="dt">
-                    ${e.damageTypes.map(dt => `<option value=${dt.value}>${dt.label}</option>`).join("")}
-                </select>
-            </div>
-            <br>
-        `,
-            yes: (html) => {
-                return html.find("#dt").val()
-            }
-        });
-    }
-}
-
-Hooks.once("init", () => {
-    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
-        "twoElementInfusion": twoElementInfusion,
-    })
-});

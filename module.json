@@ -2,7 +2,7 @@
   "id": "pf2e-macros",
   "title": "PF2e Macros",
   "description": "",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "authors": [
     {
       "name": "Reyzor",
@@ -12,10 +12,10 @@
   ],
   "languages": [],
   "esmodules": [
-    "main.js"
+    "scripts/main.js"
   ],
   "styles": [
-    "main.css"
+    "styles/main.css"
   ],
   "packFolders": [
     {
@@ -60,12 +60,12 @@
   ],
   "socket": true,
   "compatibility": {
-    "minimum": "11",
-    "verified": "12.330"
+    "minimum": "12",
+    "verified": "12.331"
   },
   "url": "https://github.com/reyzor1991",
-  "manifest": "https://www.dropbox.com/scl/fi/6iqgochhz8qd5kh8e3bi1/module.json?rlkey=4tbyatafnrd3q1rtpxrctwgxs&dl=1",
-  "download": "https://www.dropbox.com/scl/fi/wuybfq918qn0v0fqmvrnx/pf2e-macros.zip?rlkey=je3f1vtkz30u2ebdc9xdplsf4&dl=1",
+  "manifest": "https://www.dropbox.com/scl/fi/hopwdnv911f7332tlu7ss/module.json?rlkey=udckjm1m1lk99ehfea930lesb&st=q3kuxm9t&dl=1",
+  "download": "https://www.dropbox.com/scl/fi/5r9mdw8r1gw5r3cxu2imz/pf2e-macros.zip?rlkey=l34j1isit0b89qujmqez7aehj&st=7qrt3kr3&dl=1",
   "changelog": "https://github.com/reyzor1991/pf2e-macros/blob/master/CHANGELOG.md",
   "readme": "https://github.com/reyzor1991/pf2e-macros/blob/master/README.md",
   "bugs": "https://github.com/reyzor1991/pf2e-macros/issues",
