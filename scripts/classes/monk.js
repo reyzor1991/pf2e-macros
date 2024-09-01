@@ -1,3 +1,5 @@
+import {actorAction, actorFeat, combinedDamage, favoriteWeapon, getMap, selectIf} from "../lib.js";
+
 function flurryOfBlowsWeapons(actor) {
     let weapons = actor.system.actions
         .filter(h => h.item?.system?.traits?.value?.includes("unarmed") && (h.visible || actor.isOfType('npc')));
@@ -20,7 +22,23 @@ function flurryOfBlowsWeapons(actor) {
     return weapons;
 }
 
-async function flurryOfBlows(actor) {
+function getWeapon(actor, id, isRanged, slug) {
+    const _w = actor.system.actions.filter(w => w.item.id === id);
+    if (_w.length === 1) {
+        if (isRanged && _w[0].options?.includes("ranged")) {
+            return _w[0];
+        } else if (!isRanged && !_w[0].options?.includes("ranged")) {
+            return _w[0];
+        } else if (!isRanged && _w[0].options?.includes("ranged") && _w[0].altUsages.length > 0) {
+            return _w[0].altUsages.find(aa => !aa.options?.includes("ranged")) ?? null
+        }
+        return null;
+    } else {
+        return _w.find(w => w.item.slug === slug)
+    }
+}
+
+export async function flurryOfBlows(actor) {
     if (!actor) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -54,42 +72,39 @@ async function flurryOfBlows(actor) {
         weaponOptions2 += `<option value=${w.item.id} ${selectIf(f2, w.item)} data-ranged="${!!w?.options?.includes("ranged")}" data-slug="${w.item.slug}">${w.item.name}${isRanged}</option>`
     }
 
-    const {weapon1, weapon2, map} = await Dialog.wait({
-        title: "Flurry of Blows",
+    const {weapon1, weapon2, map} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Flurry of Blows"},
         content: `
-            <div class="row-flurry"><div class="column-flurry first-flurry"><h3>First Attack</h3><select id="fob1" autofocus>
-                ${weaponOptions}
-            </select></div><div class="column-flurry second-flurry"><h3>Second Attack</h3>
-            <select id="fob2">
-                ${weaponOptions2}
-            </select></div></div>${getMap()}
+            <div class="row-flurry">
+                <div class="column-flurry first-flurry">
+                    <h3>First Attack</h3>
+                    <select id="fob1" autofocus>
+                        ${weaponOptions}
+                    </select>
+                </div>
+                <div class="column-flurry second-flurry">
+                    <h3>Second Attack</h3>
+                    <select id="fob2">
+                        ${weaponOptions2}
+                    </select>
+                </div>
+            </div>
+            ${getMap()}
         `,
-        buttons: {
-            ok: {
-                label: "Attack",
-                icon: "<i class='fa-solid fa-hand-fist'></i>",
-                callback: (html) => {
-                    return {
-                        weapon1: [$(html[0]).find("#fob1").val(), $(html[0]).find("#fob1").find(':selected').attr('data-ranged') === 'true', $(html[0]).find("#fob1").find(':selected').attr('data-slug')],
-                        weapon2: [$(html[0]).find("#fob2").val(), $(html[0]).find("#fob2").find(':selected').attr('data-ranged') === 'true', $(html[0]).find("#fob2").find(':selected').attr('data-slug')],
-                        map: parseInt(html[0].querySelector("#map").value)
-                    }
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+                    weapon1: [$(form).find("#fob1").val(), $(form).find("#fob1").find(':selected').attr('data-ranged') === 'true', $(form).find("#fob1").find(':selected').attr('data-slug')],
+                    weapon2: [$(form).find("#fob2").val(), $(form).find("#fob2").find(':selected').attr('data-ranged') === 'true', $(form).find("#fob2").find(':selected').attr('data-slug')],
+                    map: parseInt($(form).find("#map").val()),
                 }
-            },
-            cancel: {
-                label: "Cancel",
-                icon: "<i class='fa-solid fa-ban'></i>",
             }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 30px red;';
-            for (const child of html.parent().parent().children()) {
-                child.style.cssText += 'box-shadow: 0 0 15px yellow;';
-            }
-            setTimeout(() => {
-                // document.getElementById('fob1').showPicker();
-            }, 0)
-        },
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
         default: "ok"
     }, {}, {width: 500});
 
@@ -108,27 +123,5 @@ async function flurryOfBlows(actor) {
 
     const options = actorFeat(actor, "stunning-fist") ? ["stunning-fist"] : [];
 
-    combinedDamage("Flurry Of Blows", primary, secondary, options, map, map2);
+    await combinedDamage("Flurry Of Blows", primary, secondary, options, map, map2);
 }
-
-function getWeapon(actor, id, isRanged, slug) {
-    const _w = actor.system.actions.filter(w => w.item.id === id);
-    if (_w.length === 1) {
-        if (isRanged && _w[0].options?.includes("ranged")) {
-            return _w[0];
-        } else if (!isRanged && !_w[0].options?.includes("ranged")) {
-            return _w[0];
-        } else if (!isRanged && _w[0].options?.includes("ranged") && _w[0].altUsages.length > 0) {
-            return _w[0].altUsages.find(aa => !aa.options?.includes("ranged")) ?? null
-        }
-        return null;
-    } else {
-        return _w.find(w => w.item.slug === slug)
-    }
-}
-
-Hooks.once("init", () => {
-    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
-        "flurryOfBlows": flurryOfBlows,
-    })
-});

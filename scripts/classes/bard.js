@@ -1,47 +1,59 @@
-async function inspireHeroics(actor) {
-    if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
+import {moduleName} from "../const.js";
+import {rollSkipDialog, veryHardDCByLvl} from "../lib.js";
 
-    if (!actor.itemTypes.spell.find(a=>a.slug === "inspire-heroics") && !actor.itemTypes.spell.find(a=>a.slug === "fortissimo-composition")) {
+export async function inspireHeroics(actor) {
+    if (!actor) {
+        ui.notifications.info("Please select 1 token");
+        return;
+    }
+
+    if (!actor.itemTypes.spell.find(a => a.slug === "inspire-heroics") && !actor.itemTypes.spell.find(a => a.slug === "fortissimo-composition")) {
         ui.notifications.warn(`${actor.name} does not have Inspire Heroics/Fortissimo Composition spell!`);
         return;
     }
 
-    if (!actor.system.resources.focus.value) { return ui.notifications.warn(`${actor.name} have no focus points`); }
+    if (!actor.system.resources.focus.value) {
+        return ui.notifications.warn(`${actor.name} have no focus points`);
+    }
 
     const defDC = veryHardDCByLvl(actor.level);
 
-    const { dc, spell } = await Dialog.wait({
-        title:"Use spell",
+    const {dc, spell} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Use spell"},
         content: `
             <h3>DC of performance check</h3>
             <input id="spell-dc" type="number" min="0" value=${defDC} />
-            <hr><h3>Spell effect for aura</h3><select id="spells">
+            <h3>Spell effect for aura</h3>
+            <select id="spells" name="spells">
                 <option value=0>Inspire Courage/Courageous Anthem</option>
                 <option value=1>Inspire Defense/Rallying Anthem</option>
                 <option value=2>Song of Strength</option>
-            </select><hr>
+            </select>
         `,
-        buttons: {
-                ok: {
-                    label: "Cast",
-                    icon: "<i class='fa-solid fa-magic'></i>",
-                    callback: (html) => { return { dc: parseInt(html[0].querySelector("#spell-dc").value), spell: parseInt(html[0].querySelector("#spells").value)} }
-                },
-                cancel: {
-                    label: "Cancel",
-                    icon: "<i class='fa-solid fa-ban'></i>",
+        buttons: [{
+            action: "ok", label: "Cast", icon: "<i class='fa-solid fa-magic'></i>",
+            callback: (event, button, form) => {
+                return {
+                    dc: parseInt($(form).find("#spell-dc").val()),
+                    spell: parseInt($(form).find("#spells").val())
                 }
-        },
-        render: (html) => {
-            html.parent().parent()[0].style.cssText += 'box-shadow: 0 0 10px yellow;';
-        },
+            }
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
         default: "ok"
     });
+    if (dc === undefined || spell === undefined) {return }
 
-    let degreeOfSuccess = (await actor.skills.performance.roll({ skipDialog: rollSkipDialog(event), dc:{value: dc} })).degreeOfSuccess;
+    let degreeOfSuccess = (await actor.skills.performance.roll({
+        skipDialog: rollSkipDialog(event),
+        dc: {value: dc}
+    })).degreeOfSuccess;
 
     const aura = (await fromUuid(`Compendium.${moduleName}.effects.Item.mGQMqBoTFRz3or4D`)).toObject();
-    let idOfEffect='';
+    let idOfEffect = '';
     if (spell === 0) {
         if (degreeOfSuccess === 3) {
             idOfEffect = "Compendium.pf2e.spell-effects.Item.VFereWC1agrwgzPL";
@@ -72,13 +84,6 @@ async function inspireHeroics(actor) {
     await actor.createEmbeddedDocuments("Item", [aura]);
 
     if (degreeOfSuccess > 1) {
-        await actor.update({"system.resources.focus.value":actor.system.resources.focus.value-1});
+        await actor.update({"system.resources.focus.value": actor.system.resources.focus.value - 1});
     }
 }
-
-Hooks.once("init", () => {
-
-    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
-        "inspireHeroics": inspireHeroics,
-    })
-});

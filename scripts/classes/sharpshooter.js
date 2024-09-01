@@ -1,9 +1,11 @@
+import {actorAction, eventSkipped, favoriteWeapon, getMap, selectIf, xdyAutoRoll} from "../lib.js";
+
 function accidentalShotWeapons(actor) {
     return actor.system.actions
         .filter( h => h.ready && h.visible && h.item?.isRanged && h.item?.ammo && h.ready);
-};
+}
 
-async function accidentalShot(actor) {
+export async function accidentalShot(actor) {
     if ( !actor ) { ui.notifications.info("Please select 1 token"); return;}
     if (game.user.targets.size !== 1) { ui.notifications.info(`Need to select 1 token as target`);return; }
 
@@ -93,9 +95,3 @@ async function accidentalShot(actor) {
         ChatMessage.createDocuments([damages[1]]);
     }
 }
-
-Hooks.once("init", () => {
-    game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
-        "accidentalShot": accidentalShot,
-    })
-});

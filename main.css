@@ -63,3 +63,14 @@
 .weapon-row {
     padding: 5px;
 }
+
+.v2-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.v2-row label:not(:first-of-type) {
+    padding-left: 20px;
+}
+
