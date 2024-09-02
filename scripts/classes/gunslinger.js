@@ -1,4 +1,12 @@
-import {actorFeat, baseMapForm, combinedDamage, eventSkipped, getMap, hasEffectBySourceId} from "../lib.js";
+import {
+    actorFeat,
+    baseAttackWeaponForm,
+    baseMapForm,
+    combinedDamage,
+    eventSkipped,
+    getMap,
+    hasEffectBySourceId
+} from "../lib.js";
 import {targetIsOffGuard} from "./general.js";
 
 function pairedShotsWeapons(actor) {
@@ -18,6 +26,12 @@ function swordAndPistolWeapons(actor) {
             .filter(h => h.ready && h.item?.isMelee)
             .filter(h => h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1)
     ];
+}
+
+function stabAndBlastWeapons(actor) {
+    return actor.system.actions
+        .filter(a => a.ready && a.item?.isRanged)
+        .filter(a => a.item.subitems.find(si => si.slug === "bayonet" || si.slug === "reinforced-stock"));
 }
 
 export async function pairedShots(actor) {
@@ -189,4 +203,46 @@ export async function swordAndPistol(actor) {
     }
 
     await swordAndPistolWeapons(actor)[second].variants[map2].roll({event: eventSkipped(event), options});
+}
+
+export async function stabAndBlast(actor) {
+    if (!actor) {
+        ui.notifications.info("Please select 1 token");
+        return;
+    }
+    if (game.user.targets.size !== 1) {
+        ui.notifications.info(`Need to select 1 token as target`);
+        return;
+    }
+    if (!actorFeat(actor, "stab-and-blast")) {
+        ui.notifications.warn(`${actor.name} does not have Stab and Blast!`);
+        return;
+    }
+    let weapons = stabAndBlastWeapons(actor);
+    let weaponOptions = weapons.map((w, i) => `<option value=${i}>${w.item.name}</option>`).join('')
+
+    const {currentWeapon, map} = await baseAttackWeaponForm("Stab and Blast", weaponOptions)
+    if (currentWeapon === undefined || map === undefined) {
+        return;
+    }
+    let activeAction = weapons[currentWeapon];
+    let subWeapon = activeAction.item.subitems.find(si => si.slug === "bayonet" || si.slug === "reinforced-stock")
+    let subAction = actor.system.actions.find(a => a.item.uuid === subWeapon.uuid)
+
+    if (!subAction) {
+        ui.notifications.error(`Not found action related to subitem`);
+        return
+    }
+
+    let res = await subAction.variants[map].roll({event: eventSkipped(event)})
+    if (res.degreeOfSuccess === 2 || res.degreeOfSuccess === 3) {
+        await activeAction.variants[map].roll({
+            event: eventSkipped(event),
+            modifiers: [new game.pf2e.Modifier({
+                label: "Stab and Blast Bonus",
+                modifier: 2,
+                type: "circumstance"
+            })]
+        })
+    }
 }

@@ -1,6 +1,6 @@
 import {inspireHeroics} from "./bard.js";
 import {certainStrike, dazingBlow, doubleSlice, knockdown, snaggingStrike, swipe, whirlwindStrike} from "./fighter.js";
-import {pairedShots, pistolerosChallenge, swordAndPistol} from "./gunslinger.js";
+import {pairedShots, pistolerosChallenge, stabAndBlast, swordAndPistol} from "./gunslinger.js";
 import {twoElementInfusion} from "./kineticist.js";
 import {flurryOfBlows} from "./monk.js";
 import {twinFeint} from "./rogue.js";
@@ -10,9 +10,12 @@ import {rootToLife} from "./thaumaturge.js";
 import {
     aid,
     counteract,
-    doffPartyArmor, effectConditionInfo,
-    explorationActivity, gmCounteract,
-    onOffNPCVision, repairParty,
+    doffPartyArmor,
+    effectConditionInfo,
+    explorationActivity,
+    gmCounteract,
+    onOffNPCVision,
+    repairParty,
     scareToDeath,
     targetIsOffGuard
 } from "./general.js";
@@ -32,6 +35,7 @@ export function initMacros() {
         "pairedShots": pairedShots,
         "pistolerosChallenge": pistolerosChallenge,
         "swordAndPistol": swordAndPistol,
+        "stabAndBlast": stabAndBlast,
 
         "twoElementInfusion": twoElementInfusion,
 

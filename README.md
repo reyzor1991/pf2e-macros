@@ -25,3 +25,7 @@
 - Dazing Blow
 - Root To Life
 - Whirlwind Strike
+- Disable/Enable NPC Vision
+- Counteract
+- Repair for party macro
+- Stab and Blast
