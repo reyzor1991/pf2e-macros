@@ -1,3 +1,6 @@
+### Version 0.6.4
+- Fix Exploration Activity form
+
 ### Version 0.6.3
 - Stab and Blast
 

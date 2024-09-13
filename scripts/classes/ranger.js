@@ -137,8 +137,13 @@ export async function twinTakedown(actor) {
     }
     const map2 = map === 2 ? map : map + 1;
 
+    let options = weapons[weapon1] === weapons[weapon2]
+        ? []
+        : weapons[weapon1].item.system.traits.value.some((t) => t === "twin") && weapons[weapon2].item.system.traits.value.some((t) => t === "twin")
+            ? ['need-twin-2nd-attack']
+            : []
 
-    await combinedDamage("Twin Takedown", weapons[weapon1], weapons[weapon2], [], map, map2);
+    await combinedDamage("Twin Takedown", weapons[weapon1], weapons[weapon2], options, map, map2);
 }
 
 export async function rangerLink(actor) {

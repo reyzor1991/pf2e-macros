@@ -170,6 +170,10 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             sOpt.push("twin-feint-second-attack")
         }
 
+        if (options.includes("need-twin-2nd-attack")) {
+            sOpt.push("twin-2nd-attack")
+        }
+
         if (damages.length > 0) {
             if (hasPrecisionDamage(damages[0].rolls[0])
                 && (

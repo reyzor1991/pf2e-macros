@@ -426,7 +426,7 @@ export async function explorationActivity(actor) {
 
     let content = `<div class="pf2e-exploration-activity-list">${buttons}</div>`
     let d = new foundry.applications.api.DialogV2({
-            window: {title: `Exploration Activities (${actor.name})`},
+            window: {title: `Exploration Activities (${actor.name})`, resizable: true},
             default: "close",
             content,
             buttons: [
@@ -436,8 +436,10 @@ export async function explorationActivity(actor) {
                     icon: "<i class='fa-solid fa-times'></i>",
                 }
             ],
-        }, {popOut: true, resizable: true, width: 450}
-    );
+        position: {
+            width: 480
+        }
+    });
     d.addEventListener('render', (e) => {
         const action = async (event) => {
             let button = $(event.currentTarget);
