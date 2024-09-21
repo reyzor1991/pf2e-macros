@@ -1,3 +1,6 @@
+### Version 0.6.5
+- Handle Twin in Twin Takedown
+
 ### Version 0.6.4
 - Fix Exploration Activity form
 

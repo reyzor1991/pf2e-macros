@@ -224,10 +224,18 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         }
 
         if ((primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
-            let m = damages[0].toObject();
+            let m = damages[0];
+            if (hasOption(m, "twin-2nd-attack")) {
+                m = (await getNewRollForTwin(m)).toObject()
+            }
             m.flags.pf2e.context.options = m.flags.pf2e.context.options.filter(e => e !== "skip-handling-message");
             ChatMessage.createDocuments([m]);
             return;
+        }
+        if (hasOption(damages[0], "twin-2nd-attack")) {
+            damages[0] = await getNewRollForTwin(damages[0])
+        } else if (hasOption(damages[1], "twin-2nd-attack")) {
+            damages[1] = await getNewRollForTwin(damages[1])
         }
 
         const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]), damages[0].target);
@@ -299,6 +307,72 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         Hooks.off('preCreateChatMessage', hookId);
         Hooks.off('preCreateChatMessage', hookIdRoll);
     }
+}
+
+async function getNewRollForTwin(message) {
+    let roll = message.rolls[0];
+    let isCrit = roll?.options?.degreeOfSuccess === 3;
+
+    roll.options.damage.damage.modifiers.find(a => a.slug === 'twin-second').ignored = false;
+    roll.options.damage.damage.modifiers.find(a => a.slug === 'twin-second').enabled = true;
+    roll.options.damage.modifiers.find(a => a.slug === 'twin-second').ignored = false;
+    roll.options.damage.modifiers.find(a => a.slug === 'twin-second').enabled = true;
+
+    let newMod = new game.pf2e.StatisticModifier(message.flags.pf2e.modifierName, roll.options.damage.damage.modifiers.filter(m => !m.damageType || m.damageType === 'slashing'));
+
+    let base = roll.terms[0].rolls[0];
+    let baseTerms = isCrit
+        ? (base.terms[0].term.operands.find(a => a.constructor.name === 'Grouping') ?? base.terms[0].term.operands.find(a => a.constructor.name === 'ArithmeticExpression')?.operands?.find(a => a.constructor.name === 'Grouping'))
+        : base.terms[0];
+
+    if (baseTerms.constructor.name === "Grouping") {
+        let ae = baseTerms.term.operands.find(a => a.constructor.name === 'ArithmeticExpression')
+        let insideNumber = baseTerms.term.operands.find(a => a instanceof foundry.dice.terms.NumericTerm)
+        if (ae) {
+            let nValue = ae.operands.find(a => a instanceof foundry.dice.terms.NumericTerm);
+            if (nValue) {
+                nValue.number = newMod.totalModifier;
+                nValue._evaluated = false
+                nValue.evaluate()
+            }
+            ae._evaluated = false
+            ae.evaluate()
+        } else if (insideNumber) {
+            insideNumber.number = newMod.totalModifier;
+            insideNumber._evaluated = false
+            insideNumber.evaluate()
+        }
+
+        baseTerms._evaluated = false
+        baseTerms.evaluate()
+    } else if (baseTerms instanceof foundry.dice.terms.NumericTerm) {
+        baseTerms.number = newMod.totalModifier;
+    }
+    base._evaluated = false
+    base.resetFormula()
+    base._total = base?._evaluateTotal() ?? base._total;
+    base.evaluate()
+
+    roll.terms[0].results = roll.terms[0].rolls.map(a => {
+        return {active: true, result: a.total}
+    })
+    roll.terms[0].terms = roll.terms[0].rolls.map((r) => r._formula)
+
+    roll._evaluated = false
+    roll.resetFormula()
+    await roll.evaluate()
+
+    let html = $(message.flavor)
+    $( `<span class="tag tag_transparent">${game.i18n.localize("PF2E.Item.Weapon.Twin.SecondPlus")}</span>` )
+        .insertAfter(html.find('.tag_transparent').last() )
+
+    message.updateSource({
+        'rolls': [roll],
+        content: `${roll.total}`,
+        flavor: Object.values(html).map(a=>a.outerHTML || '\n').join("")
+    });
+
+    return message
 }
 
 function hasPrecisionDamage(damage) {
