@@ -424,7 +424,9 @@ function combineDamages(damages, target) {
         }
     }).flat()
 
-    return [DamageRoll.fromTerms([InstancePool.fromRolls(newInstances)])]
+    let critIdx = damages[0].options.degreeOfSuccess === 3 ? 0 : 1;
+
+    return [DamageRoll.fromTerms([InstancePool.fromRolls(newInstances)],damages[critIdx].options)]
 }
 
 function createDataDamageOnlyOnePrecision(damages) {

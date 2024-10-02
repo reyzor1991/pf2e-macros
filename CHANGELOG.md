@@ -1,3 +1,6 @@
+### Version 0.6.6
+- Fix combined crit damage
+
 ### Version 0.6.5
 - Handle Twin in Twin Takedown
 
