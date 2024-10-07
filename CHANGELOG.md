@@ -1,3 +1,6 @@
+### Version 0.6.7
+- Extend aid api
+
 ### Version 0.6.6
 - Fix combined crit damage
 

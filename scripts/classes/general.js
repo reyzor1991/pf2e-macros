@@ -237,6 +237,16 @@ export async function scareToDeath(actor) {
 }
 
 export async function aid(actor) {
+    await aidBase(actor,
+        `Compendium.${moduleName}.effects.Item.w9uaEadTRdzQDvvb`,
+        `Compendium.${moduleName}.effects.Item.L1hIpxQ7GSKecbg8`,
+        `Compendium.${moduleName}.effects.Item.FNg7DnPqAJUHa7M3`,//+2
+        `Compendium.${moduleName}.effects.Item.I2ybp2bragN3affJ`,//+3
+        `Compendium.${moduleName}.effects.Item.YflHqtJFA40JQULG`,//+4
+    )
+}
+
+export async function aidBase(actor, criticalFailure, success, criticalSuccess, criticalSuccessMaster, criticalSuccessLegendary) {
     if (game.user.targets.size === 0) {
         ui.notifications.info(`Need to select target to apply Aid effect`);
         return;
@@ -325,15 +335,15 @@ export async function aid(actor) {
     let hasHelpFeat = hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.gWyCNTWUhxneOBne');//Helpful Halfling
     let effectId = undefined;
     if (roll?.options?.degreeOfSuccess === 0 && !hasHelpFeat) {
-        effectId = `Compendium.${moduleName}.effects.Item.w9uaEadTRdzQDvvb`;
+        effectId = criticalFailure;
     } else if (roll?.options?.degreeOfSuccess === 2) {
-        effectId = `Compendium.${moduleName}.effects.Item.L1hIpxQ7GSKecbg8`;
+        effectId = success;
     } else if (roll?.options?.degreeOfSuccess === 3) {
-        effectId = `Compendium.${moduleName}.effects.Item.FNg7DnPqAJUHa7M3`//+2
+        effectId = criticalSuccess//+2
         if (rank === 4 || (rank === 3 && hasHelpFeat)) {
-            effectId = `Compendium.${moduleName}.effects.Item.YflHqtJFA40JQULG`//+4
+            effectId = criticalSuccessLegendary//+4
         } else if (rank === 3 || (rank === 2 && hasHelpFeat)) {
-            effectId = `Compendium.${moduleName}.effects.Item.I2ybp2bragN3affJ`//+3
+            effectId = criticalSuccessMaster//+3
         }
     }
 
@@ -426,16 +436,16 @@ export async function explorationActivity(actor) {
 
     let content = `<div class="pf2e-exploration-activity-list">${buttons}</div>`
     let d = new foundry.applications.api.DialogV2({
-            window: {title: `Exploration Activities (${actor.name})`, resizable: true},
-            default: "close",
-            content,
-            buttons: [
-                {
-                    action: "close",
-                    label: "Close",
-                    icon: "<i class='fa-solid fa-times'></i>",
-                }
-            ],
+        window: {title: `Exploration Activities (${actor.name})`, resizable: true},
+        default: "close",
+        content,
+        buttons: [
+            {
+                action: "close",
+                label: "Close",
+                icon: "<i class='fa-solid fa-times'></i>",
+            }
+        ],
         position: {
             width: 480
         }

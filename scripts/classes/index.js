@@ -8,7 +8,7 @@ import {huntedShot, rangerLink, twinTakedown} from "./ranger.js";
 import {accidentalShot} from "./sharpshooter.js";
 import {rootToLife} from "./thaumaturge.js";
 import {
-    aid,
+    aid, aidBase,
     counteract,
     doffPartyArmor,
     effectConditionInfo,
@@ -53,6 +53,7 @@ export function initMacros() {
 
         "scareToDeath": scareToDeath,
         "aid": aid,
+        "aidBase": aidBase,
         "explorationActivity": explorationActivity,
         "doffPartyArmor": doffPartyArmor,
         "targetIsOffGuard": targetIsOffGuard,
