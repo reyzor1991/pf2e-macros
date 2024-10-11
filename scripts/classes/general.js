@@ -5,7 +5,8 @@ import {
     distanceIsCorrect,
     eventSkipped,
     hasFeatBySourceId,
-    increaseConditionForActor, isGM,
+    increaseConditionForActor,
+    isGM,
     rollSkipDialog,
     setEffectToActor,
     shareLanguage,
@@ -115,23 +116,33 @@ async function counteractRoll(actor, dc, cl, tl, idx, fixedValue = undefined) {
     if (tl - cl >= 4) {
         await counteractFailMessage()
     } else {
-        let res;
+        let modifiers = [];
         if (fixedValue) {
-            res = await game.pf2e.Check.roll(
-                new game.pf2e.CheckModifier('counteract', {
-                    modifiers: [
-                        new game.pf2e.Modifier({
-                            label: "Fixed value",
-                            modifier: fixedValue,
-                            type: "circumstance"
-                        })
-                    ]
-                }),
-                {actor, type: "skill-check", dc: {value: dc}}
-            );
+            modifiers.push(new game.pf2e.Modifier({
+                label: "Fixed value",
+                modifier: fixedValue,
+                type: "circumstance"
+            }))
         } else {
-            res = await actor.itemTypes.spellcastingEntry[idx].statistic.roll({dc})
+            modifiers = actor.itemTypes.spellcastingEntry[idx].statistic.check.modifiers
         }
+        let res = await game.pf2e.Check.roll(
+            new game.pf2e.CheckModifier('Counteract Check', {
+                modifiers
+            }),
+            {
+                actor,
+                type: "counteract-check",
+                dc: {value: dc},
+                domains: ["all", "counteract"],
+                options: new Set([
+                    ...actor.getRollOptions(),
+                    "counteract"
+                ])
+            }
+        );
+
+
         let degreeOfSuccess = res.degreeOfSuccess
         if ((tl - cl) === 3 || (tl - cl) === 2) {
             if (degreeOfSuccess === 3) {

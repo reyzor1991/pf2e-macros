@@ -1,3 +1,6 @@
+### Version 0.6.9
+- Change logic roll counteract
+
 ### Version 0.6.8
 - Fix counteract
 
