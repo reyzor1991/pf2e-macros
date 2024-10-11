@@ -100,14 +100,14 @@ export async function gmCounteract_step2(actorUuid, dc, cl, tl, idx, fixedValue)
 async function counteractFailMessage() {
     await ChatMessage.create({
         type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-        content: `Counteract was failed`
+        content: `Counteract failed`
     });
 }
 
 async function counteractSuccessMessage() {
     await ChatMessage.create({
         type: CONST.CHAT_MESSAGE_TYPES.OTHER,
-        content: `Counteract was success`
+        content: `Counteract succeed`
     });
 }
 
