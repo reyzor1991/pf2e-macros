@@ -5,7 +5,7 @@ import {
     distanceIsCorrect,
     eventSkipped,
     hasFeatBySourceId,
-    increaseConditionForActor,
+    increaseConditionForActor, isGM,
     rollSkipDialog,
     setEffectToActor,
     shareLanguage,
@@ -586,16 +586,18 @@ export async function gmCounteract(actor) {
     }
 
     const {isFixed, fixedValue} = await Dialog.wait({
-        title: "Counteract",
+        title: "Counteract ",
         content: `
+            <strong>Fixed value for roll (usually for items)</strong>
+            <div style="display: flex">
             <p class="">
                 <strong>Is value fixed?</strong>
                 <input class='isFixed' type="checkbox"">
             </p>
             <p class="">
-                <strong>Value</strong>
+                <strong>Fixed value</strong>
                 <input class='fixedValue' type="number" value='0' min=0 style="width: 5ch;">
-            </p>
+            </p></div>
         `,
         buttons: {
             ok: {

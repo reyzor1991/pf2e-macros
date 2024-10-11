@@ -1,3 +1,6 @@
+### Version 0.6.8
+- Fix counteract
+
 ### Version 0.6.7
 - Extend aid api
 

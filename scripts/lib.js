@@ -24,11 +24,11 @@ export function xdyAutoRoll(roll) {
     return game.modules.get('xdy-pf2e-workbench')?.active
         && ((
                 ["all", "players"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
-                && roll.roller.id === game.user?.id && !game.user?.isGM
+                && roll.roller.id === game.user?.id && !isGM()
             )
             || (
                 ["all", "gm"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
-                && roll.roller.id === game.user?.id && game.user?.isGM
+                && roll.roller.id === game.user?.id && isGM()
             ))
         && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
 }
@@ -58,7 +58,7 @@ export function isGM() {
 }
 
 export function hasPermissions(item) {
-    return 3 === item?.ownership[game.user.id] || game.user.isGM;
+    return item.canUserModify(game.user, "update");
 }
 
 export async function setEffectToActorId(actorId, effUuid, level = undefined, optionalData) {

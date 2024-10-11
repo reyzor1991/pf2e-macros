@@ -4,7 +4,7 @@ import {
     baseAttackWeaponForm,
     combinedDamage,
     favoriteWeapon,
-    getMap,
+    getMap, isGM,
     selectIf
 } from "../lib.js";
 
@@ -147,7 +147,7 @@ export async function twinTakedown(actor) {
 }
 
 export async function rangerLink(actor) {
-    if (!game.user.isGM) {
+    if (!isGM()) {
         ui.notifications.info(`Only GM can run script`);
         return
     }
