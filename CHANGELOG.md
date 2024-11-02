@@ -1,3 +1,6 @@
+### Version 0.7.0
+- Add unarmed attack tp list of weapons for Slam Down
+
 ### Version 0.6.9
 - Change logic roll counteract
 

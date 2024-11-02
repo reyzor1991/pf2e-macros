@@ -42,10 +42,8 @@ function doubleSliceWeapons(actor) {
 }
 
 function knockdownWeapons(actor) {
-    return actor.system.actions.filter(h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed")
-        && (
-            (h.item?.isHeld && h.visible) || actor.isOfType('npc')
-        )
+    return actor.system.actions.filter(h => h.ready && h.item?.isMelee
+        && (h.visible || actor.isOfType('npc'))
     );
 }
 
