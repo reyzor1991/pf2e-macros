@@ -1,3 +1,6 @@
+### Version 0.7.1
+- Add logs for tracking missed damage
+
 ### Version 0.7.0
 - Add unarmed attack tp list of weapons for Slam Down
 

@@ -130,6 +130,8 @@ export async function twoElementInfusion(actor) {
 
         if (damages.length === 0) {
             Hooks.off('preCreateChatMessage', hookId);
+            console.log(`Damage Message was skipped for attack`);
+            console.log(res);
             return
         }
 
