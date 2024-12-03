@@ -1,4 +1,4 @@
-import {defDCMap, moduleName} from "../const.js";
+import {defDCMap, moduleName, OFF_GUARD_TARGET_EFF} from "../const.js";
 import {
     actorFeat,
     addItemToActor,

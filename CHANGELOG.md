@@ -1,3 +1,6 @@
+### Version 0.7.2
+- Fix target off macro
+
 ### Version 0.7.1
 - Add logs for tracking missed damage
 
