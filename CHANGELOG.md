@@ -1,3 +1,6 @@
+### Version 0.7.3
+- Fix First Attack precision damage
+
 ### Version 0.7.2
 - Fix target off macro
 

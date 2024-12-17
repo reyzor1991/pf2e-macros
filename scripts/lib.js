@@ -45,10 +45,6 @@ export function until(conditionFunction) {
     return new Promise(poll);
 }
 
-function hasEffect(actor, eff) {
-    return actor?.itemTypes?.effect?.find((c => eff === c.slug))
-}
-
 function hasOption(message, opt) {
     return message?.flags?.pf2e?.context?.options?.includes(opt);
 }
@@ -79,10 +75,14 @@ async function gravityWeapon(message) {
     }
 }
 
-async function fistAttack(message) {
-    if (hasEffect(message?.target?.actor, `effect-hunt-prey-${message.actor.id}`) && message.actor.rollOptions?.["all"]?.["first-attack"]) {
-        await message.actor.toggleRollOption("all", "first-attack")
+async function firstAttack(message) {
+    if (message?.target?.actor
+            ?.itemTypes?.effect
+            ?.find(c => "Compendium.pf2e-automations-patreon.effects.Item.a51AN6VfpW9b4ttm" === c.sourceId && c.origin === message.actor)
+        && message.actor.rollOptions?.["all"]?.["first-attack"]) {
+        return await message.actor.toggleRollOption("all", "first-attack")
     }
+    return true
 }
 
 export async function combinedDamage(name, primary, secondary, options, map, map2) {
@@ -174,6 +174,15 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             sOpt.push("twin-2nd-attack")
         }
 
+        if (options.includes("forceful-second")) {
+            sOpt.push("forceful-second")
+        }
+
+        if (primaryDegreeOfSuccess === 0 || primaryDegreeOfSuccess === 1) {
+            let fAttack = await firstAttack(damages[0])
+            await until(() => fAttack === true || fAttack === false);
+        }
+
         if (damages.length > 0) {
             if (hasPrecisionDamage(damages[0].rolls[0])
                 && (
@@ -183,8 +192,11 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             ) {
                 onlyOnePrecision = true;
             }
+            let fAttack = await firstAttack(damages[0])
+            await until(() => fAttack === true || fAttack === false);
+
             await gravityWeapon(damages[0])
-            await fistAttack(damages[0])
+            await firstAttack(damages[0])
         }
 
         if (!xdyAutoRoll(secondaryMessage)) {
@@ -363,13 +375,13 @@ async function getNewRollForTwin(message) {
     await roll.evaluate()
 
     let html = $(message.flavor)
-    $( `<span class="tag tag_transparent">${game.i18n.localize("PF2E.Item.Weapon.Twin.SecondPlus")}</span>` )
-        .insertAfter(html.find('.tag_transparent').last() )
+    $(`<span class="tag tag_transparent">${game.i18n.localize("PF2E.Item.Weapon.Twin.SecondPlus")}</span>`)
+        .insertAfter(html.find('.tag_transparent').last())
 
     message.updateSource({
         'rolls': [roll],
         content: `${roll.total}`,
-        flavor: Object.values(html).map(a=>a.outerHTML || '\n').join("")
+        flavor: Object.values(html).map(a => a.outerHTML || '\n').join("")
     });
 
     return message
@@ -426,7 +438,7 @@ function combineDamages(damages, target) {
 
     let critIdx = damages[0].options.degreeOfSuccess === 3 ? 0 : 1;
 
-    return [DamageRoll.fromTerms([InstancePool.fromRolls(newInstances)],damages[critIdx].options)]
+    return [DamageRoll.fromTerms([InstancePool.fromRolls(newInstances)], damages[critIdx].options)]
 }
 
 function createDataDamageOnlyOnePrecision(damages) {
