@@ -1,3 +1,6 @@
+### Version 0.7.4
+- Current hero points macro
+
 ### Version 0.7.3
 - Fix First Attack precision damage
 

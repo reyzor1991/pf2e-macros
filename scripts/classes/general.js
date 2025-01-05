@@ -6,7 +6,7 @@ import {
     eventSkipped,
     hasFeatBySourceId,
     increaseConditionForActor,
-    isGM,
+    isGM, isV12,
     rollSkipDialog,
     setEffectToActor,
     shareLanguage,
@@ -702,4 +702,31 @@ export async function repairParty(actor) {
 
     new RepairForm(actor, items)
         .render(true)
+}
+
+export async function showHeroPoints() {
+    if (!game.user.isGM) {
+        ui.notifications.info(`User is not GM`);
+        return
+    }
+
+    let actorData = game.actors.party.members
+        .filter(c=>c?.isOfType('character'))
+        .map(c=>`${c.name} - ${c.heroPoints.value}`)
+        .join('<br/>')
+
+    let content = `Current hero points:<br/>${actorData}`
+
+    let mData ={
+            content,
+            whisper: [game.userId]
+    }
+
+    if (isV12()) {
+        mData.style = CONST.CHAT_MESSAGE_STYLES.OOC;
+    } else {
+        mData.type = CONST.CHAT_MESSAGE_TYPES.OOC;
+    }
+
+    ChatMessage.create(mData);
 }

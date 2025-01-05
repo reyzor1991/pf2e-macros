@@ -15,6 +15,7 @@ import {
     explorationActivity,
     gmCounteract,
     onOffNPCVision,
+    showHeroPoints,
     repairParty,
     scareToDeath,
     targetIsOffGuard
@@ -62,5 +63,6 @@ export function initMacros() {
         "gmCounteract": gmCounteract,
         "effectConditionInfo": effectConditionInfo,
         "repairParty": repairParty,
+        "showHeroPoints": showHeroPoints,
     })
 }
