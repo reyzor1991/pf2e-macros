@@ -1,3 +1,6 @@
+### Version 0.7.5
+- Add stunning blows to Flurry of Blows
+
 ### Version 0.7.4
 - Current hero points macro
 

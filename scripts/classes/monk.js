@@ -122,6 +122,9 @@ export async function flurryOfBlows(actor) {
     }
 
     const options = actorFeat(actor, "stunning-fist") ? ["stunning-fist"] : [];
+    if (actorFeat(actor, "stunning-blows")) {
+        options.push("stunning-blows")
+    }
     if (primary === secondary && primary?.item?.traits?.has('forceful')) {
         options.push("forceful-second")
     }
