@@ -6,7 +6,8 @@ import {
     eventSkipped,
     hasFeatBySourceId,
     increaseConditionForActor,
-    isGM, isV12,
+    isGM,
+    isV12,
     rollSkipDialog,
     setEffectToActor,
     shareLanguage,
@@ -371,6 +372,57 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
     }
 }
 
+export async function shapeshifting(token) {
+    if (!token) {
+        ui.notifications.info(`Select your token before using this macro`);
+    }
+
+    let {imageLink} = await Dialog.wait({
+        title: "Link to image",
+        content: `
+        <p class="">
+            <strong>Image link</strong>
+            <input class='dc' type="text">
+        </p>
+    `,
+        buttons: {
+            ok: {
+                label: "Apply",
+                icon: "<i class='fa-solid fa-hand'></i>",
+                callback: (html) => {
+                    return {
+                        imageLink: html.find('.dc').val(),
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                icon: "<i class='fa-solid fa-ban'></i>",
+            }
+        },
+        default: "ok"
+    }, {}, {width: 300});
+    if (!imageLink) {
+        return;
+    }
+
+    const effect = {
+        type: 'effect',
+        name: `Shapeshifting`,
+        img: `icons/svg/circle.svg`,
+        system: {
+            tokenIcon: {show: true},
+            duration: {value: -1, unit: 'unlimited', sustained: false, expiry: null},
+            rules: [{
+                "key": "TokenImage",
+                "value": imageLink
+            }],
+            slug: `shapeshifting-${_token.actor.id}`
+        },
+    };
+    await addItemToActor(token.actor, effect);
+}
+
 export async function explorationActivity(actor) {
     if (!actor) {
         ui.notifications.info(`Select your token before using this macro`);
@@ -711,15 +763,15 @@ export async function showHeroPoints() {
     }
 
     let actorData = game.actors.party.members
-        .filter(c=>c?.isOfType('character'))
-        .map(c=>`${c.name} - ${c.heroPoints.value}`)
+        .filter(c => c?.isOfType('character'))
+        .map(c => `${c.name} - ${c.heroPoints.value}`)
         .join('<br/>')
 
     let content = `Current hero points:<br/>${actorData}`
 
-    let mData ={
-            content,
-            whisper: [game.userId]
+    let mData = {
+        content,
+        whisper: [game.userId]
     }
 
     if (isV12()) {

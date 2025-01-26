@@ -1,3 +1,6 @@
+### Version 0.7.6
+- Shapeshifting macro
+
 ### Version 0.7.5
 - Add stunning blows to Flurry of Blows
 
