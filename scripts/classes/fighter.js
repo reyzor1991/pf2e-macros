@@ -4,7 +4,8 @@ import {
     actorFeat,
     applyDamage,
     baseAttackWeaponForm,
-    combinedDamage, distanceIsCorrect,
+    combinedDamage,
+    distanceIsCorrect,
     eventSkipped,
     favoriteWeapon,
     getMap,
@@ -125,7 +126,14 @@ export async function doubleSlice(actor) {
     let primary = weapons[weapon1][0];
     let secondary = weapons[weapon2][0];
 
-    await combinedDamage("Double Slice", primary, secondary, ["double-slice-second"], map, map);
+
+    let opts = ["double-slice-second"];
+    if (primary.item.system.traits.value.some((t) => t === "twin")
+        && secondary.item.system.traits.value.some((t) => t === "twin")) {
+        opts.push('need-twin-2nd-attack')
+    }
+
+    await combinedDamage("Double Slice", primary, secondary, opts, map, map);
 }
 
 export async function knockdown(actor) {

@@ -1,3 +1,6 @@
+### Version 0.7.7
+- Add twin to double slice
+
 ### Version 0.7.6
 - Shapeshifting macro
 
