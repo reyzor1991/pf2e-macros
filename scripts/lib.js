@@ -236,10 +236,10 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         }
 
         if ((primaryDegreeOfSuccess <= 1 && secondaryDegreeOfSuccess >= 2) || (secondaryDegreeOfSuccess <= 1 && primaryDegreeOfSuccess >= 2)) {
-            let m = damages[0];
-            if (hasOption(m, "twin-2nd-attack")) {
-                m = (await getNewRollForTwin(m)).toObject()
-            }
+            let m = hasOption(damages[0], "twin-2nd-attack")
+                ? (await getNewRollForTwin(damages[0])).toObject()
+                : damages[0].toObject()
+
             m.flags.pf2e.context.options = m.flags.pf2e.context.options.filter(e => e !== "skip-handling-message");
             ChatMessage.createDocuments([m]);
             return;
@@ -251,7 +251,9 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         }
 
         const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]), damages[0].target);
-        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options).filter(e => e !== 'skip-handling-message');
+        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options)
+            .filter(e => e !== 'skip-handling-message')
+            .filter(e => !e.startsWith("item:"));
         const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
         const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
         const flavor = `<strong>${name} Total Damage</strong>`
@@ -263,6 +265,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         const originF = damages[0]?.flags?.pf2e?.origin;
         const originS = damages[1]?.flags?.pf2e?.origin;
 
+        //todo: delete later
         let criticalItems = [];
         if (primaryDegreeOfSuccess === 3) {
             criticalItems.push({
@@ -275,6 +278,24 @@ export async function combinedDamage(name, primary, secondary, options, map, map
                 actor: secondary.item.actor.uuid,
                 uuid: secondary.item.uuid,
             })
+        }
+
+        let fItemOptions = damages[0].flags.pf2e.context.options.filter(e => e.startsWith("item:"));
+        let sItemOptions = damages[1].flags.pf2e.context.options.filter(e => e.startsWith("item:"));
+
+        if (primaryDegreeOfSuccess === 3) {
+            opts.push(...fItemOptions.map(e => e.replace("item:", "crit-item-1:")));
+            opts.push(`crit-item-1:signature:${primary.item.uuid}`);
+        } else {
+            opts.push(...fItemOptions.map(e => e.replace("item:", "item-1:")));
+            opts.push(`item-1:signature:${primary.item.uuid}`);
+        }
+        if (secondaryDegreeOfSuccess === 3) {
+            opts.push(...sItemOptions.map(e => e.replace("item:", "crit-item-2:")));
+            opts.push(`crit-item-2:signature:${secondary.item.uuid}`);
+        } else {
+            opts.push(...sItemOptions.map(e => e.replace("item:", "item-2:")));
+            opts.push(`item-2:signature:${secondary.item.uuid}`);
         }
 
         let messageData = {

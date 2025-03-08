@@ -1,3 +1,6 @@
+### Version 0.7.8
+- Prepare roll options for handling crit spec
+
 ### Version 0.7.7
 - Add twin to double slice
 
