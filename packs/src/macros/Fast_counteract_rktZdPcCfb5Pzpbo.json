@@ -1,0 +1,13 @@
+{
+  "_id": "rktZdPcCfb5Pzpbo",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.counteract(actor);",
+  "img": "icons/magic/air/air-pressure-shield-blue.webp",
+  "name": "Fast counteract",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!rktZdPcCfb5Pzpbo"
+}

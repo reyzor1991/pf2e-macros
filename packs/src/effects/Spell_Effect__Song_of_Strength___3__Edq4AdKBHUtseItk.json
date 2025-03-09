@@ -1,0 +1,60 @@
+{
+  "_id": "Edq4AdKBHUtseItk",
+  "img": "systems/pf2e/icons/spells/song-of-strength.webp",
+  "name": "Spell Effect: Song of Strength (+3)",
+  "system": {
+    "description": {
+      "value": "<p>You gain a +3 status bonus to Athletics checks and DCs against Athletics skill actions such as Disarm, Reposition, Shove, and Trip.</p>"
+    },
+    "duration": {
+      "expiry": "turn-start",
+      "sustained": false,
+      "unit": "rounds",
+      "value": 1
+    },
+    "level": {
+      "value": 1
+    },
+    "rules": [
+      {
+        "key": "FlatModifier",
+        "selector": "athletics",
+        "type": "status",
+        "value": 3
+      },
+      {
+        "key": "FlatModifier",
+        "predicate": [
+          {
+            "or": [
+              "action:disarm",
+              "action:reposition",
+              "action:trip",
+              "action:shove"
+            ]
+          }
+        ],
+        "selector": [
+          "fortitude",
+          "reflex"
+        ],
+        "value": 3
+      }
+    ],
+    "start": {
+      "initiative": null,
+      "value": 0
+    },
+    "target": null,
+    "tokenIcon": {
+      "show": true
+    },
+    "traits": {
+      "rarity": "common",
+      "value": []
+    },
+    "slug": "spell-effect-song-of-strength-3"
+  },
+  "type": "effect",
+  "_key": "!items!Edq4AdKBHUtseItk"
+}

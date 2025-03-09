@@ -1,0 +1,53 @@
+{
+  "_id": "mGQMqBoTFRz3or4D",
+  "img": "systems/pf2e/icons/default-icons/effect.svg",
+  "name": "Inspire Aura",
+  "system": {
+    "description": {
+      "value": ""
+    },
+    "duration": {
+      "expiry": "turn-start",
+      "sustained": false,
+      "unit": "rounds",
+      "value": 1
+    },
+    "level": {
+      "value": 1
+    },
+    "rules": [
+      {
+        "effects": [
+          {
+            "affects": "allies",
+            "events": [
+              "enter"
+            ],
+            "uuid": "Compendium.pf2e.spell-effects.beReeFroAx24hj83",
+            "level": "ceil(@actor.level/2)"
+          }
+        ],
+        "key": "Aura",
+        "radius": 60
+      }
+    ],
+    "source": {
+      "value": ""
+    },
+    "start": {
+      "initiative": null,
+      "value": 0
+    },
+    "target": null,
+    "tokenIcon": {
+      "show": true
+    },
+    "traits": {
+      "rarity": "common",
+      "value": []
+    },
+    "slug": "effect-inspire-aura"
+  },
+  "type": "effect",
+  "_key": "!items!mGQMqBoTFRz3or4D"
+}

@@ -1,0 +1,13 @@
+{
+  "_id": "7Zvm5FuedX8EQ9Im",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.whirlwindStrike(token);",
+  "img": "systems/pf2e/icons/spells/whirlwind.webp",
+  "name": "Whirlwind Strike",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!7Zvm5FuedX8EQ9Im"
+}

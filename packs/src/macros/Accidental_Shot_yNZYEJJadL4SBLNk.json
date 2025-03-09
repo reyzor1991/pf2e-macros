@@ -1,0 +1,13 @@
+{
+  "_id": "yNZYEJJadL4SBLNk",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.accidentalShot(actor);",
+  "img": "systems/pf2e/icons/equipment/consumables/ammunition/awakened-silver-shot.webp",
+  "name": "Accidental Shot",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!yNZYEJJadL4SBLNk"
+}

@@ -1,0 +1,13 @@
+{
+  "_id": "dB7kmlKziC4kDnim",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.dazingBlow(actor);",
+  "img": "icons/equipment/hand/gauntlet-simple-leather-brown-gold.webp",
+  "name": "Dazing Blow",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!dB7kmlKziC4kDnim"
+}

@@ -1,0 +1,13 @@
+{
+  "_id": "ExfKinMmz3XQWwge",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.swipe(token);",
+  "img": "systems/pf2e/icons/equipment/weapons/specific-magic-weapons/glaive-of-the-artist.webp",
+  "name": "Swipe",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!ExfKinMmz3XQWwge"
+}

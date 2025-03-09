@@ -1,0 +1,13 @@
+{
+  "_id": "XeMi4SwQ0JWeF41b",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.showHeroPoints();",
+  "img": "icons/svg/dice-target.svg",
+  "name": "Current hero points",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!XeMi4SwQ0JWeF41b"
+}

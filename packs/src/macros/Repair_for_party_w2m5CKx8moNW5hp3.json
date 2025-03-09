@@ -1,0 +1,13 @@
+{
+  "_id": "w2m5CKx8moNW5hp3",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.repairParty(actor);",
+  "img": "systems/pf2e/icons/equipment/adventuring-gear/repair-kit.webp",
+  "name": "Repair for party",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!w2m5CKx8moNW5hp3"
+}

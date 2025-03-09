@@ -1,0 +1,13 @@
+{
+  "_id": "xSKhCPZSE6HjmvHM",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.huntedShot(actor);",
+  "img": "systems/pf2e/icons/equipment/consumables/ammunition/beacon-shot.webp",
+  "name": "Hunted Shot",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!xSKhCPZSE6HjmvHM"
+}

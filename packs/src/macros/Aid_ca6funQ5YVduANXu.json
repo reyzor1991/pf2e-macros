@@ -1,0 +1,13 @@
+{
+  "_id": "ca6funQ5YVduANXu",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.aid(actor);",
+  "img": "systems/pf2e/icons/spells/efficient-apport.webp",
+  "name": "Aid",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!ca6funQ5YVduANXu"
+}

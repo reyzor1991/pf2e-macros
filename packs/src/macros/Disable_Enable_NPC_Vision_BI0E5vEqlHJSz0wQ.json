@@ -1,0 +1,13 @@
+{
+  "_id": "BI0E5vEqlHJSz0wQ",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.onOffNPCVision();",
+  "img": "systems/pf2e/icons/spells/vision-of-weakness.webp",
+  "name": "Disable/Enable NPC Vision",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!BI0E5vEqlHJSz0wQ"
+}

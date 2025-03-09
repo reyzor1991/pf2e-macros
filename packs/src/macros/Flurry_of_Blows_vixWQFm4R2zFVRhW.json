@@ -1,0 +1,13 @@
+{
+  "_id": "vixWQFm4R2zFVRhW",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.flurryOfBlows(actor);",
+  "img": "systems/pf2e/icons/features/classes/flurry-of-blows.webp",
+  "name": "Flurry of Blows",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!vixWQFm4R2zFVRhW"
+}

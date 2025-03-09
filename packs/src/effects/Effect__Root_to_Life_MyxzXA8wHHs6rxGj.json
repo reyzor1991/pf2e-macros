@@ -1,0 +1,49 @@
+{
+  "_id": "MyxzXA8wHHs6rxGj",
+  "img": "icons/magic/nature/tree-spirit-glow-black-yellow.webp",
+  "name": "Effect: Root to Life",
+  "system": {
+    "description": {
+      "value": ""
+    },
+    "duration": {
+      "expiry": "turn-end",
+      "sustained": false,
+      "unit": "rounds",
+      "value": 0
+    },
+    "level": {
+      "value": 1
+    },
+    "rules": [
+      {
+        "itemType": "condition",
+        "key": "ItemAlteration",
+        "mode": "downgrade",
+        "predicate": [
+          "item:persistent-damage"
+        ],
+        "property": "pd-recovery-dc",
+        "value": 10
+      }
+    ],
+    "source": {
+      "value": ""
+    },
+    "start": {
+      "initiative": null,
+      "value": 0
+    },
+    "target": null,
+    "tokenIcon": {
+      "show": true
+    },
+    "traits": {
+      "rarity": "common",
+      "value": []
+    },
+    "slug": "effect-root-to-life"
+  },
+  "type": "effect",
+  "_key": "!items!MyxzXA8wHHs6rxGj"
+}

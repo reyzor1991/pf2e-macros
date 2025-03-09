@@ -1,0 +1,13 @@
+{
+  "_id": "g1mNnPvxI18ulPNK",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.swordAndPistol(actor);",
+  "img": "systems/pf2e/icons/equipment/weapons/rapier-pistol.webp",
+  "name": "Sword and Pistol",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!g1mNnPvxI18ulPNK"
+}

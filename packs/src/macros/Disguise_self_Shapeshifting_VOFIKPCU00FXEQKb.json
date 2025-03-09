@@ -1,0 +1,13 @@
+{
+  "_id": "VOFIKPCU00FXEQKb",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.shapeshifting(token);",
+  "img": "icons/equipment/head/mask-carved-face-orange.webp",
+  "name": "Disguise self/Shapeshifting",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!VOFIKPCU00FXEQKb"
+}

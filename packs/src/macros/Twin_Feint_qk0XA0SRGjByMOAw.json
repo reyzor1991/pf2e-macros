@@ -1,0 +1,13 @@
+{
+  "_id": "qk0XA0SRGjByMOAw",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.twinFeint(actor);",
+  "img": "systems/pf2e/icons/features/classes/master-tricks.webp",
+  "name": "Twin Feint",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!qk0XA0SRGjByMOAw"
+}

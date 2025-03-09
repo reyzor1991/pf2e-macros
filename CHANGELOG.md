@@ -1,3 +1,6 @@
+### Version 0.8.0
+- Migrate to LevelDB
+
 ### Version 0.7.8
 - Prepare roll options for handling crit spec
 

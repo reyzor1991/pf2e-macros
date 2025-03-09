@@ -1,0 +1,13 @@
+{
+  "_id": "84GO2KD9FxrBTwrJ",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.pistolerosChallenge(actor);",
+  "img": "icons/weapons/guns/gun-pistol-flintlock-metal.webp",
+  "name": "Pistolero's Challenge",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!84GO2KD9FxrBTwrJ"
+}

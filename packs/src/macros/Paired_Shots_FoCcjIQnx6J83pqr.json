@@ -1,0 +1,13 @@
+{
+  "_id": "FoCcjIQnx6J83pqr",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.pairedShots(actor);",
+  "img": "systems/pf2e/icons/features/classes/gunslinging-legend.webp",
+  "name": "Paired Shots",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!FoCcjIQnx6J83pqr"
+}

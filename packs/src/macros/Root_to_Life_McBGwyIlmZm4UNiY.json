@@ -1,0 +1,13 @@
+{
+  "_id": "McBGwyIlmZm4UNiY",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.rootToLife(actor);",
+  "img": "icons/magic/nature/tree-spirit-glow-black-yellow.webp",
+  "name": "Root to Life",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!McBGwyIlmZm4UNiY"
+}

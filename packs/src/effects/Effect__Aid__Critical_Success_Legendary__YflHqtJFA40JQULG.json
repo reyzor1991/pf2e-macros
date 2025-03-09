@@ -1,0 +1,47 @@
+{
+  "_id": "YflHqtJFA40JQULG",
+  "img": "systems/pf2e/icons/spells/efficient-apport.webp",
+  "name": "Effect: Aid (Critical Success Legendary)",
+  "system": {
+    "description": {
+      "value": "You gain a circumstance bonus to the aided check based on the result of your ally's Aid check."
+    },
+    "duration": {
+      "expiry": "turn-start",
+      "sustained": false,
+      "unit": "rounds",
+      "value": 1
+    },
+    "level": {
+      "value": 1
+    },
+    "rules": [
+      {
+        "key": "FlatModifier",
+        "removeAfterRoll": true,
+        "selector": [
+          "perception-check",
+          "attack-roll",
+          "skill-check"
+        ],
+        "type": "circumstance",
+        "value": 4
+      }
+    ],
+    "start": {
+      "initiative": null,
+      "value": 0
+    },
+    "target": null,
+    "tokenIcon": {
+      "show": true
+    },
+    "traits": {
+      "rarity": "common",
+      "value": []
+    },
+    "slug": "effect-aid-critical-success-legendary"
+  },
+  "type": "effect",
+  "_key": "!items!YflHqtJFA40JQULG"
+}

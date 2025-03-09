@@ -1,0 +1,13 @@
+{
+  "_id": "gBIZr0NIBLYlM3kf",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.doubleSlice(actor);",
+  "img": "systems/pf2e/icons/features/classes/double-spellstrike.webp",
+  "name": "Double Slice",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!gBIZr0NIBLYlM3kf"
+}
