@@ -1,3 +1,6 @@
+### Version 0.8.1
+- Fix handling traits
+
 ### Version 0.8.0
 - Migrate to LevelDB
 

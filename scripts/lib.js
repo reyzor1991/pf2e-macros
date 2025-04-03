@@ -251,9 +251,17 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         }
 
         const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]), damages[0].target);
-        const opts = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options)
-            .filter(e => e !== 'skip-handling-message')
+        let all = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options)
+            .filter(e => e !== 'skip-handling-message');
+        const opts = all
             .filter(e => !e.startsWith("item:"));
+        const optItems = all
+            .filter(e => e.startsWith("item:"));
+        const resultOptsItems = [
+            ...optItems.filter(e => e.startsWith("item:trait")),
+            ...optItems.filter(e => e.startsWith("item:material")),
+            ...optItems.filter(e => e.startsWith("item:magical")),
+        ];
         const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
         const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
         const flavor = `<strong>${name} Total Damage</strong>`
@@ -297,6 +305,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             opts.push(...sItemOptions.map(e => e.replace("item:", "item-2:")));
             opts.push(`item-2:signature:${secondary.item.uuid}`);
         }
+        opts.push(...resultOptsItems)
 
         let messageData = {
             flags: {
