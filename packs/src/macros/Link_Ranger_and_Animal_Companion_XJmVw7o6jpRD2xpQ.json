@@ -2,7 +2,7 @@
   "_id": "XJmVw7o6jpRD2xpQ",
   "author": "E9zWf1a6ounUt7Ro",
   "command": "game.activemacros.rangerLink(actor);",
-  "img": "systems/pf2e/icons/features/classes/animal.webp",
+  "img": "icons/creatures/abilities/bear-roar-bite-brown-green.webp",
   "name": "Link Ranger and Animal Companion",
   "ownership": {
     "default": 1

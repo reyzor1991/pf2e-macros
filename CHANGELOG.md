@@ -1,3 +1,6 @@
+### Version 0.8.2
+- Add Overwhelming Combination
+
 ### Version 0.8.1
 - Fix handling traits
 

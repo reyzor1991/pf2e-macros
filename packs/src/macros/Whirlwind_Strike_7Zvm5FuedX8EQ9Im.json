@@ -2,7 +2,7 @@
   "_id": "7Zvm5FuedX8EQ9Im",
   "author": "E9zWf1a6ounUt7Ro",
   "command": "game.activemacros.whirlwindStrike(token);",
-  "img": "systems/pf2e/icons/spells/whirlwind.webp",
+  "img": "icons/magic/air/wind-vortex-swirl-blue-purple.webp",
   "name": "Whirlwind Strike",
   "ownership": {
     "default": 1

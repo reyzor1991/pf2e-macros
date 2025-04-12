@@ -1,5 +1,14 @@
 import {inspireHeroics} from "./bard.js";
-import {certainStrike, dazingBlow, doubleSlice, knockdown, snaggingStrike, swipe, whirlwindStrike} from "./fighter.js";
+import {
+    certainStrike,
+    dazingBlow,
+    doubleSlice,
+    knockdown,
+    overwhelmingCombination,
+    snaggingStrike,
+    swipe,
+    whirlwindStrike
+} from "./fighter.js";
 import {pairedShots, pistolerosChallenge, stabAndBlast, swordAndPistol} from "./gunslinger.js";
 import {twoElementInfusion} from "./kineticist.js";
 import {flurryOfBlows} from "./monk.js";
@@ -26,6 +35,7 @@ export function initMacros() {
     game.activemacros = foundry.utils.mergeObject(game.activemacros ?? {}, {
         "inspireHeroics": inspireHeroics,
 
+        "overwhelmingCombination": overwhelmingCombination,
         "doubleSlice": doubleSlice,
         "knockdown": knockdown,
         "dazingBlow": dazingBlow,

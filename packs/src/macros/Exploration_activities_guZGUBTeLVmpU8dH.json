@@ -2,7 +2,7 @@
   "_id": "guZGUBTeLVmpU8dH",
   "author": "E9zWf1a6ounUt7Ro",
   "command": "game.activemacros.explorationActivity(actor);",
-  "img": "systems/pf2e/icons/equipment/treasure/art-objects/minor-art-object/hand-mirror-with-decorated-frame.webp",
+  "img": "icons/commodities/treasure/lense-pipe-bronze.webp",
   "name": "Exploration activities",
   "ownership": {
     "default": 1

@@ -1,13 +1,13 @@
 {
-  "_id": "gBIZr0NIBLYlM3kf",
+  "_id": "zwOLPfoWckj1NnF6",
   "author": "E9zWf1a6ounUt7Ro",
-  "command": "game.activemacros.doubleSlice(actor);",
+  "command": "game.activemacros.overwhelmingCombination(actor);",
   "img": "icons/skills/melee/blade-tips-double-blue.webp",
-  "name": "Double Slice",
+  "name": "Overwhelming Combination",
   "ownership": {
     "default": 1
   },
   "scope": "global",
   "type": "script",
-  "_key": "!macros!gBIZr0NIBLYlM3kf"
+  "_key": "!macros!zwOLPfoWckj1NnF6"
 }

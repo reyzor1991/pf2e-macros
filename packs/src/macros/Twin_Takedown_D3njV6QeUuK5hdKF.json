@@ -2,7 +2,7 @@
   "_id": "D3njV6QeUuK5hdKF",
   "author": "E9zWf1a6ounUt7Ro",
   "command": "game.activemacros.twinTakedown(actor);",
-  "img": "systems/pf2e/icons/features/classes/double-spellstrike.webp",
+  "img": "icons/skills/melee/blade-tips-double-blue.webp",
   "name": "Twin Takedown",
   "ownership": {
     "default": 1

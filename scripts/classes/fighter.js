@@ -464,7 +464,7 @@ export async function certainStrike(actor) {
 }
 
 export async function swipe(token) {
-    ui.notifications.info("Not ready yet");
+    ui.notifications.info("Wait for updating pf2e features");
     return;
 
     if (!token) {
@@ -663,4 +663,84 @@ export async function whirlwindStrike(token) {
         await weapons[currentWeapon].variants[map].roll({event: eventSkipped(event)});
         enemy.setTarget(false);
     }
+}
+
+export async function overwhelmingCombination(actor) {
+    if (!actor) {
+        ui.notifications.info("Please select 1 token");
+        return;
+    }
+    if (game.user.targets.size !== 1) {
+        ui.notifications.info(`Need to select 1 token as target`);
+        return;
+    }
+
+    if (!actorAction(actor, "overwhelming-combination")) {
+        ui.notifications.warn(`${actor.name} does not have Overwhelming Combination!`);
+        return;
+    }
+
+    let weapons = actor.system.actions
+        .filter(h => h.ready && h.item?.isHeld && ((h.item?.hands === "1" && h.item?.handsHeld === 1) || h.item?.traits?.has('agile')))
+    let hand = actor.system.actions.filter(h => h.slug === 'basic-unarmed')
+
+    let all = [...weapons, ...hand];
+    if (all.length < 2) {
+        ui.notifications.warn(`${actor.name} don't have correct weapons`);
+        return
+    }
+
+    let weaponOptions = '';
+    let weaponOptions2 = '';
+    for (const w of all) {
+        weaponOptions += `<option value=${w.item.uuid}>${w.item.name}</option>`
+        weaponOptions2 += `<option value=${w.item.uuid}>${w.item.name}</option>`
+    }
+
+    let {weapon1, weapon2, map} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Double Slice"},
+        width: 550,
+        content: `
+            <div class="v2-row">
+                <label>First Attack</label>
+                <select id="fob1" autofocus>
+                    ${weaponOptions}
+                </select>
+    
+                <label>Second Attack</label>
+                <select id="fob2">
+                    ${weaponOptions2}
+                </select>
+            </div>
+            
+            ${getMap()}
+        `,
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                return {
+                    map: parseInt($(form).find("#map").val()),
+                    weapon1: $(form).find("#fob1").val(),
+                    weapon2: $(form).find("#fob2").val(),
+                }
+            }
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
+        default: "ok"
+    });
+    weapon1 = all.find(w=>w?.item?.uuid === weapon1)
+    weapon2 = all.find(w=>w?.item?.uuid === weapon2)
+    if (weapon1 === undefined || weapon2 === undefined || map === undefined) {
+        return;
+    }
+    const map2 = map === 2 ? map : map + 1;
+    if (weapon1?.item?.id !== 'xxPF2ExUNARMEDxx' && weapon2?.item?.id !== 'xxPF2ExUNARMEDxx') {
+        ui.notifications.warn(`One of attack should be fist`);
+        return
+    }
+
+    await combinedDamage("Overwhelming Combination", weapon1, weapon2, [], map, map2);
 }

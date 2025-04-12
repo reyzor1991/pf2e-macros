@@ -2,7 +2,7 @@
   "_id": "vixWQFm4R2zFVRhW",
   "author": "E9zWf1a6ounUt7Ro",
   "command": "game.activemacros.flurryOfBlows(actor);",
-  "img": "systems/pf2e/icons/features/classes/flurry-of-blows.webp",
+  "img": "icons/skills/melee/unarmed-punch-fist-yellow-red.webp",
   "name": "Flurry of Blows",
   "ownership": {
     "default": 1

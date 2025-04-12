@@ -2,7 +2,7 @@
   "_id": "YRUL66BahUfmY1oO",
   "author": "E9zWf1a6ounUt7Ro",
   "command": "game.activemacros.scareToDeath(actor);",
-  "img": "systems/pf2e/icons/spells/death-knell.webp",
+  "img": "icons/magic/death/skull-flames-white-blue.webp",
   "name": "Scare to Death",
   "ownership": {
     "default": 1
