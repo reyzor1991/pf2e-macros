@@ -3,7 +3,7 @@ import {
     actorFeat,
     deleteItem,
     distanceIsCorrect,
-    hasEffectBySourceId,
+    hasEffectBySourceId, isV12,
     removeConditionFromActor,
     rollAllRecovery,
     setEffectToActor
@@ -40,7 +40,8 @@ export async function rootToLife(actor) {
         buttons: [{
             action: "ok", label: "Use", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
-                return {action: parseInt($(form).find("#map").val())}
+                let el = isV12() ? $(form) : $(form.element);
+                return {action: parseInt(el.find("#map").val())}
 
             }
         }, {

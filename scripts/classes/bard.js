@@ -1,5 +1,5 @@
 import {moduleName} from "../const.js";
-import {rollSkipDialog, veryHardDCByLvl} from "../lib.js";
+import {isV12, rollSkipDialog, veryHardDCByLvl} from "../lib.js";
 
 export async function inspireHeroics(actor) {
     if (!actor) {
@@ -33,9 +33,10 @@ export async function inspireHeroics(actor) {
         buttons: [{
             action: "ok", label: "Cast", icon: "<i class='fa-solid fa-magic'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-                    dc: parseInt($(form).find("#spell-dc").val()),
-                    spell: parseInt($(form).find("#spells").val())
+                    dc: parseInt(el.find("#spell-dc").val()),
+                    spell: parseInt(el.find("#spells").val())
                 }
             }
         }, {

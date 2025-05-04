@@ -10,11 +10,11 @@ import {
     favoriteWeapon,
     getMap,
     hasFeatBySourceId,
-    increaseConditionForActor,
+    increaseConditionForActor, isV12,
     rollSkipDialog,
     selectIf,
     setEffectToActor,
-    xdyAutoRoll
+    otherModulesAutoRoll
 } from "../lib.js";
 import {DamageRoll} from "../hooks/init.js";
 
@@ -102,10 +102,11 @@ export async function doubleSlice(actor) {
         buttons: [{
             action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-                    map: parseInt($(form).find("#map").val()),
-                    weapon1: parseInt($(form).find("#fob1").val()),
-                    weapon2: parseInt($(form).find("#fob2").val()),
+                    map: parseInt(el.find("#map").val()),
+                    weapon1: parseInt(el.find("#fob1").val()),
+                    weapon2: parseInt(el.find("#fob2").val()),
                 }
             }
         }, {
@@ -170,7 +171,7 @@ export async function knockdown(actor) {
     const primaryDegreeOfSuccess = primaryMessage.degreeOfSuccess;
 
     let pd;
-    if (xdyAutoRoll(primaryMessage)) {
+    if (otherModulesAutoRoll(primaryMessage)) {
         pd = true;
     } else {
         if (primaryDegreeOfSuccess === 2) {
@@ -242,13 +243,15 @@ export async function dazingBlow(actor) {
         return
     }
 
-    if (!xdyAutoRoll(primaryMessage)) {
+    if (!otherModulesAutoRoll(primaryMessage)) {
         if (primaryDegreeOfSuccess === 2) {
             await primary.damage({event: eventSkipped(event, true)});
         }
         if (primaryDegreeOfSuccess === 3) {
             await primary.critical({event: eventSkipped(event, true)});
         }
+    } else {
+        console.log('Waiting for workbench auto roll damage')
     }
 
     if (actor.rollOptions?.["all"]?.["dazing-blow"]) {
@@ -311,13 +314,15 @@ export async function snaggingStrike(actor) {
         return
     }
 
-    if (!xdyAutoRoll(primaryMessage)) {
+    if (!otherModulesAutoRoll(primaryMessage)) {
         if (primaryDegreeOfSuccess === 2) {
             await primary.damage({event: eventSkipped(event, true)});
         }
         if (primaryDegreeOfSuccess === 3) {
             await primary.critical({event: eventSkipped(event, true)});
         }
+    } else {
+        console.log('Waiting for workbench auto roll damage')
     }
 
     await setEffectToActor(
@@ -718,10 +723,11 @@ export async function overwhelmingCombination(actor) {
         buttons: [{
             action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-                    map: parseInt($(form).find("#map").val()),
-                    weapon1: $(form).find("#fob1").val(),
-                    weapon2: $(form).find("#fob2").val(),
+                    map: parseInt(el.find("#map").val()),
+                    weapon1: el.find("#fob1").val(),
+                    weapon2: el.find("#fob2").val(),
                 }
             }
         }, {

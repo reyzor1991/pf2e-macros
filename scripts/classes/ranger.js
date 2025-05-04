@@ -4,7 +4,7 @@ import {
     baseAttackWeaponForm,
     combinedDamage,
     favoriteWeapon,
-    getMap, isGM,
+    getMap, isGM, isV12,
     selectIf
 } from "../lib.js";
 
@@ -118,10 +118,11 @@ export async function twinTakedown(actor) {
         buttons: [{
             action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-                    weapon1: $(form).find("#fob1").val(),
-                    weapon2: $(form).find("#fob2").val(),
-                    map: parseInt($(form).find("#map").val()),
+                    weapon1: el.find("#fob1").val(),
+                    weapon2: el.find("#fob2").val(),
+                    map: parseInt(el.find("#map").val()),
                 }
             }
         }, {

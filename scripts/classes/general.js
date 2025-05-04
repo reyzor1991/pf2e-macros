@@ -293,11 +293,11 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
         buttons: [{
             action: "ok", label: "Use", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-
-                    id: $(form).find("#actions").val(),
-                    isSkill: $(form).find("#actions").find('option:selected').data('skill'),
-                    dc: parseInt($(form).find('.dc').val()) ?? defDC
+                    id: el.find("#actions").val(),
+                    isSkill: el.find("#actions").find('option:selected').data('skill'),
+                    dc: parseInt(el.find('.dc').val()) ?? defDC
                 }
 
             }

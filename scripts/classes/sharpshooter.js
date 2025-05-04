@@ -5,7 +5,7 @@ import {
     favoriteWeapon,
     selectIf,
     setEffectToActor,
-    xdyAutoRoll
+    otherModulesAutoRoll
 } from "../lib.js";
 
 function accidentalShotWeapons(actor) {
@@ -56,7 +56,7 @@ export async function accidentalShot(actor) {
         return;
     }
 
-    const isWorkbench = xdyAutoRoll(primaryRoll);
+    const isWorkbench = otherModulesAutoRoll(primaryRoll);
 
     const options = ["skip-handling-message"];
     if ( primaryDegreeOfSuccess === 2 ) {
@@ -71,6 +71,8 @@ export async function accidentalShot(actor) {
         } else {
             await primary.critical({event: eventSkipped(event, true)});
         }
+    } else {
+        console.log('Waiting for workbench auto roll damage')
     }
 
     Hooks.off('preCreateChatMessage', hookId);

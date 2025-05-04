@@ -5,7 +5,7 @@ import {
     combinedDamage,
     eventSkipped,
     getMap,
-    hasEffectBySourceId
+    hasEffectBySourceId, isV12
 } from "../lib.js";
 import {targetIsOffGuard} from "./general.js";
 
@@ -166,10 +166,11 @@ export async function swordAndPistol(actor) {
         buttons: [{
             action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-                    map: parseInt($(form).find("#map").val()),
-                    first: parseInt($(form).find("#fob1").val()),
-                    second: parseInt($(form).find("#fob2").val()),
+                    map: parseInt(el.find("#map").val()),
+                    first: parseInt(el.find("#fob1").val()),
+                    second: parseInt(el.find("#fob2").val()),
                 }
             }
 

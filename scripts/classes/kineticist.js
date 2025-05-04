@@ -1,4 +1,4 @@
-import {actorFeat, getMap, until} from "../lib.js";
+import {actorFeat, getMap, isV12, until} from "../lib.js";
 import {DamageRoll} from "../hooks/init.js";
 
 async function getDataEBRoll(eb, element) {
@@ -21,7 +21,8 @@ async function getDataEBRoll(eb, element) {
             yes: {
                 action: "ok", label: "Select", icon: "<i class='fa-solid fa-hand-fist'></i>",
                 callback: (event, button, form) => {
-                    return $(form).find("#dt").val()
+                    let el = isV12() ? $(form) : $(form.element);
+                    return el.find("#dt").val()
                 }
             }
         });
@@ -70,11 +71,12 @@ export async function twoElementInfusion(actor) {
         yes: {
             action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-                    el1: $(form).find("#el1").val(),
-                    el2: $(form).find("#el2").val(),
-                    mapIncreases: parseInt($(form).find("#map")?.val()),
-                    melee: !$(form).find('#melee').prop("checked")
+                    el1: el.find("#el1").val(),
+                    el2: el.find("#el2").val(),
+                    mapIncreases: parseInt(el.find("#map")?.val()),
+                    melee: !el.find('#melee').prop("checked")
                 }
             }
         },

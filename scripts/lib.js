@@ -3,7 +3,7 @@ import {dcByLevel, moduleName, TO_AVERAGE_DMG} from "./const.js";
 import {ArithmeticExpression, DamageInstance, DamageRoll, InstancePool} from "./hooks/init.js";
 
 export function isV12() {
-    return game.release.generation > 11
+    return game.release.generation < 13
 }
 
 export function eventSkipped(event, isDamage = false) {
@@ -20,29 +20,51 @@ export function rollSkipDialog(event) {
         );
 }
 
-export function xdyAutoRoll(roll) {
-    return game.modules.get('xdy-pf2e-workbench')?.active
-        && ((
-                ["all", "players"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
-                && roll.roller.id === game.user?.id && !isGM()
-            )
-            || (
-                ["all", "gm"].includes(String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow")))
-                && roll.roller.id === game.user?.id && isGM()
-            ))
-        && game.settings.get('xdy-pf2e-workbench', 'autoRollDamageForStrike');
+function shouldIHandleThisMessage(message, playerCondition = true, gmCondition = true) {
+    const amIMessageSender = message.author?.id === game.user?.id;
+    if (!game.user?.isGM && playerCondition && amIMessageSender) {
+        return true;
+    } else if (game.user?.isGM && gmCondition && amIMessageSender) {
+        return true;
+    }
+    return false;
+}
+
+
+export function otherModulesAutoRoll(message) {
+    if (!game.modules.get('xdy-pf2e-workbench')?.active) {
+        if (game.modules.get('pf2e-target-helper')?.active) {
+            return game.settings.get("pf2e-target-helper", "multipleTargetRollDamage") === "all";
+        }
+        return false
+    }
+    let autoRollDamageAllow = String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow"));
+    return autoRollDamageAllow
+        && shouldIHandleThisMessage(
+            message,
+            ["all", "players"].includes(autoRollDamageAllow),
+            ["all", "gm"].includes(autoRollDamageAllow),
+        );
 }
 
 export function veryHardDCByLvl(lvl) {
     return (dcByLevel.get(lvl) ?? 50) + 5;
 }
 
-export function until(conditionFunction) {
-    const poll = resolve => {
-        if (conditionFunction()) resolve();
-        else setTimeout(_ => poll(resolve), 400);
-    }
-    return new Promise(poll);
+export function until(checkFn, timeout = 7000, interval = 100) {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+
+        const timer = setInterval(() => {
+            if (checkFn()) {
+                clearInterval(timer);
+                resolve(true);
+            } else if (Date.now() - start >= timeout) {
+                clearInterval(timer);
+                reject(new Error('Timeout error'))
+            }
+        }, interval);
+    });
 }
 
 function hasOption(message, opt) {
@@ -152,13 +174,16 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         const fOpt = [...options, "skip-handling-message"];
         const sOpt = [...options, "skip-handling-message"];
 
-        if (!xdyAutoRoll(primaryMessage)) {
+        let needToRoll = !otherModulesAutoRoll(primaryMessage);
+        if (needToRoll) {
             if (primaryDegreeOfSuccess === 2) {
                 await primary.damage({event: eventSkipped(event, true), options: fOpt});
             }
             if (primaryDegreeOfSuccess === 3) {
                 await primary.critical({event: eventSkipped(event, true), options: fOpt});
             }
+        } else {
+            console.log('Waiting for workbench auto roll damage')
         }
 
         if (primaryDegreeOfSuccess === 2 || primaryDegreeOfSuccess === 3) {
@@ -199,13 +224,15 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             await firstAttack(damages[0])
         }
 
-        if (!xdyAutoRoll(secondaryMessage)) {
+        if (needToRoll) {
             if (secondaryDegreeOfSuccess === 2) {
                 await secondary.damage({event: eventSkipped(event, true), options: sOpt});
             }
             if (secondaryDegreeOfSuccess === 3) {
                 await secondary.critical({event: eventSkipped(event, true), options: sOpt});
             }
+        } else {
+            console.log('Waiting for workbench auto roll damage')
         }
 
         if (secondaryDegreeOfSuccess === 2 || secondaryDegreeOfSuccess === 3) {
