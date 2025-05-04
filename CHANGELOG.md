@@ -1,3 +1,6 @@
+### Version 1.0.1
+- Fix rendering html
+
 ### Version 1.0.0
 - Adapt to v13
 
