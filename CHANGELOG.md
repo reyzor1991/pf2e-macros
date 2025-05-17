@@ -1,3 +1,6 @@
+### Version 1.0.3
+- Swipe prototype macro
+
 ### Version 1.0.2
 - Turn off tiger slash for macro
 

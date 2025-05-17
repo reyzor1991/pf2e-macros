@@ -10,11 +10,13 @@ import {
     favoriteWeapon,
     getMap,
     hasFeatBySourceId,
-    increaseConditionForActor, isV12,
+    increaseConditionForActor,
+    isV12,
+    otherModulesAutoRoll,
     rollSkipDialog,
     selectIf,
     setEffectToActor,
-    otherModulesAutoRoll
+    until
 } from "../lib.js";
 import {DamageRoll} from "../hooks/init.js";
 
@@ -469,9 +471,6 @@ export async function certainStrike(actor) {
 }
 
 export async function swipe(token) {
-    ui.notifications.info("Wait for updating pf2e features");
-    return;
-
     if (!token) {
         ui.notifications.info("Please select 1 token");
         return;
@@ -576,56 +575,75 @@ export async function swipe(token) {
         additionalTarget = additionalTargets[0]
     }
 
-    let targetMessage = undefined;
+    let damages = undefined;
     let statisticModifier = weapon.variants[map]
-    const rollVsTarget = await statisticModifier.roll({
+
+    function PD(cm) {
+        if ((cm.author.id || cm.user.id) === game.userId && cm.isDamageRoll) {
+            damages = cm;
+            return false;
+        }
+    }
+
+    let hookId = Hooks.on('preCreateChatMessage', PD);
+    statisticModifier.roll({
         event: eventSkipped(event),
         target: target._object,
         options: ['sweep-bonus'],
         createMessage: true,
-        callback: (roll, outcome, message, _event) => {
-            targetMessage = message.toJSON();
+        callback: async (roll, outcome, message, _event) => {
+            if (outcome === 'criticalFailure' || outcome === 'failure') {
+                Hooks.off('preCreateChatMessage', hookId);
+                return
+            }
+
+            let needToRoll = !otherModulesAutoRoll(message);
+            if (needToRoll) {
+                if (outcome === 'success') {
+                    await primary.damage({event: eventSkipped(event, true), options: fOpt});
+                }
+                if (outcome === 'criticalSuccess') {
+                    await primary.critical({event: eventSkipped(event, true), options: fOpt});
+                }
+            } else {
+                console.log('Waiting for workbench auto roll damage')
+            }
+
+            await until(() => !!damages);
+            Hooks.off('preCreateChatMessage', hookId);
+            if (!damages) {
+                console.log('Not found damage')
+                return;
+            }
+            let m = damages.toObject()
+            await ChatMessage.createDocuments([m]);
+
+            if (additionalTarget && additionalTarget?.actor?.armorClass?.value <= Number(message.content)) {
+                console.log('Apply damage to additional target')
+
+                let coreF = m.flags.core;
+                let pf2eF = m.flags.pf2e;
+
+                pf2eF.context.target = {
+                    actor: additionalTarget.actor.uuid,
+                    token: additionalTarget.uuid
+                }
+
+                pf2eF.target = {
+                    actor: additionalTarget.actor.uuid,
+                    token: additionalTarget.uuid
+                }
+
+                m.flags = {
+                    core: coreF,
+                    pf2e: pf2eF,
+                }
+
+                ChatMessage.createDocuments([m]);
+            }
+
         }
     });
-
-    if (additionalTarget) {
-        let context = await actor.getCheckContext({
-            item: weapon.item,
-            domains: rollVsTarget.options.domains,
-            statistic: statisticModifier,
-            target: {
-                token: additionalTarget._object
-            },
-            defense: "armor",
-            options: new Set(targetMessage.flags.pf2e.context.options),
-            viewOnly: undefined,
-            traits: ["attack"]
-        });
-
-        let checkContext = {
-            type: "attack-roll",
-            identifier: `${weapon.item.id}.${weapon.item.slug}.melee`,
-            action: "strike",
-            title: targetMessage?.flags?.pf2e?.context?.title,
-            actor: context.self.actor,
-            token: context.self.token,
-            target: context.target,
-            item: context.self.item,
-            altUsage: targetMessage?.flags?.pf2e?.context?.altUsage,
-            damaging: targetMessage?.flags?.pf2e?.context?.damaging,
-            domains: context.domains,
-            options: context.options,
-            notes: targetMessage?.flags?.pf2e?.context?.notes,
-            dc: context.dc,
-            traits: context.traits,
-            rollTwice: targetMessage?.flags?.pf2e?.context?.rollTwice,
-            substitutions: targetMessage?.flags?.pf2e?.context?.substitutions,
-            dosAdjustments: targetMessage?.flags?.pf2e?.context?.dosAdjustments,
-            mapIncreases: targetMessage?.flags?.pf2e?.context?.mapIncreases,
-            createMessage: true,
-            rollMode: targetMessage?.flags?.pf2e?.context?.rollMode,
-        };
-    }
 }
 
 export async function whirlwindStrike(token) {
@@ -737,8 +755,8 @@ export async function overwhelmingCombination(actor) {
         }],
         default: "ok"
     });
-    weapon1 = all.find(w=>w?.item?.uuid === weapon1)
-    weapon2 = all.find(w=>w?.item?.uuid === weapon2)
+    weapon1 = all.find(w => w?.item?.uuid === weapon1)
+    weapon2 = all.find(w => w?.item?.uuid === weapon2)
     if (weapon1 === undefined || weapon2 === undefined || map === undefined) {
         return;
     }
