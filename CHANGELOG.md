@@ -1,3 +1,6 @@
+### Version 1.0.2
+- Turn off tiger slash for macro
+
 ### Version 1.0.1
 - Fix rendering html
 

@@ -2,7 +2,7 @@
   "id": "pf2e-macros",
   "title": "PF2e Macros",
   "description": "",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "authors": [
     {
       "name": "Reyzor",
@@ -77,7 +77,7 @@
         "manifest": "https://github.com/foundryvtt/pf2e/releases/latest/download/system.json",
         "compatibility": {
           "minimum": "5.3.2",
-          "verified": "7.0.0"
+          "verified": "7.0.5"
         }
       }
     ],

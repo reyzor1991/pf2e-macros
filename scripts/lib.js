@@ -132,6 +132,10 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         if (options.includes("double-slice-second") && primary.item.actor.rollOptions?.["all"]?.["double-slice-second"]) {
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
+        if (primary.item.actor.rollOptions?.["all"]?.["tiger-slash"]) {
+            await primary.item.actor.toggleRollOption("all", "tiger-slash")
+        }
+
         const primaryMessage = await primary.variants[map].roll({'event': eventSkipped(event)});
         const primaryDegreeOfSuccess =
             attacks[0]?.flags?.pf2e?.flatCheck?.result === 'fail'
