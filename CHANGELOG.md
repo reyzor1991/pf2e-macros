@@ -1,3 +1,6 @@
+### Version 1.0.4
+- Fix Overwhelming Combination
+
 ### Version 1.0.3
 - Swipe prototype macro
 

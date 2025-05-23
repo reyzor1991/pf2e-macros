@@ -704,7 +704,7 @@ export async function overwhelmingCombination(actor) {
     }
 
     let weapons = actor.system.actions
-        .filter(h => h.ready && h.item?.isHeld && ((h.item?.hands === "1" && h.item?.handsHeld === 1) || h.item?.traits?.has('agile')))
+        .filter(h => h.ready && h.item?.isHeld && ((h.item?.hands === "1" && h.item?.handsHeld === 1) || h.item?.traits?.has('agile')|| h.item?.traits?.has('finesse')))
     let hand = actor.system.actions.filter(h => h.slug === 'basic-unarmed')
 
     let all = [...weapons, ...hand];
@@ -721,7 +721,7 @@ export async function overwhelmingCombination(actor) {
     }
 
     let {weapon1, weapon2, map} = await foundry.applications.api.DialogV2.wait({
-        window: {title: "Double Slice"},
+        window: {title: "Overwhelming Combination"},
         width: 550,
         content: `
             <div class="v2-row">
@@ -761,7 +761,12 @@ export async function overwhelmingCombination(actor) {
         return;
     }
     const map2 = map === 2 ? map : map + 1;
-    if (weapon1?.item?.id !== 'xxPF2ExUNARMEDxx' && weapon2?.item?.id !== 'xxPF2ExUNARMEDxx') {
+    if (
+        weapon1?.item?.id !== 'xxPF2ExUNARMEDxx'
+        && weapon2?.item?.id !== 'xxPF2ExUNARMEDxx'
+        && weapon1?.item?.slug !== 'fist'
+        && weapon2?.item?.slug !== 'fist'
+    ) {
         ui.notifications.warn(`One of attack should be fist`);
         return
     }
