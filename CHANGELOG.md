@@ -1,3 +1,6 @@
+### Version 1.0.5
+- Increase timing for damage rolls
+
 ### Version 1.0.4
 - Fix Overwhelming Combination
 

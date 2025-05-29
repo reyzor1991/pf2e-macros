@@ -51,7 +51,7 @@ export function veryHardDCByLvl(lvl) {
     return (dcByLevel.get(lvl) ?? 50) + 5;
 }
 
-export function until(checkFn, timeout = 7000, interval = 100) {
+export function until(checkFn, timeout = 10000, interval = 100) {
     return new Promise((resolve, reject) => {
         const start = Date.now();
 
@@ -113,14 +113,14 @@ export async function combinedDamage(name, primary, secondary, options, map, map
     const attacks = [];
 
     function PD(cm) {
-        if ((cm.author.id || cm.user.id) === game.userId && cm.isDamageRoll) {
+        if ((cm.author.id === game.userId || cm.user.id === game.userId) && cm.isDamageRoll) {
             damages.push(cm);
             return false;
         }
     }
 
     function PRoll(cm) {
-        if ((cm.author.id || cm.user.id) === game.userId && !cm.isDamageRoll && cm.isRoll && cm.flags?.pf2e?.origin && cm.flags?.pf2e?.context) {
+        if ((cm.author.id === game.userId || cm.user.id === game.userId) && !cm.isDamageRoll && cm.isRoll && cm.flags?.pf2e?.origin && cm.flags?.pf2e?.context) {
             attacks.push(cm);
         }
     }
@@ -187,7 +187,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
                 await primary.critical({event: eventSkipped(event, true), options: fOpt});
             }
         } else {
-            console.log('Waiting for workbench auto roll damage')
+            console.log('Waiting for primary other modules auto roll damage')
         }
 
         if (primaryDegreeOfSuccess === 2 || primaryDegreeOfSuccess === 3) {
@@ -236,7 +236,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
                 await secondary.critical({event: eventSkipped(event, true), options: sOpt});
             }
         } else {
-            console.log('Waiting for workbench auto roll damage')
+            console.log('Waiting for second other modules auto roll damage')
         }
 
         if (secondaryDegreeOfSuccess === 2 || secondaryDegreeOfSuccess === 3) {
