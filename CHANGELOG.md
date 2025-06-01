@@ -1,3 +1,6 @@
+### Version 1.0.6
+- Add basic logic for Flowing Spirit Strike
+
 ### Version 1.0.5
 - Increase timing for damage rolls
 

@@ -28,7 +28,8 @@ import {
     showHeroPoints,
     repairParty,
     scareToDeath,
-    targetIsOffGuard
+    targetIsOffGuard,
+    flowingSpiritStrike
 } from "./general.js";
 
 export function initMacros() {
@@ -76,5 +77,6 @@ export function initMacros() {
         "effectConditionInfo": effectConditionInfo,
         "repairParty": repairParty,
         "showHeroPoints": showHeroPoints,
+        "flowingSpiritStrike": flowingSpiritStrike,
     })
 }

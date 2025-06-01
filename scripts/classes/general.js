@@ -2,6 +2,8 @@ import {defDCMap, moduleName, OFF_GUARD_TARGET_EFF} from "../const.js";
 import {
     actorFeat,
     addItemToActor,
+    baseMapForm,
+    combinedDamage,
     distanceIsCorrect,
     eventSkipped,
     hasFeatBySourceId,
@@ -781,4 +783,38 @@ export async function showHeroPoints() {
     }
 
     ChatMessage.create(mData);
+}
+
+export async function flowingSpiritStrike(actor) {
+    let feat = actor.itemTypes.feat.find(f => f.sourceId === 'Compendium.pf2e.classfeatures.Item.o8Q7wWx2oKvKMi1s');
+    if (!feat) {
+        ui.notifications.warn(`${actor.name} does not have Flowing Spirit Strike feat!`);
+        return;
+    }
+    let ikon = feat.flags.pf2e.rulesSelections.grantedIkon;
+    if (!ikon) {
+        ui.notifications.warn(`${actor.name} does not selected ikon!`);
+        return
+    }
+    if (game.user.targets.size !== 1) {
+        ui.notifications.info(`Need to select target to run macro`);
+        return;
+    }
+
+    let weaponAction = actor.system.actions
+        .find(a => a?.item?.sourceId === ikon || a?.item?.uuid === ikon);
+
+    const {map} = await baseMapForm();
+
+    if (map === undefined) {
+        return;
+    }
+
+    await combinedDamage(
+        "Flowing Spirit Strike",
+        weaponAction,
+        weaponAction,
+        [],
+        map,
+        map);
 }

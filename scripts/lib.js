@@ -752,9 +752,11 @@ export async function baseAttackWeaponForm(title, weaponOptions) {
         buttons: [{
             action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
+
                 return {
-                    map: parseInt($(form).find("#map").val()),
-                    currentWeapon: $(form).find("#fob1").val(),
+                    map: parseInt(el.find("#map").val()),
+                    currentWeapon: el.find("#fob1").val(),
                 }
             }
         }, {
@@ -775,8 +777,9 @@ export async function baseMapForm(title) {
         buttons: [{
             action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
             callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
                 return {
-                    map: parseInt($(form).find("#map").val()),
+                    map: parseInt(el.find("#map").val()),
                 }
             }
         }, {

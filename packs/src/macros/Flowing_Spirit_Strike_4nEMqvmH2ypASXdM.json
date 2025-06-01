@@ -1,0 +1,13 @@
+{
+  "_id": "4nEMqvmH2ypASXdM",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.flowingSpiritStrike(actor);",
+  "img": "icons/weapons/swords/scimitar-guard-gold.webp",
+  "name": "Flowing Spirit Strike",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!4nEMqvmH2ypASXdM"
+}
