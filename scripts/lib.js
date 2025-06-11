@@ -20,8 +20,8 @@ export function rollSkipDialog(event) {
         );
 }
 
-function shouldIHandleThisMessage(message, playerCondition = true, gmCondition = true) {
-    const amIMessageSender = message.author?.id === game.user?.id;
+function shouldIHandleThisMessage(roll, playerCondition = true, gmCondition = true) {
+    const amIMessageSender = roll.roller?.id === game.user?.id;
     if (!game.user?.isGM && playerCondition && amIMessageSender) {
         return true;
     } else if (game.user?.isGM && gmCondition && amIMessageSender) {
@@ -31,7 +31,7 @@ function shouldIHandleThisMessage(message, playerCondition = true, gmCondition =
 }
 
 
-export function otherModulesAutoRoll(message) {
+export function otherModulesAutoRoll(roll) {
     if (!game.modules.get('xdy-pf2e-workbench')?.active) {
         if (game.modules.get('pf2e-target-helper')?.active) {
             return game.settings.get("pf2e-target-helper", "multipleTargetRollDamage") === "all";
@@ -41,7 +41,7 @@ export function otherModulesAutoRoll(message) {
     let autoRollDamageAllow = String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow"));
     return autoRollDamageAllow
         && shouldIHandleThisMessage(
-            message,
+            roll,
             ["all", "players"].includes(autoRollDamageAllow),
             ["all", "gm"].includes(autoRollDamageAllow),
         );

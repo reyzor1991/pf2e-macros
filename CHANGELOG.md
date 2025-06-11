@@ -1,3 +1,6 @@
+### Version 1.0.7
+- Fix compatibility with workbench
+
 ### Version 1.0.6
 - Add basic logic for Flowing Spirit Strike
 
