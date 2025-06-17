@@ -1,3 +1,6 @@
+### Version 1.0.8
+- Add Retch Macro
+
 ### Version 1.0.7
 - Fix compatibility with workbench
 

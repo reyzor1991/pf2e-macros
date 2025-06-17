@@ -818,3 +818,27 @@ export async function flowingSpiritStrike(actor) {
         map,
         map);
 }
+
+export async function retch(actor) {
+    if (!actor) {
+        ui.notifications.info(`Select your token before using this macro`);
+        return;
+    }
+
+    let sick = actor.itemTypes.condition.find(c=>c.slug==='sickened' && c?.flags?.['patreon-v3']?.dc)
+    if (!sick) {
+        ui.notifications.info(`${actor.name} doesn't have sickened condition with DC value`)
+        return
+    }
+    let dc = sick.flags['patreon-v3'].dc
+
+    let resultRoll = await actor.saves.fortitude.roll({dc: {value: dc, label: 'Retching in an attempt to recover'}})
+
+    if (resultRoll.degreeOfSuccess >= 2) {
+        await actor.decreaseCondition('sickened')
+    }
+
+    if (resultRoll.degreeOfSuccess === 3) {
+        await actor.decreaseCondition('sickened')
+    }
+}

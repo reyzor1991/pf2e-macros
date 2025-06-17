@@ -1,0 +1,13 @@
+{
+  "_id": "lYAKtTXdcsuDNIM1",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.retch(actor);",
+  "img": "icons/magic/unholy/strike-body-life-soul-purple.webp",
+  "name": "Retch",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!lYAKtTXdcsuDNIM1"
+}
