@@ -101,6 +101,12 @@ export async function twoElementInfusion(actor) {
     }
     damageTypes.push({damageType: r2, element: el2})
 
+    let activeAttack = eb.configs.filter(e => e.element === el1 || e.element === el2)
+        .reduce(function (prev, current) {
+            return prev && prev.range > current.range ? prev : current
+        });
+    activeAttack = damageTypes.find(dt => dt.element === activeAttack.element)
+
     let active = eb.configs.filter(e => e.element === el1 || e.element === el2)
         .reduce(function (prev, current) {
             return prev && prev.dieFaces > current.dieFaces ? prev : current
@@ -119,7 +125,11 @@ export async function twoElementInfusion(actor) {
 
     let hookId = Hooks.on('preCreateChatMessage', PD);
     try {
-        let res = await eb.attack({...active, melee, mapIncreases})
+        let res = await eb.attack({...activeAttack, melee, mapIncreases})
+        if (!res) {
+            Hooks.off('preCreateChatMessage', hookId);
+            return
+        }
         if (res.degreeOfSuccess === 2) {
             await eb.damage({...active, melee, outcome: "success"})
         } else if (res.degreeOfSuccess === 3) {

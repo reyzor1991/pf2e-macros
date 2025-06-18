@@ -1,3 +1,6 @@
+### Version 1.0.9
+- Fix range of Two-Element Infusion Macro
+
 ### Version 1.0.8
 - Add Retch Macro
 
