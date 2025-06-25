@@ -448,7 +448,7 @@ export async function explorationActivity(actor) {
         },
         {
             label: 'Detect Magic',
-            img: 'systems/pf2e/icons/spells/detect-magic.webp',
+            img: 'icons/magic/vortex-water-whirlpool.webp',
             id: 'Compendium.pf2e.actionspf2e.Item.Yb0C1uLzeHrVLl7a'
         },
         {
@@ -825,7 +825,7 @@ export async function retch(actor) {
         return;
     }
 
-    let sick = actor.itemTypes.condition.find(c=>c.slug==='sickened' && c?.flags?.['patreon-v3']?.dc)
+    let sick = actor.itemTypes.condition.find(c => c.slug === 'sickened' && c?.flags?.['patreon-v3']?.dc)
     if (!sick) {
         ui.notifications.info(`${actor.name} doesn't have sickened condition with DC value`)
         return
@@ -841,4 +841,104 @@ export async function retch(actor) {
     if (resultRoll.degreeOfSuccess === 3) {
         await actor.decreaseCondition('sickened')
     }
+}
+
+export async function distractingPerformance(token) {
+    if (!token || !token.actor) {
+        ui.notifications.info(`Select your token before using this macro`);
+        return;
+    }
+    let actor = token.actor;
+    let feat = actor.itemTypes.feat.find(f => f.sourceId === "Compendium.pf2e.feats-srd.Item.4UXyMtXLaOxuH6Js");
+    if (!feat) {
+        ui.notifications.warn(`${actor.name} does not have Distracting Performance feat!`);
+        return;
+    }
+    let target = game.user.targets.first()?.actor;
+    if (!target) {
+        ui.notifications.info(`Select target before using this macro`);
+        return;
+    }
+
+    let allies = token.scene.tokens.contents
+        .filter(t => t?.actor?.isAllyOf(actor))
+        .reduce((obj, v) => {
+                obj[v.uuid] = v;
+                return obj;
+            },
+            {}
+        );
+    if (Object.keys(allies).length === 0) {
+        ui.notifications.info(`Select target before using this macro`);
+        return
+    }
+    let allyHtml = Object.values(allies).map(t => {
+        return `<option value=${t.uuid}>${t.name}</option>`;
+    }).join('')
+
+    const {variant, ally} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Distracting Performance"},
+        content: `
+            <strong>Select variant</strong>
+            <select id="variant">
+                <option value="distracting-words">Distracting Words</option>
+                <option value="gesture">Gesture</option>
+                <option value="trick">Trick</option>
+            </select>
+            <strong>Skill or Attack</strong>
+            <select id="ally">
+                ${allyHtml}
+            </select>
+        `,
+        buttons: [{
+            action: "ok", label: "Select", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
+                return {
+                    variant: el.find("#variant").val(),
+                    ally: el.find("#ally").val(),
+                }
+
+            }
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
+        default: "ok"
+    }, {}, {width: 600});
+    if (!ally || !variant) {
+        return
+    }
+    game.pf2e.actions.createADiversion({
+        variant,
+        skill: "performance",
+        actors: [actor],
+        callback: (data) => {
+            if (data?.outcome === "criticalSuccess" || data?.outcome === "success") {
+                const effect = {
+                    type: 'effect',
+                    name: `Hidden (Distracting Performance)`,
+                    img: `icons/svg/circle.svg`,
+                    system: {
+                        tokenIcon: {show: true},
+                        duration: {value: 1, unit: 'rounds', sustained: false, expiry: 'turn-end'},
+                        rules: [{
+                            "key": "GrantItem",
+                            "onDeleteActions": {
+                                "grantee": "restrict"
+                            },
+                            "uuid": "Compendium.pf2e.conditionitems.Item.iU0fEDdBp3rXpTMC"
+                        }],
+                        slug: `shapeshifting-${_token.actor.id}`
+                    },
+                };
+                if (token?.combatant?.initiative > allies[ally]?.combatant?.initiative) {
+                    effect.system.duration.value = 0;
+                }
+
+                addItemToActor(allies[ally]?.actor, effect);
+            }
+        }
+    })
 }

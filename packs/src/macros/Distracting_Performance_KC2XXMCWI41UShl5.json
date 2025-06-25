@@ -1,0 +1,13 @@
+{
+  "_id": "KC2XXMCWI41UShl5",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.distractingPerformance(token);",
+  "img": "icons/magic/control/energy-stream-link-spiral-teal.webp",
+  "name": "Distracting Performance",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!KC2XXMCWI41UShl5"
+}

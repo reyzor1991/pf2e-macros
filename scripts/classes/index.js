@@ -29,7 +29,7 @@ import {
     repairParty,
     scareToDeath,
     targetIsOffGuard,
-    flowingSpiritStrike, retch
+    flowingSpiritStrike, retch, distractingPerformance
 } from "./general.js";
 
 export function initMacros() {
@@ -79,5 +79,6 @@ export function initMacros() {
         "showHeroPoints": showHeroPoints,
         "flowingSpiritStrike": flowingSpiritStrike,
         "retch": retch,
+        "distractingPerformance": distractingPerformance,
     })
 }
