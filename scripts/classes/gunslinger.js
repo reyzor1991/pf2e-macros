@@ -247,3 +247,39 @@ export async function stabAndBlast(actor) {
         })
     }
 }
+
+export async function triggerbrandSalvo(actor) {
+    if (!actor) {
+        ui.notifications.info("Please select 1 token");
+        return;
+    }
+    if (game.user.targets.size !== 1) {
+        ui.notifications.info(`Need to select 1 token as target`);
+        return;
+    }
+    if (!actorFeat(actor, "triggerbrand-salvo")) {
+        ui.notifications.warn(`${actor.name} does not have Triggerbrand Salvo!`);
+        return;
+    }
+
+    let weapons = actor.system.actions
+        .filter(a => a.ready)
+        .filter(a => a.item?.traits?.has("combination"))
+
+    let weaponOptions = weapons.map((w, i) => `<option value=${i}>${w.item.name}</option>`).join('')
+
+    const {currentWeapon, map} = await baseAttackWeaponForm("Stab and Blast", weaponOptions)
+    if (currentWeapon === undefined || map === undefined) {
+        return;
+    }
+    let activeAction = weapons[currentWeapon];
+
+    let rollResult = await activeAction.altUsages[0].variants[map].roll()
+    if (rollResult?.degreeOfSuccess >= 2) {
+        if (!actor?.rollOptions?.all?.['triggerbrand-salvo']) {
+            await actor.toggleRollOption("all", "triggerbrand-salvo")
+        }
+        await activeAction.variants[map].roll()
+        await actor.toggleRollOption("all", "triggerbrand-salvo")
+    }
+}

@@ -9,7 +9,7 @@ import {
     swipe,
     whirlwindStrike
 } from "./fighter.js";
-import {pairedShots, pistolerosChallenge, stabAndBlast, swordAndPistol} from "./gunslinger.js";
+import {pairedShots, pistolerosChallenge, stabAndBlast, swordAndPistol, triggerbrandSalvo} from "./gunslinger.js";
 import {twoElementInfusion} from "./kineticist.js";
 import {flurryOfBlows} from "./monk.js";
 import {twinFeint} from "./rogue.js";
@@ -49,6 +49,7 @@ export function initMacros() {
         "pistolerosChallenge": pistolerosChallenge,
         "swordAndPistol": swordAndPistol,
         "stabAndBlast": stabAndBlast,
+        "triggerbrandSalvo": triggerbrandSalvo,
 
         "twoElementInfusion": twoElementInfusion,
 

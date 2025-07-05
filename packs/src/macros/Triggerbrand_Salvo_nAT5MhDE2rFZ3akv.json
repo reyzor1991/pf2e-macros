@@ -1,0 +1,13 @@
+{
+  "_id": "nAT5MhDE2rFZ3akv",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.triggerbrandSalvo(actor);",
+  "img": "icons/weapons/swords/swords-short.webp",
+  "name": "Triggerbrand Salvo",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!nAT5MhDE2rFZ3akv"
+}

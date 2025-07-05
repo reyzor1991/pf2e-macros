@@ -1,3 +1,6 @@
+### Version 1.0.11
+- Add Triggerbrand Salvo
+
 ### Version 1.0.10
 - Add Distracting Performance
 
