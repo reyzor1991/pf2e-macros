@@ -1,3 +1,9 @@
+### Version 1.0.12
+- Twin Feint - Add favorite weapons
+- Twin Feint - delete combined damage
+- Twin Feint - change logic to 2 rolls
+- Twin Feint - effect need to delete manually after roll damage
+
 ### Version 1.0.11
 - Add Triggerbrand Salvo
 

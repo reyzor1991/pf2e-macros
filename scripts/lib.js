@@ -691,7 +691,7 @@ export async function removeEffectFromActorId(actor, effect) {
     await removeEffectFromActor(await fromUuid(actorId), effect);
 }
 
-async function removeEffectFromActor(actor, effect) {
+export async function removeEffectFromActor(actor, effect) {
     if (!actor) {
         return
     }

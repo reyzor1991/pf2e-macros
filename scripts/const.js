@@ -13,6 +13,8 @@ const DEFAULT_FAVORITE = [
     {id: 'snagging-strike', label: 'Snagging Strike', value: ''},
     {id: 'twin-takedown-1', label: 'Twin Takedown First Weapon', value: ''},
     {id: 'twin-takedown-2', label: 'Twin Takedown Second Weapon', value: ''},
+    {id: 'twin-feint-1', label: 'Twin Feint First Weapon', value: ''},
+    {id: 'twin-feint-2', label: 'Twin Feint Second Weapon', value: ''},
 ]
 
 const dcByLevel = new Map([

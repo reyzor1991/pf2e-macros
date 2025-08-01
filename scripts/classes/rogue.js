@@ -1,4 +1,15 @@
-import {actorAction, actorFeat, baseMapForm, combinedDamage, getMap} from "../lib.js";
+import {
+    actorAction,
+    actorFeat,
+    eventSkipped,
+    favoriteWeapon,
+    getMap,
+    isV12,
+    removeEffectFromActor,
+    selectIf,
+    setEffectToActor
+} from "../lib.js";
+import {moduleName} from "../const.js";
 
 function twinFeintWeapons(actor) {
     return actor.system.actions
@@ -25,24 +36,76 @@ export async function twinFeint(actor) {
     }
 
     const weapons = twinFeintWeapons(actor);
-    if (weapons.length !== 2) {
+    if (weapons.length < 2) {
         ui.notifications.warn(`${actor.name} needs only 2 melee weapons can be equipped at a time.'`);
         return;
     }
 
-    const {map} = await baseMapForm("Twin Feint");
+    let f1 = favoriteWeapon("twin-feint-1")
+    let f2 = favoriteWeapon("twin-feint-2")
 
-    if (map === undefined) {
+    let weaponOptions = '';
+    let weaponOptions2 = '';
+    for (const [i, value] of weapons.entries()) {
+        weaponOptions += `<option value=${i} ${selectIf(f1, value.item)}>${value.label}</option>`
+        weaponOptions2 += `<option value=${i} ${selectIf(f2, value.item)}>${value.label}</option>`
+    }
+
+    const {weapon1, weapon2, map} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Twin Feint"},
+        width: 550,
+        content: `
+            <div class="v2-row">
+                <label>First Attack</label>
+                <select id="fob1" autofocus>
+                    ${weaponOptions}
+                </select>
+    
+                <label>Second Attack</label>
+                <select id="fob2">
+                    ${weaponOptions2}
+                </select>
+            </div>
+            
+            ${getMap()}
+        `,
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
+                return {
+                    map: parseInt(el.find("#map").val()),
+                    weapon1: parseInt(el.find("#fob1").val()),
+                    weapon2: parseInt(el.find("#fob2").val()),
+                }
+            }
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
+        default: "ok"
+    });
+    if (weapon1 === undefined || weapon2 === undefined || map === undefined) {
         return;
     }
-    const map2 = map === 2 ? map : map + 1;
-
-    let primary = weapons[0];
-    let secondary = weapons[1];
-    if (primary.item.system.traits.value.includes("agile")) {
-        primary = weapons[1];
-        secondary = weapons[0];
+    if (weapon1 === weapon2) {
+        ui.notifications.info("Need to select different weapons");
+        return;
     }
 
-    await combinedDamage("Twin Feint", primary, secondary, ["twin-feint"], map, map2);
+    let primary = weapons[weapon1];
+    let secondary = weapons[weapon2];
+
+    const map2 = map === 2 ? map : map + 1;
+
+    await primary.variants[map].roll({'event': eventSkipped(event)});
+    await setEffectToActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`)
+    let roll = await secondary.variants[map2].roll({
+        'event': eventSkipped(event),
+        options: ["twin-feint-second-attack"]
+    });
+    if (roll.options?.degreeOfSuccess < 2) {
+        await removeEffectFromActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`);
+    }
 }
