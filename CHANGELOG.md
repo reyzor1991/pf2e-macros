@@ -1,3 +1,6 @@
+### Version 1.0.13
+- Fix detect magic icon in Exploration Activity
+
 ### Version 1.0.12
 - Twin Feint - Add favorite weapons
 - Twin Feint - delete combined damage

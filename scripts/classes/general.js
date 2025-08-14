@@ -428,6 +428,7 @@ export async function shapeshifting(token) {
 export async function explorationActivity(actor) {
     if (!actor) {
         ui.notifications.info(`Select your token before using this macro`);
+        return
     }
 
     const actions = [
@@ -448,7 +449,7 @@ export async function explorationActivity(actor) {
         },
         {
             label: 'Detect Magic',
-            img: 'icons/magic/vortex-water-whirlpool.webp',
+            img: 'icons/magic/water/vortex-water-whirlpool.webp',
             id: 'Compendium.pf2e.actionspf2e.Item.Yb0C1uLzeHrVLl7a'
         },
         {
