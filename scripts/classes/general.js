@@ -943,3 +943,41 @@ export async function distractingPerformance(token) {
         }
     })
 }
+
+export async function crescentSpray(token) {
+    if (!token || !token.actor) {
+        ui.notifications.info(`Select your token before using this macro`);
+        return;
+    }
+    let actor = token.actor;
+    let feat = actor.items.find(f => f.sourceId === "Compendium.pf2e.actionspf2e.Item.2XQowhfM4SfAhJaf");
+    if (!feat) {
+        ui.notifications.warn(`${actor.name} does not have Crescent Spray action!`);
+        return;
+    }
+    let target = game.user.targets.first()?.actor;
+    if (!target) {
+        ui.notifications.info(`Select target before using this macro`);
+        return;
+    }
+
+    let weapon = actor.system.actions.find(a=>a?.item?.slug==='crescent-cross' & a?.ready)
+    if (!weapon) {
+        ui.notifications.warn(`${actor.name} does not have Crescent Cross weapon!`);
+        return;
+    }
+    if (!(weapon.item?.ammo?.quantity >= 3)) {
+        ui.notifications.warn(`${actor.name} does not have enough ammo for Crescent Cross!`);
+        return
+    }
+
+    const {map} = await baseMapForm();
+
+    if (map === undefined) {
+        return;
+    }
+
+    await weapon.variants[map].roll({'event': eventSkipped(event)});
+    await weapon.variants[map].roll({'event': eventSkipped(event)});
+    await weapon.variants[map].roll({'event': eventSkipped(event)});
+}

@@ -1,3 +1,6 @@
+### Version 1.0.14
+- Add Crescent Spray
+
 ### Version 1.0.13
 - Fix detect magic icon in Exploration Activity
 

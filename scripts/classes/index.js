@@ -29,7 +29,7 @@ import {
     repairParty,
     scareToDeath,
     targetIsOffGuard,
-    flowingSpiritStrike, retch, distractingPerformance
+    flowingSpiritStrike, retch, distractingPerformance, crescentSpray
 } from "./general.js";
 
 export function initMacros() {
@@ -81,5 +81,6 @@ export function initMacros() {
         "flowingSpiritStrike": flowingSpiritStrike,
         "retch": retch,
         "distractingPerformance": distractingPerformance,
+        "crescentSpray": crescentSpray,
     })
 }

@@ -1,0 +1,13 @@
+{
+  "_id": "1PYpD9SeWMH8H1OK",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.crescentSpray(token);",
+  "img": "icons/weapons/ammunition/bullets-cartridge-shell-gray.webp",
+  "name": "Crescent Spray",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!1PYpD9SeWMH8H1OK"
+}
