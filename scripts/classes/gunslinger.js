@@ -31,7 +31,10 @@ function swordAndPistolWeapons(actor) {
 function stabAndBlastWeapons(actor) {
     return actor.system.actions
         .filter(a => a.ready && a.item?.isRanged)
-        .filter(a => a.item.subitems.find(si => si.slug === "bayonet" || si.slug === "reinforced-stock"));
+        .filter(a =>
+            a.item.subitems.find(si => si.slug === "bayonet" || si.slug === "reinforced-stock")
+            || a.item.traits.has("combination")
+        );
 }
 
 export async function pairedShots(actor) {
@@ -228,7 +231,11 @@ export async function stabAndBlast(actor) {
     }
     let activeAction = weapons[currentWeapon];
     let subWeapon = activeAction.item.subitems.find(si => si.slug === "bayonet" || si.slug === "reinforced-stock")
-    let subAction = actor.system.actions.find(a => a.item.uuid === subWeapon.uuid)
+    let subAction = actor.system.actions.find(a => a.item.uuid === subWeapon?.uuid)
+
+    if (activeAction.item.traits.has("combination")) {
+        subAction = activeAction.altUsages[0]
+    }
 
     if (!subAction) {
         ui.notifications.error(`Not found action related to subitem`);

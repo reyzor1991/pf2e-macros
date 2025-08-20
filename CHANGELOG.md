@@ -1,3 +1,6 @@
+### Version 1.0.15
+- Add Combination weapons to Stab And Blast
+
 ### Version 1.0.14
 - Add Crescent Spray
 
