@@ -18,13 +18,20 @@ function huntedShotWeapons(actor) {
 }
 
 function twinTakedownWeapons(actor) {
-    return actor.system.actions
+     let actions = actor.system.actions
         .filter(h => h.ready && (h.item?.isMelee || (h?.item?.isRanged && h.altUsages[0]?.options?.includes('melee'))) && !h.item?.system?.traits?.value?.includes("unarmed")
             && (
                 (h.item?.isHeld && h.item?.hands === "1" && h.item?.handsHeld === 1)
                 || actor.isOfType('npc')
             )
         );
+     if (actor.itemTypes.effect.find(e=>e.slug==='stance-haft-striker')) {
+        actions.push(
+            ...actor.system.actions.filter(h => h.ready && h.item?.isMelee && h.item?.isHeld && h.item?.handsHeld === 2)
+        )
+     }
+
+    return actions;
 }
 
 export async function huntedShot(actor) {

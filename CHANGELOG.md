@@ -1,3 +1,6 @@
+### Version 1.0.16
+- Add support of Haft Striker Stance for Twin Takedown
+
 ### Version 1.0.15
 - Add Combination weapons to Stab And Blast
 
