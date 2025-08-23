@@ -1,3 +1,6 @@
+### Version 1.0.17
+- Add fix for precision damage from Hunter's Edge
+
 ### Version 1.0.16
 - Add support of Haft Striker Stance for Twin Takedown
 

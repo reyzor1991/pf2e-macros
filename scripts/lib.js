@@ -98,6 +98,15 @@ async function gravityWeapon(message) {
 }
 
 async function firstAttack(message) {
+    if (message.actor.rollOptions?.["all"]?.["precision-hunters-edge"]
+        && message.actor
+        ?.itemTypes?.effect
+        ?.find(e => e?.rules
+            ?.find(r => r.key === "TokenMark" && r.slug === "hunted-prey" && r.uuid === message.target?.token?.uuid))
+    ) {
+        return await message.actor.toggleRollOption("all", "precision-hunters-edge");
+    }
+
     if (message?.target?.actor
             ?.itemTypes?.effect
             ?.find(c => "Compendium.pf2e-automations-patreon.effects.Item.a51AN6VfpW9b4ttm" === c.sourceId && c.origin === message.actor)
