@@ -5,12 +5,12 @@ import {
     baseMapForm,
     combinedDamage,
     distanceIsCorrect,
-    eventSkipped,
+    eventSkipped, favoriteWeapon, getMap,
     hasFeatBySourceId,
     increaseConditionForActor,
     isGM,
     isV12,
-    rollSkipDialog,
+    rollSkipDialog, selectIf,
     setEffectToActor,
     shareLanguage,
     veryHardDCByLvl
@@ -816,6 +816,91 @@ export async function flowingSpiritStrike(actor) {
         weaponAction,
         weaponAction,
         [],
+        map,
+        map);
+}
+
+export async function twinFlowingSpiritStrike(actor) {
+    let feat = actor.itemTypes.feat.find(f => f.sourceId === 'Compendium.pf2e.classfeatures.Item.o8Q7wWx2oKvKMi1s');
+    if (!feat) {
+        ui.notifications.warn(`${actor.name} does not have Flowing Spirit Strike feat!`);
+        return;
+    }
+    let ikon = feat.flags.pf2e.rulesSelections.grantedIkon;
+    if (!ikon) {
+        ui.notifications.warn(`${actor.name} does not selected ikon!`);
+        return
+    }
+    if (game.user.targets.size !== 1) {
+        ui.notifications.info(`Need to select target to run macro`);
+        return;
+    }
+
+    let weapons = actor.system.actions
+        .filter(h => h.ready && h.item?.isMelee && !h.item?.system?.traits?.value?.includes("unarmed"));
+
+    let f1 = favoriteWeapon("flowing-spirit-1")
+    let f2 = favoriteWeapon("flowing-spirit-2")
+
+    let weaponOptions = '';
+    let weaponOptions2 = '';
+    for (const [i, value] of weapons.entries()) {
+        weaponOptions += `<option value=${i} ${selectIf(f1, value.item)}>${value.item.name}</option>`
+        weaponOptions2 += `<option value=${i} ${selectIf(f2, value.item)}>${value.item.name}</option>`
+    }
+
+    const {weapon1, weapon2, map} = await foundry.applications.api.DialogV2.wait({
+        window: {title: "Flowing Spirit Strike"},
+        content: `
+            <div style="display: flex; justify-content: space-between;">
+                <div>
+                    <h3>First Attack</h3>
+                    <select id="fob1" autofocus>
+                        ${weaponOptions}
+                    </select>
+                </div>
+                <div>
+                    <h3>Second Attack</h3>
+                    <select id="fob2">
+                        ${weaponOptions2}
+                    </select>
+                </div>
+            </div>
+            ${getMap()}
+        `,
+        buttons: [{
+            action: "ok", label: "Attack", icon: "<i class='fa-solid fa-hand-fist'></i>",
+            callback: (event, button, form) => {
+                let el = isV12() ? $(form) : $(form.element);
+                return {
+                    weapon1: el.find("#fob1").val(),
+                    weapon2: el.find("#fob2").val(),
+                    map: parseInt(el.find("#map").val()),
+                }
+            }
+        }, {
+            action: "cancel",
+            label: "Cancel",
+            icon: "<i class='fa-solid fa-ban'></i>",
+        }],
+        default: "ok"
+    });
+
+    if (map === undefined) {
+        return;
+    }
+
+    let options = weapons[weapon1] === weapons[weapon2]
+        ? []
+        : weapons[weapon1].item.system.traits.value.some((t) => t === "twin") && weapons[weapon2].item.system.traits.value.some((t) => t === "twin")
+            ? ['need-twin-2nd-attack']
+            : []
+
+    await combinedDamage(
+        "Flowing Spirit Strike",
+        weapons[weapon1],
+        weapons[weapon2],
+        options,
         map,
         map);
 }

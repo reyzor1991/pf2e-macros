@@ -98,6 +98,9 @@ async function gravityWeapon(message) {
 }
 
 async function firstAttack(message) {
+    if (!message) {
+        return true;
+    }
     if (message.actor.rollOptions?.["all"]?.["precision-hunters-edge"]
         && message.actor
         ?.itemTypes?.effect

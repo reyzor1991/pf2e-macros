@@ -1,3 +1,6 @@
+### Version 1.0.18
+- Add Flowing Spirit Strike (twin) macro
+
 ### Version 1.0.17
 - Add fix for precision damage from Hunter's Edge
 
