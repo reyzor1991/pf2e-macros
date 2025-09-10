@@ -58,7 +58,7 @@ export async function pairedShots(actor) {
         return;
     }
 
-    const {map} = await baseMapForm();
+    const {map} = await baseMapForm("Paired Shots");
 
     if (map === undefined) {
         return;

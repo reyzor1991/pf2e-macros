@@ -792,7 +792,7 @@ export async function flowingSpiritStrike(actor) {
         ui.notifications.warn(`${actor.name} does not have Flowing Spirit Strike feat!`);
         return;
     }
-    let ikon = feat.flags.pf2e.rulesSelections.grantedIkon;
+    let ikon = feat.flags.pf2e.rulesSelections.grantedIkon || feat.flags.pf2e.rulesSelections.existingIkon;
     if (!ikon) {
         ui.notifications.warn(`${actor.name} does not selected ikon!`);
         return
@@ -803,9 +803,9 @@ export async function flowingSpiritStrike(actor) {
     }
 
     let weaponAction = actor.system.actions
-        .find(a => a?.item?.sourceId === ikon || a?.item?.uuid === ikon);
+        .find(a => a?.item?.id === ikon ||  a?.item?.sourceId === ikon || a?.item?.uuid === ikon);
 
-    const {map} = await baseMapForm();
+    const {map} = await baseMapForm("Flowing Spirit Strike");
 
     if (map === undefined) {
         return;
@@ -825,11 +825,6 @@ export async function twinFlowingSpiritStrike(actor) {
     if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Flowing Spirit Strike feat!`);
         return;
-    }
-    let ikon = feat.flags.pf2e.rulesSelections.grantedIkon;
-    if (!ikon) {
-        ui.notifications.warn(`${actor.name} does not selected ikon!`);
-        return
     }
     if (game.user.targets.size !== 1) {
         ui.notifications.info(`Need to select target to run macro`);
@@ -1056,7 +1051,7 @@ export async function crescentSpray(token) {
         return
     }
 
-    const {map} = await baseMapForm();
+    const {map} = await baseMapForm("Crescent Spray");
 
     if (map === undefined) {
         return;

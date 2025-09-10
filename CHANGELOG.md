@@ -1,3 +1,6 @@
+### Version 1.0.19
+- Fix handling ikons for Flowing Spirit Strike
+
 ### Version 1.0.18
 - Add Flowing Spirit Strike (twin) macro
 
