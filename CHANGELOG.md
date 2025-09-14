@@ -1,3 +1,6 @@
+### Version 1.0.20
+- Flowing Spirit Strike penalty
+
 ### Version 1.0.19
 - Fix handling ikons for Flowing Spirit Strike
 

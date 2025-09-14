@@ -815,7 +815,7 @@ export async function flowingSpiritStrike(actor) {
         "Flowing Spirit Strike",
         weaponAction,
         weaponAction,
-        [],
+        ["flowingSpiritStrike"],
         map,
         map);
 }
@@ -886,10 +886,10 @@ export async function twinFlowingSpiritStrike(actor) {
     }
 
     let options = weapons[weapon1] === weapons[weapon2]
-        ? []
+        ? ["flowingSpiritStrike"]
         : weapons[weapon1].item.system.traits.value.some((t) => t === "twin") && weapons[weapon2].item.system.traits.value.some((t) => t === "twin")
-            ? ['need-twin-2nd-attack']
-            : []
+            ? ['need-twin-2nd-attack', "flowingSpiritStrike"]
+            : ["flowingSpiritStrike"]
 
     await combinedDamage(
         "Flowing Spirit Strike",

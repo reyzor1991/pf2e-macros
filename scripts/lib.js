@@ -172,6 +172,13 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             await setEffectToActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`)
             secondOpts.push("twin-feint-second-attack")
         }
+        if (options.includes("flowingSpiritStrike")) {
+            secondOpts.push("item:tag:physical-ikon:gleaming-blade")
+            let fss = secondary.item.actor.items.find(i=>i.slug === "flowing-spirit-strike");
+            if (fss) {
+                await secondary.item.actor.toggleRollOption("all", "flowing-spirit-strike", fss.id, true, "second-strike")
+            }
+        }
 
         const secondaryMessage = await secondary.variants[map2].roll({
             'event': eventSkipped(event),
