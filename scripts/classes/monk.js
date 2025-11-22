@@ -16,7 +16,7 @@ function flurryOfBlowsWeapons(actor) {
     }
 
     if (actor.itemTypes.effect.some(s => s.slug === "stance-monastic-archer-stance") && actor.system.actions.some(h => h.item?.isHeld && h.item?.group === "bow" && h.item?.reload === "0")) {
-        weapons.unshift(actor.system.actions.find(h => h.item?.isHeld && h.item?.group === "bow" && h.item?.reload === "0"))
+        weapons.unshift(...actor.system.actions.filter(h => h.item?.isHeld && h.item?.group === "bow" && h.item?.reload === "0"))
     }
 
     return weapons;

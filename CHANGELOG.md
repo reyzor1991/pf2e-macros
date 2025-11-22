@@ -1,3 +1,6 @@
+### Version 1.0.21
+- Fix handling Monastic Archer Stance for Flurry of Blows
+
 ### Version 1.0.20
 - Flowing Spirit Strike penalty
 
