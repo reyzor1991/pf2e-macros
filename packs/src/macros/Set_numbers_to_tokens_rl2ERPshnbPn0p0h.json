@@ -1,0 +1,13 @@
+{
+  "_id": "rl2ERPshnbPn0p0h",
+  "author": "E9zWf1a6ounUt7Ro",
+  "command": "game.activemacros.setNumbersToTokens();",
+  "img": "icons/dice/d4black.svg",
+  "name": "Set numbers to tokens",
+  "ownership": {
+    "default": 1
+  },
+  "scope": "global",
+  "type": "script",
+  "_key": "!macros!rl2ERPshnbPn0p0h"
+}

@@ -1,3 +1,6 @@
+### Version 1.0.22
+- Add macro -- Set numbers to tokens
+
 ### Version 1.0.21
 - Fix handling Monastic Archer Stance for Flurry of Blows
 

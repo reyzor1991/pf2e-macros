@@ -5,12 +5,15 @@ import {
     baseMapForm,
     combinedDamage,
     distanceIsCorrect,
-    eventSkipped, favoriteWeapon, getMap,
+    eventSkipped,
+    favoriteWeapon,
+    getMap,
     hasFeatBySourceId,
     increaseConditionForActor,
     isGM,
     isV12,
-    rollSkipDialog, selectIf,
+    rollSkipDialog,
+    selectIf,
     setEffectToActor,
     shareLanguage,
     veryHardDCByLvl
@@ -803,7 +806,7 @@ export async function flowingSpiritStrike(actor) {
     }
 
     let weaponAction = actor.system.actions
-        .find(a => a?.item?.id === ikon ||  a?.item?.sourceId === ikon || a?.item?.uuid === ikon);
+        .find(a => a?.item?.id === ikon || a?.item?.sourceId === ikon || a?.item?.uuid === ikon);
 
     const {map} = await baseMapForm("Flowing Spirit Strike");
 
@@ -1041,7 +1044,7 @@ export async function crescentSpray(token) {
         return;
     }
 
-    let weapon = actor.system.actions.find(a=>a?.item?.slug==='crescent-cross' & a?.ready)
+    let weapon = actor.system.actions.find(a => a?.item?.slug === 'crescent-cross' & a?.ready)
     if (!weapon) {
         ui.notifications.warn(`${actor.name} does not have Crescent Cross weapon!`);
         return;
@@ -1060,4 +1063,45 @@ export async function crescentSpray(token) {
     await weapon.variants[map].roll({'event': eventSkipped(event)});
     await weapon.variants[map].roll({'event': eventSkipped(event)});
     await weapon.variants[map].roll({'event': eventSkipped(event)});
+}
+
+export async function setNumbersToTokens() {
+    if (!isGM()) {
+        return
+    }
+
+    let tokens = game.scenes.active.tokens.filter(t => t?.actor?.prototypeToken?.actorLink === false);
+
+    const groupedByName = tokens.reduce((groups, token) => {
+        const name = token.name ?? "Unnamed";
+        if (!groups[name]) groups[name] = [];
+        groups[name].push(token);
+        return groups;
+    }, {});
+
+    const filteredGroups = Object.fromEntries(
+        Object.entries(groupedByName).filter(([name, list]) =>
+            name !== "Unnamed" && list.length > 1
+        )
+    );
+
+    let count = 0;
+
+    Object.values(filteredGroups).forEach(arr => {
+        let sarr = arr.sort((a, b) => a.name.localeCompare(b.name));
+
+        sarr.forEach((t, i) => {
+            let newName = t.actor.name + ` ${i + 1}`;
+            if (newName !== t.name) {
+                t?.update({name: newName})
+                count += 1;
+            }
+        })
+    })
+
+    if (count > 0) {
+        ui.notifications.info(`Were renamed ${count} tokens`)
+    } else {
+        ui.notifications.warn(`No one token was renamed`)
+    }
 }

@@ -2,7 +2,7 @@
   "id": "pf2e-macros",
   "title": "PF2e Macros",
   "description": "",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "authors": [
     {
       "name": "Reyzor",
@@ -61,7 +61,8 @@
   "socket": true,
   "compatibility": {
     "minimum": "12",
-    "verified": "13.348"
+    "maximum": "13.999",
+    "verified": "13.351"
   },
   "url": "https://github.com/reyzor1991",
   "manifest": "https://www.dropbox.com/scl/fi/hopwdnv911f7332tlu7ss/module.json?rlkey=udckjm1m1lk99ehfea930lesb&st=q3kuxm9t&dl=1",
