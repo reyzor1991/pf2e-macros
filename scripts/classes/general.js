@@ -1073,7 +1073,7 @@ export async function setNumbersToTokens() {
     let tokens = game.scenes.active.tokens.filter(t => t?.actor?.prototypeToken?.actorLink === false);
 
     const groupedByName = tokens.reduce((groups, token) => {
-        const name = token.name ?? "Unnamed";
+        const name = token.actor.name ?? "Unnamed";
         if (!groups[name]) groups[name] = [];
         groups[name].push(token);
         return groups;
@@ -1087,16 +1087,18 @@ export async function setNumbersToTokens() {
 
     let count = 0;
 
-    Object.values(filteredGroups).forEach(arr => {
-        let sarr = arr.sort((a, b) => a.name.localeCompare(b.name));
+    let tts = Object.values(filteredGroups).flat();
 
-        sarr.forEach((t, i) => {
-            let newName = t.actor.name + ` ${i + 1}`;
-            if (newName !== t.name) {
-                t?.update({name: newName})
-                count += 1;
-            }
-        })
+    const nums = Array.from({ length: 100 }, (_, i) => i + 1)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, tts.length);
+
+    tts.forEach((t, i) => {
+        let newName = t.actor.name + ` ${nums[i]}`;
+        if (newName !== t.name) {
+            t?.update({name: newName})
+            count += 1;
+        }
     })
 
     if (count > 0) {

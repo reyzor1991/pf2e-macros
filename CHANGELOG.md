@@ -1,3 +1,6 @@
+### Version 1.0.23
+- Macro -- Set numbers to tokens -- set random numbers
+
 ### Version 1.0.22
 - Add macro -- Set numbers to tokens
 
