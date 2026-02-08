@@ -273,6 +273,7 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
     let defDC = defDCMap[game.settings.get(moduleName, "defAidDC")];
     let styles = `style="display: flex; align-items: center; justify-content: space-between;"`
     let weapons = actor.system.actions.filter(h => h.ready);
+    let spellCast = actor.spellcasting.contents.filter(a => a.id !== "rituals");
 
     let skillsHtml = `<option value="perception" data-skill='true'>${game.i18n.localize("PF2E.PerceptionLabel")}</option>` + Object.values(_token.actor.skills).map(s => {
         return `<option value="${s.slug}" data-skill='true'>${s.label}</option>`
@@ -280,14 +281,17 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
     let weaponsHtml = weapons.map(s => {
         return `<option value="${s.slug}" data-skill='false'>${s.label}</option>`
     })
+    let spellcastHtml = spellCast.map(s => {
+        return `<option value="${s.id}" data-skill='false' data-spellcast='true'>${s.name}</option>`
+    });
 
-    const {id, isSkill, dc} = await foundry.applications.api.DialogV2.wait({
+    const {id, isSkill, isSpellCast, dc} = await foundry.applications.api.DialogV2.wait({
         window: {title: "Aid"},
         content: `
             <p ${styles}>
                 <strong>Skill or Attack</strong>
                 <select id="actions">
-                    ${game.settings.get(moduleName, "aidWeaponTop") ? weaponsHtml + skillsHtml : skillsHtml + weaponsHtml}
+                    ${game.settings.get(moduleName, "aidWeaponTop") ? weaponsHtml + skillsHtml + spellcastHtml : skillsHtml + weaponsHtml + spellcastHtml}
                 </select>
             </p>
             <p ${styles}>
@@ -302,6 +306,7 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
                 return {
                     id: el.find("#actions").val(),
                     isSkill: el.find("#actions").find('option:selected').data('skill'),
+                    isSpellCast: el.find("#actions").find('option:selected').data('spellcast'),
                     dc: parseInt(el.find('.dc').val()) ?? defDC
                 }
 
@@ -337,6 +342,16 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
                 await setEffectToActor(actor, 'Compendium.pf2e.feat-effects.Item.uBJsxCzNhje8m8jj')//set panache
             }
         }
+    } else if (isSpellCast) {
+        let _sc = spellCast.find(w => w.id === id)?.statistic;
+        if (!_sc) {
+            ui.notifications.warn('Cant find corrent statistic for roll')
+            return
+        }
+
+        roll = await _sc?.roll({event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid']})
+        rank = _sc?.rank;
+
     } else {
         let weapon = weapons.find(w => w.slug === id)
         roll = await weapon?.roll({event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid']})
@@ -1089,7 +1104,7 @@ export async function setNumbersToTokens() {
 
     let tts = Object.values(filteredGroups).flat();
 
-    const nums = Array.from({ length: 100 }, (_, i) => i + 1)
+    const nums = Array.from({length: 100}, (_, i) => i + 1)
         .sort(() => Math.random() - 0.5)
         .slice(0, tts.length);
 

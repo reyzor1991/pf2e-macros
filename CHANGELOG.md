@@ -1,3 +1,6 @@
+### Version 1.0.24
+- Macro -- Aid -- Add spellcasting
+
 ### Version 1.0.23
 - Macro -- Set numbers to tokens -- set random numbers
 
