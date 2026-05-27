@@ -1,7 +1,7 @@
 import {defDCMap, moduleName, OFF_GUARD_TARGET_EFF} from "../const.js";
 import {
     actorFeat,
-    addItemToActor,
+    addItemToActor, baseAttackWeaponForm,
     baseMapForm,
     combinedDamage,
     distanceIsCorrect,
@@ -1181,7 +1181,7 @@ const newCoords = [
 
 export async function changeAlliance() {
 
-    let selectedActors = game.user.getActiveTokens().map(t=>t.actor).filter(a=>!!a);
+    let selectedActors = game.user.getActiveTokens().map(t => t.actor).filter(a => !!a);
     if (!selectedActors.length) {
         ui.notifications.info(`Need to select at least 1 actor`);
         return;
@@ -1282,4 +1282,45 @@ export async function formUp(token) {
         await ttt.document.update({x: nn.x, y: nn.y})
     }
     ui.notifications.info("Troop formed Up");
+}
+
+export async function tumblingStrike(actor) {
+    let target = game.user.targets.first()?.actor;
+
+    if (!target) {
+        ui.notifications.info(`Need to select target`);
+        return;
+    }
+
+    const title = "Tumbling Strike";
+    const targetDC = game.user.targets.first().actor?.getStatistic('reflex')?.dc;
+    const dc = {
+        scope: "check",
+        statistic: targetDC,
+        value: targetDC?.value ?? 0
+    };
+
+    let degreeOfSuccess = (await actor.skills.acrobatics.roll({
+        skipDialog: rollSkipDialog(event),
+        dc,
+        title
+    }))?.degreeOfSuccess;
+    if (degreeOfSuccess === undefined || degreeOfSuccess === null) {
+        return
+    }
+
+    if (degreeOfSuccess === 0) {
+        return
+    }
+
+    if (degreeOfSuccess === 3) {
+        await targetIsOffGuard(actor);
+    }
+    let weapons = actor.system.actions.filter(h => h.ready);
+    let weaponOptions = weapons.map((w, i) => `<option value=${i}>${w.item.name}</option>`).join('')
+    const {currentWeapon, map} = await baseAttackWeaponForm("Tumbling Strike", weaponOptions)
+    if (currentWeapon === undefined) {
+        return
+    }
+    await weapons[currentWeapon].variants[map].roll({event: eventSkipped(event)});
 }

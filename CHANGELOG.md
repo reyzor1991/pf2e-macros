@@ -1,3 +1,6 @@
+### Version 1.1.2
+- Add tumbling strike
+
 ### Version 1.1.1
 - fix download link
 
