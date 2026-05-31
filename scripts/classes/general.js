@@ -355,7 +355,11 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
 
     } else {
         let weapon = weapons.find(w => w.slug === id)
-        roll = await weapon?.roll({event: eventSkipped(event), dc, options: [`action:aid:${id}`, 'action:aid']})
+        roll = await weapon?.roll({event: eventSkipped(event),
+        dc: {
+            scope: "attack",
+            value: dc
+        }, options: [`action:aid:${id}`, 'action:aid']})
         rank = weapon?.options?.includes("proficiency:trained")
             ? 1
             : weapon?.options?.includes("proficiency:expert") ? 2
