@@ -402,6 +402,8 @@ export async function shapeshifting(token) {
         ui.notifications.info(`Select your token before using this macro`);
     }
 
+    console.log(token)
+
     let {imageLink} = await foundry.applications.api.DialogV2.wait({
         window: {title: "Link to image"},
         content: `
@@ -431,6 +433,21 @@ export async function shapeshifting(token) {
         return;
     }
 
+    let rule = {
+        "key": "TokenImage",
+        "value": imageLink
+    };
+
+    if (token?.document?.ring?.enabled) {
+        rule["ring"] = {
+            "subject": {
+                "texture": imageLink,
+                "scale": 0.8
+            },
+            "colors": {}
+        }
+    }
+
     const effect = {
         type: 'effect',
         name: `Shapeshifting`,
@@ -438,10 +455,7 @@ export async function shapeshifting(token) {
         system: {
             tokenIcon: {show: true},
             duration: {value: -1, unit: 'unlimited', sustained: false, expiry: null},
-            rules: [{
-                "key": "TokenImage",
-                "value": imageLink
-            }],
+            rules: [rule],
             slug: `shapeshifting-${_token.actor.id}`
         },
     };

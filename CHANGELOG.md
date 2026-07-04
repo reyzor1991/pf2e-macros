@@ -1,3 +1,6 @@
+### Version 1.1.4
+- Fix Shapeshifting
+
 ### Version 1.1.2
 - Add tumbling strike
 
