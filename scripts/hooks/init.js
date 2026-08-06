@@ -1,5 +1,6 @@
 import {initSettings} from "../settings/index.js";
 import {initMacros} from "../classes/index.js";
+import {moduleName} from "../const.js";
 
 export let DamageRoll = undefined;
 export let DamageInstance = undefined;
@@ -17,6 +18,10 @@ export const Init = {
 
             initSettings();
             initMacros();
+
+            foundry.applications.handlebars.loadTemplates([
+                `modules/${moduleName}/templates/save.hbs`,
+            ]);
         });
     }
 }

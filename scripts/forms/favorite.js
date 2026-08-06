@@ -4,27 +4,29 @@ const {ApplicationV2, HandlebarsApplicationMixin} = foundry.applications.api;
 
 export class FavoriteWeapons extends HandlebarsApplicationMixin(ApplicationV2) {
     static DEFAULT_OPTIONS = {
+        tag: "form",
         id: `${moduleName}-favorite-weapons`,
         classes: [moduleName],
         position: {
             width: 500
         },
         window: {
-            title: "Favorite weapons"
+            title: "Favorite weapons",
+            resizable: true
         },
         form: {
+            handler: this.formHandler,
             closeOnSubmit: true,
             submitOnChange: false,
-            handler: async function (event, form) {
-                return this._updateObject(event, Object.fromEntries(new FormData(form).entries()));
-            }
         }
     };
 
     static PARTS = {
-        form: {
-            root: true,
+        hbs: {
             template: `modules/${moduleName}/templates/weapons.hbs`
+        },
+        footer: {
+            template: `modules/${moduleName}/templates/save.hbs`
         }
     };
 
@@ -40,8 +42,13 @@ export class FavoriteWeapons extends HandlebarsApplicationMixin(ApplicationV2) {
         };
     }
 
+    static async formHandler(event, form, formData) {
+        this._updateObject(event, formData.object);
+    }
+
     async _updateObject(_event, data) {
         let checkData = this.getFavoriteWeapons();
+        console.log(checkData);
         for (let w in data) {
             checkData.find(c => c.id === w).value = data[w]
         }

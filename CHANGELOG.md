@@ -1,3 +1,6 @@
+### Version 1.1.5
+- Fix favorite form
+
 ### Version 1.1.4
 - Fix Shapeshifting
 
