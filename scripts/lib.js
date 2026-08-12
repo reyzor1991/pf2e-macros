@@ -560,7 +560,7 @@ function createDataDamageOnlyOnePrecision(damages) {
     }
 
     let json = deletePrecisionFrom(damages[damageIdx].instances[0].head.toJSON(), damages[damageIdx]?.options?.degreeOfSuccess === 3)
-    let dInstance = DamageInstance.fromTerms([RollTerm.fromData(json)], foundry.utils.deepClone(damages[damageIdx].instances[0].options))
+    let dInstance = DamageInstance.fromTerms([foundry.dice.terms.RollTerm.fromData(json)], foundry.utils.deepClone(damages[damageIdx].instances[0].options))
     damages[damageIdx] = DamageRoll.fromTerms([InstancePool.fromRolls([dInstance, ...damages[damageIdx].instances.slice(1)])])
 
     return combineDamages(damages)

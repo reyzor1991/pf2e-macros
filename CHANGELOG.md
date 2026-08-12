@@ -1,3 +1,6 @@
+### Version 1.1.6
+- Fix class location
+
 ### Version 1.1.5
 - Fix favorite form
 
