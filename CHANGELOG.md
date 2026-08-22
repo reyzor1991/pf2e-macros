@@ -1,3 +1,6 @@
+### Version 1.1.7
+- Fix Stunning Fist/Stunning Blows note not appearing on Flurry of Blows
+
 ### Version 1.1.6
 - Fix class location
 
