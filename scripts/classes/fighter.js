@@ -30,7 +30,7 @@ function doubleSliceWeapons(actor) {
         .map(a => [a, a.item.name]);
 
     //Dual Thrower
-    if (hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.zfTmb78yGZzNpgU3')) {
+    if (hasFeatBySourceId(actor, `Compendium.${game.system.id}.feats-srd.Item.zfTmb78yGZzNpgU3`)) {
         let comboThrows = actor.system.actions.filter(h => h.ready && h.altUsages?.[0]?.item.isThrown)
             .map(a => [a.altUsages?.[0], `${a.altUsages?.[0].item.name} Throw`])
 
@@ -326,9 +326,14 @@ export async function snaggingStrike(actor) {
         console.log('Waiting for workbench auto roll damage')
     }
 
+    let prefix = game.system.id === "pf2e"
+        ? `${moduleName}.effects`
+        : `${moduleName}.effects-sf2e`;
+
+
     await setEffectToActor(
         game.user.targets.first().actor,
-        `Compendium.${moduleName}.effects.Item.YsNqG4OocHoErbc9`,
+        `Compendium.${prefix}.Item.YsNqG4OocHoErbc9`,
         feat.level,
         {
             origin: {
@@ -432,7 +437,7 @@ export async function certainStrike(actor) {
             `<span class="tag tag_transparent" data-visibility="">${b}</span>`
         );
         flavor += `<h4 class="action"><strong>Damage Roll: Certain Strike</strong><span class="subtitle">(Miss)</span></h4>`
-        flavor += `<div class="tags" data-tooltip-class="pf2e"><span class="tag" data-trait="press" data-tooltip="PF2E.TraitDescriptionPress" aria-describedby="tooltip">${game.i18n.localize("PF2E.TraitPress")}</span></div>`
+        flavor += `<div class="tags" data-tooltip-class="${game.system.id}"><span class="tag" data-trait="press" data-tooltip="PF2E.TraitDescriptionPress" aria-describedby="tooltip">${game.i18n.localize("PF2E.TraitPress")}</span></div>`
         flavor += `<hr>`
         flavor += breakdownTags.length > 0 ? `<div class="tags modifiers">${breakdownTags.join("")}</div>` : ""
 
@@ -442,7 +447,7 @@ export async function certainStrike(actor) {
             }),
             flavor,
             flags: {
-                pf2e: {
+                [game.system.id]: {
                     context: {
                         type: 'damage-roll',
                         actor: actor.id,
@@ -475,7 +480,7 @@ export async function swipe(token) {
         return;
     }
     let actor = token.actor;
-    if (!hasFeatBySourceId(actor, "Compendium.pf2e.feats-srd.Item.JbrVcOf82oFXk3mY")) {
+    if (!hasFeatBySourceId(actor, `Compendium.${game.system.id}.feats-srd.Item.JbrVcOf82oFXk3mY`)) {
         ui.notifications.warn(`${actor.name} does not have Swipe!`);
         return;
     }
@@ -618,21 +623,21 @@ export async function swipe(token) {
                 console.log('Apply damage to additional target')
 
                 let coreF = m.flags.core;
-                let pf2eF = m.flags.pf2e;
+                let systemF = m.flags[game.system.id];
 
-                pf2eF.context.target = {
+                systemF.context.target = {
                     actor: additionalTarget.actor.uuid,
                     token: additionalTarget.uuid
                 }
 
-                pf2eF.target = {
+                systemF.target = {
                     actor: additionalTarget.actor.uuid,
                     token: additionalTarget.uuid
                 }
 
                 m.flags = {
                     core: coreF,
-                    pf2e: pf2eF,
+                    [game.system.id]: systemF,
                 }
 
                 ChatMessage.createDocuments([m]);
@@ -648,7 +653,7 @@ export async function whirlwindStrike(token) {
         ui.notifications.info("Please select 1 token");
         return;
     }
-    if (!hasFeatBySourceId(actor, "Compendium.pf2e.feats-srd.Item.AGydz5DKJ2KHSO4S")) {//swipe
+    if (!hasFeatBySourceId(actor, `Compendium.${game.system.id}.feats-srd.Item.AGydz5DKJ2KHSO4S`)) {//swipe
         ui.notifications.warn(`${actor.name} does not have Whirlwind Strike!`);
         return;
     }

@@ -99,12 +99,17 @@ export async function twinFeint(actor) {
     const map2 = map === 2 ? map : map + 1;
 
     await primary.variants[map].roll({'event': eventSkipped(event)});
-    await setEffectToActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`)
+
+    let prefix = game.system.id === "pf2e"
+        ? `${moduleName}.effects`
+        : `${moduleName}.effects-sf2e`;
+
+    await setEffectToActor(secondary.item.actor, `Compendium.${prefix}.Item.HnErWUKHpIpE7eqO`)
     let roll = await secondary.variants[map2].roll({
         'event': eventSkipped(event),
         options: ["twin-feint-second-attack"]
     });
     if (roll.options?.degreeOfSuccess < 2) {
-        await removeEffectFromActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`);
+        await removeEffectFromActor(secondary.item.actor, `Compendium.${prefix}.Item.HnErWUKHpIpE7eqO`);
     }
 }

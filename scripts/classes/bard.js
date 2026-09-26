@@ -45,38 +45,47 @@ export async function inspireHeroics(actor) {
         }],
         default: "ok"
     });
-    if (dc === undefined || spell === undefined) {return }
+    if (dc === undefined || spell === undefined) {
+        return
+    }
 
     let degreeOfSuccess = (await actor.skills.performance.roll({
         skipDialog: rollSkipDialog(event),
         dc: {value: dc}
     })).degreeOfSuccess;
 
-    const aura = (await fromUuid(`Compendium.${moduleName}.effects.Item.mGQMqBoTFRz3or4D`)).toObject();
+    let prefix = game.system.id === "pf2e"
+        ? `${moduleName}.effects`
+        : `${moduleName}.effects-sf2e`;
+
+    const aura = (await fromUuid(`Compendium.${prefix}.Item.mGQMqBoTFRz3or4D`)).toObject();
     let idOfEffect = '';
     if (spell === 0) {
         if (degreeOfSuccess === 3) {
-            idOfEffect = "Compendium.pf2e.spell-effects.Item.VFereWC1agrwgzPL";
+            idOfEffect = `Compendium.${game.system.id}.spell-effects.Item.VFereWC1agrwgzPL`;
         } else if (degreeOfSuccess === 2) {
-            idOfEffect = "Compendium.pf2e.spell-effects.Item.kZ39XWJA3RBDTnqG";
+            idOfEffect = `Compendium.${game.system.id}.spell-effects.Item.kZ39XWJA3RBDTnqG`;
         } else {
-            idOfEffect = "Compendium.pf2e.spell-effects.Item.beReeFroAx24hj83";
+            idOfEffect = `Compendium.${game.system.id}.spell-effects.Item.beReeFroAx24hj83`;
         }
     } else if (spell === 1) {
         if (degreeOfSuccess === 3) {
-            idOfEffect = "Compendium.pf2e.spell-effects.Item.BKam63zT98iWMJH7";
+            idOfEffect = `Compendium.${game.system.id}.spell-effects.Item.BKam63zT98iWMJH7`;
         } else if (degreeOfSuccess === 2) {
-            idOfEffect = "Compendium.pf2e.spell-effects.Item.Chol7ExtoN2T36mP";
+            idOfEffect = `Compendium.${game.system.id}.spell-effects.Item.Chol7ExtoN2T36mP`;
         } else {
-            idOfEffect = "Compendium.pf2e.spell-effects.Item.DLwTvjjnqs2sNGuG";
+            idOfEffect = `Compendium.${game.system.id}.spell-effects.Item.DLwTvjjnqs2sNGuG`;
         }
     } else if (spell === 2) {
         if (degreeOfSuccess === 3) {
-            idOfEffect = `Compendium.${moduleName}.effects.Item.Edq4AdKBHUtseItk`;
+            let prefix = game.system.id === "pf2e"
+                ? `${moduleName}.effects`
+                : `${moduleName}.effects-sf2e`;
+            idOfEffect = `Compendium.${prefix}.Item.Edq4AdKBHUtseItk`;
         } else if (degreeOfSuccess === 2) {
-            idOfEffect = `Compendium.${moduleName}.effects.Item.Sc2JpGRqXir7WSx2`;
+            idOfEffect = `Compendium.${prefix}.Item.Sc2JpGRqXir7WSx2`;
         } else {
-            idOfEffect = "Compendium.pf2e.spell-effects.Item.8adLKKzJy49USYJt";
+            idOfEffect = `Compendium.${game.system.id}.spell-effects.Item.8adLKKzJy49USYJt`;
         }
     }
 

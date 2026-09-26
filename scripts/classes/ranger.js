@@ -176,8 +176,8 @@ export async function rangerLink(actor) {
         return
     }
 
-    await target.setFlag("pf2e", "master", actor.id);
-    await actor.setFlag("pf2e", "animalCompanion", target.uuid);
+    await target.setFlag(game.system.di, "master", actor.id);
+    await actor.setFlag(game.system.di, "animalCompanion", target.uuid);
 
     ui.notifications.info(`Ranger and Animal Companion were linked`);
 }

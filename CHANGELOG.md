@@ -1,3 +1,6 @@
+### Version 1.1.7
+- Sf2e support (testing)
+
 ### Version 1.1.6
 - Fix class location
 

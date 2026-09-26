@@ -1,7 +1,8 @@
 import {defDCMap, moduleName, OFF_GUARD_TARGET_EFF} from "../const.js";
 import {
     actorFeat,
-    addItemToActor, baseAttackWeaponForm,
+    addItemToActor,
+    baseAttackWeaponForm,
     baseMapForm,
     combinedDamage,
     distanceIsCorrect,
@@ -256,12 +257,15 @@ export async function scareToDeath(actor) {
 }
 
 export async function aid(actor) {
+    let prefix = game.system.id === "pf2e"
+        ? `${moduleName}.effects`
+        : `${moduleName}.effects-sf2e`;
     await aidBase(actor,
-        `Compendium.${moduleName}.effects.Item.w9uaEadTRdzQDvvb`,
-        `Compendium.${moduleName}.effects.Item.L1hIpxQ7GSKecbg8`,
-        `Compendium.${moduleName}.effects.Item.FNg7DnPqAJUHa7M3`,//+2
-        `Compendium.${moduleName}.effects.Item.I2ybp2bragN3affJ`,//+3
-        `Compendium.${moduleName}.effects.Item.YflHqtJFA40JQULG`,//+4
+        `Compendium.${prefix}.Item.w9uaEadTRdzQDvvb`,
+        `Compendium.${prefix}.Item.L1hIpxQ7GSKecbg8`,
+        `Compendium.${prefix}.Item.FNg7DnPqAJUHa7M3`,//+2
+        `Compendium.${prefix}.Item.I2ybp2bragN3affJ`,//+3
+        `Compendium.${prefix}.Item.YflHqtJFA40JQULG`,//+4
     )
 }
 
@@ -336,11 +340,11 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
 
         if (
             id === 'diplomacy'
-            && hasFeatBySourceId(actor, "Compendium.pf2e.classfeatures.Item.4lGhbEjlEoGP4scl")
-            && hasFeatBySourceId(actor, "Compendium.pf2e.feats-srd.Item.bCizH4ByTwbLcYA1")
+            && hasFeatBySourceId(actor, `Compendium.${game.system.id}.classfeatures.Item.4lGhbEjlEoGP4scl`)
+            && hasFeatBySourceId(actor, `Compendium.${game.system.id}.feats-srd.Item.bCizH4ByTwbLcYA1`)
         ) {//Wit&One For All
             if (roll.total >= veryHardDCByLvl(actor.level)) {
-                await setEffectToActor(actor, 'Compendium.pf2e.feat-effects.Item.uBJsxCzNhje8m8jj')//set panache
+                await setEffectToActor(actor, `Compendium.${game.system.id}.feat-effects.Item.uBJsxCzNhje8m8jj`)//set panache
             }
         }
     } else if (isSpellCast) {
@@ -355,11 +359,13 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
 
     } else {
         let weapon = weapons.find(w => w.slug === id)
-        roll = await weapon?.roll({event: eventSkipped(event),
-        dc: {
-            scope: "attack",
-            value: dc
-        }, options: [`action:aid:${id}`, 'action:aid']})
+        roll = await weapon?.roll({
+            event: eventSkipped(event),
+            dc: {
+                scope: "attack",
+                value: dc
+            }, options: [`action:aid:${id}`, 'action:aid']
+        })
         rank = weapon?.options?.includes("proficiency:trained")
             ? 1
             : weapon?.options?.includes("proficiency:expert") ? 2
@@ -369,7 +375,7 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
 
     }
 
-    let hasHelpFeat = hasFeatBySourceId(actor, 'Compendium.pf2e.feats-srd.Item.gWyCNTWUhxneOBne');//Helpful Halfling
+    let hasHelpFeat = hasFeatBySourceId(actor, `Compendium.${game.system.id}.feats-srd.Item.gWyCNTWUhxneOBne`);//Helpful Halfling
     let effectId = undefined;
     if (roll?.options?.degreeOfSuccess === 0 && !hasHelpFeat) {
         effectId = criticalFailure;
@@ -385,7 +391,7 @@ export async function aidBase(actor, criticalFailure, success, criticalSuccess, 
     }
 
     if (effectId) {
-        if (actor.items.find(a => a.sourceId === 'Compendium.pf2e.equipment-srd.Item.XyoYrGEAhJ3iCahe')?.isInvested) {//The Publican
+        if (actor.items.find(a => a.sourceId === `Compendium.${game.system.id}.equipment-srd.Item.XyoYrGEAhJ3iCahe`)?.isInvested) {//The Publican
             let effObj = (await fromUuid(effectId)).toObject()
             effObj.system.rules[0].value += 1;
 
@@ -468,66 +474,70 @@ export async function explorationActivity(actor) {
         return
     }
 
+    let prefix = game.system.id === "pf2e"
+        ? "pf2e.actionspf2e"
+        : "sf2e.actions";
+
     const actions = [
         {
             label: 'Avoid Notice',
             img: 'icons/magic/perception/silhouette-stealth-shadow.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.IE2nThCmoyhQA0Jn'
+            id: `Compendium.${prefix}.Item.IE2nThCmoyhQA0Jn`
         },
         {
             label: 'Cover Tracks',
             img: 'icons/tools/smithing/horseshoe-steel-blue.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.SB7cMECVtE06kByk'
+            id: `Compendium.${prefix}.Item.SB7cMECVtE06kByk`
         },
         {
             label: 'Defend',
             img: 'icons/equipment/shield/heater-steel-boss-red.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.cYtYKa1gDEl7y2N0'
+            id: `Compendium.${prefix}.Item.cYtYKa1gDEl7y2N0`
         },
         {
             label: 'Detect Magic',
             img: 'icons/magic/water/vortex-water-whirlpool.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.Yb0C1uLzeHrVLl7a'
+            id: `Compendium.${prefix}.Item.Yb0C1uLzeHrVLl7a`
         },
         {
             label: 'Follow the Expert',
             img: 'icons/skills/social/diplomacy-unity-alliance.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.tfa4Sh7wcxCEqL29'
+            id: `Compendium.${prefix}.Item.tfa4Sh7wcxCEqL29`
         },
         {
             label: 'Hustle',
             img: 'icons/skills/movement/feet-winged-boots-brown.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.JuqmIAnkL9hVGai8'
+            id: `Compendium.${prefix}.Item.JuqmIAnkL9hVGai8`
         },
         {
             label: 'Investigate',
             img: 'icons/tools/scribal/magnifying-glass.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.EwgTZBWsc8qKaViP'
+            id: `Compendium.${prefix}.Item.EwgTZBWsc8qKaViP`
         },
         {
             label: 'Refocus',
             img: 'icons/magic/perception/third-eye-blue-red.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.OSefkMgojBLqmRDh'
+            id: `Compendium.${prefix}.Item.OSefkMgojBLqmRDh`
         },
         {
             label: 'Repeat a Spell',
             img: 'icons/magic/symbols/circle-ouroboros.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.OQaFzDtVEOMWizJJ'
+            id: `Compendium.${prefix}.Item.OQaFzDtVEOMWizJJ`
         },
         {
             label: 'Scout',
             img: 'icons/tools/navigation/map-marked-red.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.kV3XM0YJeS2KCSOb'
+            id: `Compendium.${prefix}.Item.kV3XM0YJeS2KCSOb`
         },
         {
             label: 'Search',
             img: 'icons/magic/perception/eye-ringed-green.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.TiNDYUGlMmxzxBYU'
+            id: `Compendium.${prefix}.Item.TiNDYUGlMmxzxBYU`
         },
         {
             label: 'Track',
             img: 'icons/creatures/abilities/paw-print-yellow.webp',
-            id: 'Compendium.pf2e.actionspf2e.Item.EA5vuSgJfiHH7plD'
+            id: `Compendium.${prefix}.Item.EA5vuSgJfiHH7plD`
         }
     ];
 
@@ -603,7 +613,7 @@ export async function targetIsOffGuard(actor) {
     }
     let target = game.user.targets.first().actor;
 
-    let o = foundry.utils.deepClone(OFF_GUARD_TARGET_EFF);
+    let o = foundry.utils.deepClone(OFF_GUARD_TARGET_EFF());
     o.name = target.name + o.name
     o.system.rules[0].predicate.push("target:signature:" + target.signature)
 
@@ -751,7 +761,7 @@ export async function effectConditionInfo(_actor) {
     if (effects.length > 0) {
         content += `Target is under effects:<br>${effects.join('<br>')}`
     }
-    let conds = game.user.targets.first().actor.itemTypes.condition.filter(a => !a.flags.pf2e?.grantedBy?.id).map(e => e.name)
+    let conds = game.user.targets.first().actor.itemTypes.condition.filter(a => !a.flags[game.system.id]?.grantedBy?.id).map(e => e.name)
     if (conds.length > 0) {
         if (content) {
             content += '<br><br>'
@@ -822,12 +832,12 @@ export async function showHeroPoints() {
 }
 
 export async function flowingSpiritStrike(actor) {
-    let feat = actor.itemTypes.feat.find(f => f.sourceId === 'Compendium.pf2e.classfeatures.Item.o8Q7wWx2oKvKMi1s');
+    let feat = actor.itemTypes.feat.find(f => f.sourceId === `Compendium.${game.system.id}.classfeatures.Item.o8Q7wWx2oKvKMi1s`);
     if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Flowing Spirit Strike feat!`);
         return;
     }
-    let ikon = feat.flags.pf2e.rulesSelections.grantedIkon || feat.flags.pf2e.rulesSelections.existingIkon;
+    let ikon = feat.flags[game.system.id].rulesSelections.grantedIkon || feat.flags[game.system.id].rulesSelections.existingIkon;
     if (!ikon) {
         ui.notifications.warn(`${actor.name} does not selected ikon!`);
         return
@@ -856,7 +866,7 @@ export async function flowingSpiritStrike(actor) {
 }
 
 export async function twinFlowingSpiritStrike(actor) {
-    let feat = actor.itemTypes.feat.find(f => f.sourceId === 'Compendium.pf2e.classfeatures.Item.o8Q7wWx2oKvKMi1s');
+    let feat = actor.itemTypes.feat.find(f => f.sourceId === `Compendium.${game.system.id}.classfeatures.Item.o8Q7wWx2oKvKMi1s`);
     if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Flowing Spirit Strike feat!`);
         return;
@@ -964,7 +974,7 @@ export async function distractingPerformance(token) {
         return;
     }
     let actor = token.actor;
-    let feat = actor.itemTypes.feat.find(f => f.sourceId === "Compendium.pf2e.feats-srd.Item.4UXyMtXLaOxuH6Js");
+    let feat = actor.itemTypes.feat.find(f => f.sourceId === `Compendium.${game.system.id}.feats-srd.Item.4UXyMtXLaOxuH6Js`);
     if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Distracting Performance feat!`);
         return;
@@ -1030,6 +1040,10 @@ export async function distractingPerformance(token) {
         actors: [actor],
         callback: (data) => {
             if (data?.outcome === "criticalSuccess" || data?.outcome === "success") {
+                let prefix = game.system.id === "pf2e"
+                    ? "pf2e.conditionitems"
+                    : "sf2e.conditions";
+
                 const effect = {
                     type: 'effect',
                     name: `Hidden (Distracting Performance)`,
@@ -1042,7 +1056,7 @@ export async function distractingPerformance(token) {
                             "onDeleteActions": {
                                 "grantee": "restrict"
                             },
-                            "uuid": "Compendium.pf2e.conditionitems.Item.iU0fEDdBp3rXpTMC"
+                            "uuid": `Compendium.${prefix}.Item.iU0fEDdBp3rXpTMC`
                         }],
                         slug: `shapeshifting-${_token.actor.id}`
                     },
@@ -1062,8 +1076,12 @@ export async function crescentSpray(token) {
         ui.notifications.info(`Select your token before using this macro`);
         return;
     }
+    let prefix = game.system.id === "pf2e"
+        ? "pf2e.actionspf2e"
+        : "sf2e.actions";
+
     let actor = token.actor;
-    let feat = actor.items.find(f => f.sourceId === "Compendium.pf2e.actionspf2e.Item.2XQowhfM4SfAhJaf");
+    let feat = actor.items.find(f => f.sourceId === `Compendium.${prefix}.Item.2XQowhfM4SfAhJaf`);
     if (!feat) {
         ui.notifications.warn(`${actor.name} does not have Crescent Spray action!`);
         return;

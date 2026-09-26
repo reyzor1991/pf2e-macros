@@ -57,7 +57,10 @@ export async function rootToLife(actor) {
     await removeConditionFromActor(game.user.targets.first().actor, 'dying', true)
 
     if (action === 2) {
-        setEffectToActor(game.user.targets.first().actor, `Compendium.${moduleName}.effects.Item.MyxzXA8wHHs6rxGj`, 1, {
+        let prefix = game.system.id === "pf2e"
+            ? `${moduleName}.effects`
+            : `${moduleName}.effects-sf2e`;
+        setEffectToActor(game.user.targets.first().actor, `Compendium.${prefix}.Item.MyxzXA8wHHs6rxGj`, 1, {
             origin: {
                 actor: actor?.uuid,
                 item: feat?.uuid
@@ -65,7 +68,7 @@ export async function rootToLife(actor) {
         })
             .then(async () => {
                 await rollAllRecovery(game.user.targets.first().actor)
-                const eff = hasEffectBySourceId(game.user.targets.first().actor, `Compendium.${moduleName}.effects.Item.MyxzXA8wHHs6rxGj`)
+                const eff = hasEffectBySourceId(game.user.targets.first().actor, `Compendium.${prefix}.Item.MyxzXA8wHHs6rxGj`)
                 if (eff) {
                     await deleteItem(eff)
                 }

@@ -1,5 +1,10 @@
 const moduleName = "pf2e-macros";
 
+export const XDY_PF2E_WORKBENCH = 'xdy-pf2e-workbench';
+export const TARGET_HELPER = 'pf2e-target-helper';
+export const HUNTED_PREY_EFFECT = 'Compendium.pf2e-automations-patreon.effects.Item.a51AN6VfpW9b4ttm';
+export const ROLL_TWICE_EFFECT = 'Compendium.pf2e.spell-effects.Item.fpGDAz2v5PG0zUSl';
+
 const DEFAULT_FAVORITE = [
     {id: 'double-slice-1', label: 'Double Slice First Weapon', value: ''},
     {id: 'double-slice-2', label: 'Double Slice Second Weapon', value: ''},
@@ -62,41 +67,47 @@ const defDCMap = {
     'homebrew13': 13,
 }
 
-const OFF_GUARD_TARGET_EFF = {
-    "name": " is Off-guard",
-    "type": "effect",
-    "effects": [],
-    "system": {
-        "description": {
-            "gm": "",
-            "value": ""
+function OFF_GUARD_TARGET_EFF() {
+    let prefix = game.system.id === "pf2e"
+        ? "pf2e.conditionitems"
+        : "sf2e.conditions";
+
+    return {
+        "name": " is Off-guard",
+        "type": "effect",
+        "effects": [],
+        "system": {
+            "description": {
+                "gm": "",
+                "value": ""
+            },
+            "rules": [
+                {
+                    "key": "EphemeralEffect",
+                    "selectors": [
+                        "attack-roll",
+                        "damage"
+                    ],
+                    "predicate": [],
+                    "uuid": `Compendium.${prefix}.Item.AJh5ex99aV6VTggg`
+                }
+            ],
+            "slug": "target-is-off-guard",
+            "traits": {
+                "otherTags": [],
+                "value": []
+            },
+            "level": {"value": 1},
+            "duration": {
+                "value": -1,
+                "unit": "unlimited",
+                "expiry": null,
+                "sustained": false
+            },
+            "tokenIcon": {"show": true},
         },
-        "rules": [
-            {
-                "key": "EphemeralEffect",
-                "selectors": [
-                    "attack-roll",
-                    "damage"
-                ],
-                "predicate": [],
-                "uuid": "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg"
-            }
-        ],
-        "slug": "target-is-off-guard",
-        "traits": {
-            "otherTags": [],
-            "value": []
-        },
-        "level": {"value": 1},
-        "duration": {
-            "value": -1,
-            "unit": "unlimited",
-            "expiry": null,
-            "sustained": false
-        },
-        "tokenIcon": {"show": true},
-    },
-    "img": "icons/skills/melee/strike-blade-scimitar-gray-red.webp"
+        "img": "icons/skills/melee/strike-blade-scimitar-gray-red.webp"
+    }
 }
 
 export {

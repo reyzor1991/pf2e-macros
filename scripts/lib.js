@@ -1,10 +1,10 @@
 import {socketlibSocket} from "./hooks/setup.js";
-import {dcByLevel, moduleName, TO_AVERAGE_DMG} from "./const.js";
+import {dcByLevel, HUNTED_PREY_EFFECT, moduleName, TARGET_HELPER, TO_AVERAGE_DMG, XDY_PF2E_WORKBENCH} from "./const.js";
 import {ArithmeticExpression, DamageInstance, DamageRoll, InstancePool} from "./hooks/init.js";
 
 export function eventSkipped(event, isDamage = false) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
-        ? new KeyboardEvent('keydown', {'shiftKey': isDamage ? game.user.flags.pf2e.settings.showDamageDialogs : game.user.flags.pf2e.settings.showCheckDialogs})
+        ? new KeyboardEvent('keydown', {'shiftKey': isDamage ? game.user.flags?.[game.system.id].settings.showDamageDialogs : game.user.flags?.[game.system.id].settings.showCheckDialogs})
         : event;
 }
 
@@ -12,7 +12,7 @@ export function rollSkipDialog(event) {
     return game.settings.get(moduleName, "skipRollDialogMacro")
         ? true
         : (
-            event.shiftKey ? game.user.flags.pf2e.settings.showCheckDialogs : !game.user.flags.pf2e.settings.showCheckDialogs
+            event.shiftKey ? game.user.flags?.[game.system.id].settings.showCheckDialogs : !game.user.flags?.[game.system.id].settings.showCheckDialogs
         );
 }
 
@@ -27,14 +27,15 @@ function shouldIHandleThisMessage(roll, playerCondition = true, gmCondition = tr
 }
 
 
+
 export function otherModulesAutoRoll(roll) {
-    if (!game.modules.get('xdy-pf2e-workbench')?.active) {
-        if (game.modules.get('pf2e-target-helper')?.active) {
-            return game.settings.get("pf2e-target-helper", "multipleTargetRollDamage") === "all";
+    if (!game.modules.get(XDY_PF2E_WORKBENCH)?.active) {
+        if (game.modules.get(TARGET_HELPER)?.active) {
+            return game.settings.get(TARGET_HELPER, "multipleTargetRollDamage") === "all";
         }
         return false
     }
-    let autoRollDamageAllow = String(game.settings.get('xdy-pf2e-workbench', "autoRollDamageAllow"));
+    let autoRollDamageAllow = String(game.settings.get(XDY_PF2E_WORKBENCH, "autoRollDamageAllow"));
     return autoRollDamageAllow
         && shouldIHandleThisMessage(
             roll,
@@ -64,7 +65,7 @@ export function until(checkFn, timeout = 10000, interval = 100) {
 }
 
 function hasOption(message, opt) {
-    return message?.flags?.pf2e?.context?.options?.includes(opt);
+    return message?.flags?.[game.system.id]?.context?.options?.includes(opt);
 }
 
 export function isGM() {
@@ -142,7 +143,7 @@ async function firstAttack(message) {
 
     if (message?.target?.actor
             ?.itemTypes?.effect
-            ?.find(c => "Compendium.pf2e-automations-patreon.effects.Item.a51AN6VfpW9b4ttm" === c.sourceId && c.origin === message.actor)
+            ?.find(c => HUNTED_PREY_EFFECT === c.sourceId && c.origin === message.actor)
         && message.actor.rollOptions?.["all"]?.["first-attack"]) {
         return await message.actor.toggleRollOption("all", "first-attack")
     }
@@ -153,6 +154,9 @@ export async function combinedDamage(name, primary, secondary, options, map, map
     let onlyOnePrecision = false;
     const damages = [];
     const attacks = [];
+    let prefix = game.system.id === "pf2e"
+        ? `${moduleName}.effects`
+        : `${moduleName}.effects-sf2e`;
 
     function PD(cm) {
         if (cm.author.id === game.userId && cm.isDamageRoll) {
@@ -162,7 +166,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
     }
 
     function PRoll(cm) {
-        if (cm.author.id === game.userId && !cm.isDamageRoll && cm.isRoll && cm.flags?.pf2e?.origin && cm.flags?.pf2e?.context) {
+        if (cm.author.id === game.userId && !cm.isDamageRoll && cm.isRoll && cm.flags?.[game.system.id]?.origin && cm.flags?.[game.system.id]?.context) {
             attacks.push(cm);
         }
     }
@@ -180,7 +184,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
 
         const primaryMessage = await primary.variants[map].roll({'event': eventSkipped(event)});
         const primaryDegreeOfSuccess =
-            attacks[0]?.flags?.pf2e?.flatCheck?.result === 'fail'
+            attacks[0]?.flags?.[game.system.id]?.flatCheck?.result === 'fail'
                 ? 0
                 : (primaryMessage?.options?.degreeOfSuccess || 0);
 
@@ -188,8 +192,8 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             await primary.item.actor.toggleRollOption("all", "double-slice-second")
         }
 
-        if (primaryMessage && primaryMessage?.flags?.pf2e?.modifiers?.find(a => a.slug === "aid" && a.enabled)) {
-            const eff = hasEffectBySourceId(primary.item.actor, "Compendium.pf2e.other-effects.Item.AHMUpMbaVkZ5A1KX")
+        if (primaryMessage && primaryMessage?.flags?.[game.system.id]?.modifiers?.find(a => a.slug === "aid" && a.enabled)) {
+            const eff = hasEffectBySourceId(primary.item.actor, `Compendium.${game.system.id}.other-effects.Item.AHMUpMbaVkZ5A1KX`)
             if (eff) {
                 await deleteItem(eff)
             }
@@ -199,7 +203,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             secondOpts.push("backswing-bonus")
         }
         if (options.includes("twin-feint")) {
-            await setEffectToActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`)
+            await setEffectToActor(secondary.item.actor, `Compendium.${prefix}.Item.HnErWUKHpIpE7eqO`)
             secondOpts.push("twin-feint-second-attack")
         }
         if (options.includes("flowingSpiritStrike")) {
@@ -215,7 +219,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             options: secondOpts
         });
         const secondaryDegreeOfSuccess =
-            attacks[1]?.flags?.pf2e?.flatCheck?.result === 'fail'
+            attacks[1]?.flags?.[game.system.id]?.flatCheck?.result === 'fail'
                 ? 0
                 : (secondaryMessage?.options?.degreeOfSuccess || 0);
 
@@ -293,7 +297,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         }
 
         if (options.includes("twin-feint")) {
-            await removeEffectFromActor(secondary.item.actor, `Compendium.${moduleName}.effects.Item.HnErWUKHpIpE7eqO`);
+            await removeEffectFromActor(secondary.item.actor, `Compendium.${prefix}.Item.HnErWUKHpIpE7eqO`);
         }
 
         if (damages.length === 0) {
@@ -316,7 +320,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
                 ? (await getNewRollForTwin(damages[0])).toObject()
                 : damages[0].toObject()
 
-            m.flags.pf2e.context.options = m.flags.pf2e.context.options.filter(e => e !== "skip-handling-message");
+            m.flags[game.system.id].context.options = m.flags?.[game.system.id].context.options.filter(e => e !== "skip-handling-message");
             ChatMessage.createDocuments([m]);
             return;
         }
@@ -327,7 +331,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         }
 
         const rolls = createNewDamageRolls(onlyOnePrecision, damages.map(a => a.rolls[0]), damages[0].target);
-        let all = damages[0].flags.pf2e.context.options.concat(damages[1].flags.pf2e.context.options)
+        let all = damages[0].flags?.[game.system.id].context.options.concat(damages[1].flags?.[game.system.id].context.options)
             .filter(e => e !== 'skip-handling-message');
         const opts = all
             .filter(e => !e.startsWith("item:"));
@@ -338,16 +342,16 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             ...optItems.filter(e => e.startsWith("item:material")),
             ...optItems.filter(e => e.startsWith("item:magical")),
         ];
-        const doms = damages[0].flags.pf2e.context.domains.concat(damages[1].flags.pf2e.context.domains);
-        const mods = damages[0].flags.pf2e.modifiers.concat(damages[1].flags.pf2e.modifiers);
+        const doms = damages[0].flags?.[game.system.id].context.domains.concat(damages[1].flags?.[game.system.id].context.domains);
+        const mods = damages[0].flags?.[game.system.id].modifiers.concat(damages[1].flags?.[game.system.id].modifiers);
         const flavor = `<strong>${name} Total Damage</strong>`
             + (damages[0].flavor === damages[1].flavor
                 ? `<p>Both Attack<hr>${damages[0].flavor}</p><hr>`
                 : `<hr>${damages[0].flavor}<hr>${damages[1].flavor}`)
 
         const target = damages[0].target;
-        const originF = damages[0]?.flags?.pf2e?.origin;
-        const originS = damages[1]?.flags?.pf2e?.origin;
+        const originF = damages[0]?.flags?.[game.system.id]?.origin;
+        const originS = damages[1]?.flags?.[game.system.id]?.origin;
 
         //todo: delete later
         let criticalItems = [];
@@ -364,8 +368,8 @@ export async function combinedDamage(name, primary, secondary, options, map, map
             })
         }
 
-        let fItemOptions = damages[0].flags.pf2e.context.options.filter(e => e.startsWith("item:"));
-        let sItemOptions = damages[1].flags.pf2e.context.options.filter(e => e.startsWith("item:"));
+        let fItemOptions = damages[0].flags?.[game.system.id].context.options.filter(e => e.startsWith("item:"));
+        let sItemOptions = damages[1].flags?.[game.system.id].context.options.filter(e => e.startsWith("item:"));
 
         if (primaryDegreeOfSuccess === 3) {
             opts.push(...fItemOptions.map(e => e.replace("item:", "crit-item-1:")));
@@ -385,7 +389,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
 
         let messageData = {
             flags: {
-                pf2e: {
+                [game.system.id]: {
                     target: {
                         actor: target?.actor?.uuid,
                         token: target?.token?.uuid
@@ -410,7 +414,7 @@ export async function combinedDamage(name, primary, secondary, options, map, map
         };
 
         if (originF && originS && originF === originS) {
-            messageData.flags.pf2e.origin = originF;
+            messageData.flags[game.system.id].origin = originF;
         }
 
         Hooks.off('preCreateChatMessage', hookId);
@@ -433,7 +437,7 @@ async function getNewRollForTwin(message) {
     roll.options.damage.modifiers.find(a => a.slug === 'twin-second').ignored = false;
     roll.options.damage.modifiers.find(a => a.slug === 'twin-second').enabled = true;
 
-    let newMod = new game.pf2e.StatisticModifier(message.flags.pf2e.modifierName, roll.options.damage.damage.modifiers.filter(m => !m.damageType || m.damageType === 'slashing'));
+    let newMod = new game.pf2e.StatisticModifier(message.flags?.[game.system.id].modifierName, roll.options.damage.damage.modifiers.filter(m => !m.damageType || m.damageType === 'slashing'));
 
     let base = roll.terms[0].rolls[0];
     let baseTerms = isCrit

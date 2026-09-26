@@ -151,14 +151,14 @@ export async function twoElementInfusion(actor) {
         let total = damages[0].rolls[0].total
         let fDamage = Math.ceil(total / 2);
 
-        let systemFlags = foundry.utils.deepClone(damages[0].flags.pf2e);
+        let systemFlags = foundry.utils.deepClone(damages[0].flags?.[game.system.id] || {});
 
         let r = new DamageRoll(`${fDamage}[${active.damageType}],${total - fDamage}[${passive.damageType}]`);
         r.evaluateSync()
         r.toMessage({
             speaker: damages[0].speaker,
             flags: {
-                pf2e: {
+                [game.system.id]: {
                     context: systemFlags.context,
                     origin: {
                         actor: systemFlags.origin.actor,
