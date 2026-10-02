@@ -1,3 +1,6 @@
+### Version 1.1.8
+- Sf2e support Retch
+
 ### Version 1.1.7
 - Sf2e support (testing)
 
