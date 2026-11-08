@@ -131,6 +131,9 @@ export async function flurryOfBlows(actor) {
     if (primary === secondary && primary?.item?.traits?.has('forceful')) {
         options.push("forceful-second")
     }
+    if (primary !== secondary && secondary?.item?.traits?.has('twin') && primary?.item?.traits?.has('twin')) {
+        options.push("need-twin-2nd-attack")
+    }
 
     await combinedDamage("Flurry Of Blows", primary, secondary, options, map, map2);
 }
