@@ -951,12 +951,16 @@ export async function retch(actor) {
     }
 
     let sick = actor.itemTypes.condition.find(c => c.slug === 'sickened'
-            && (c?.flags?.['patreon-v3']?.dc || c?.flags?.['core']?.dc))
+            && (c?.flags?.['patreon-v3']?.dc
+            || c?.flags?.['pf2e-automations']?.dc
+            || c?.flags?.['core']?.dc))
     if (!sick) {
         ui.notifications.info(`${actor.name} doesn't have sickened condition with DC value`)
         return
     }
-    let dc = sick.flags['patreon-v3']?.dc || sick.flags['core']?.dc
+    let dc = sick.flags['patreon-v3']?.dc
+        || sick.flags['pf2e-automations']?.dc
+        || sick.flags['core']?.dc
 
     let resultRoll = await actor.saves.fortitude.roll({dc: {value: dc, label: 'Retching in an attempt to recover'}})
 

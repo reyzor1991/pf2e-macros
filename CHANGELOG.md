@@ -1,3 +1,6 @@
+### Version 1.1.9
+- Fix automation support Retch
+
 ### Version 1.1.8
 - Sf2e support Retch
 
