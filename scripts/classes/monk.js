@@ -115,25 +115,41 @@ export async function flurryOfBlows(actor) {
         return;
     }
 
-    const map2 = map === 2 ? map : map + 1;
+    // Stunning Fist / Stunning Blows put their reminder Note behind a toggleable RollOption on
+    // the "damage" domain. Passing the option into the damage roll's context is not enough: the
+    // Note's predicate is tested against the actor's own roll options, so the toggle has to be
+    // set. It must also be set BEFORE the strikes are resolved below, because toggling updates
+    // the item, which re-prepares the actor and rebuilds `actor.system.actions` - strikes
+    // captured beforehand are stale and roll without the option.
+    const noteToggles = ["stunning-fist", "stunning-blows"]
+        .filter(slug => actorFeat(actor, slug))
+        .map(slug => actor.itemTypes.feat.find(f => f.slug === slug))
+        .filter(item => !!item && !actor.rollOptions?.damage?.[item.slug]);
 
-    let primary = getWeapon(actor, weapon1[0], weapon1[1], weapon1[2]);
-    let secondary = getWeapon(actor, weapon2[0], weapon2[1], weapon2[2]);
-    if (!primary || !secondary) {
-        ui.notifications.error("Can't map to correct weapon");
-        return;
-    }
+    try {
+        for (const item of noteToggles) {
+            await actor.toggleRollOption("damage", item.slug, item.id, true);
+        }
 
-    const options = actorFeat(actor, "stunning-fist") ? ["stunning-fist"] : [];
-    if (actorFeat(actor, "stunning-blows")) {
-        options.push("stunning-blows")
-    }
-    if (primary === secondary && primary?.item?.traits?.has('forceful')) {
-        options.push("forceful-second")
-    }
-    if (primary !== secondary && secondary?.item?.traits?.has('twin') && primary?.item?.traits?.has('twin')) {
-        options.push("need-twin-2nd-attack")
-    }
+        let primary = getWeapon(actor, weapon1[0], weapon1[1], weapon1[2]);
+        let secondary = getWeapon(actor, weapon2[0], weapon2[1], weapon2[2]);
+        if (!primary || !secondary) {
+            ui.notifications.error("Can't map to correct weapon");
+            return;
+        }
 
-    await combinedDamage("Flurry Of Blows", primary, secondary, options, map, map2);
+        const options = actorFeat(actor, "stunning-fist") ? ["stunning-fist"] : [];
+        if (actorFeat(actor, "stunning-blows")) {
+            options.push("stunning-blows")
+        }
+        if (primary === secondary && primary?.item?.traits?.has('forceful')) {
+            options.push("forceful-second")
+        }
+
+        await combinedDamage("Flurry Of Blows", primary, secondary, options, map, map2);
+    } finally {
+        for (const item of noteToggles) {
+            await actor.toggleRollOption("damage", item.slug, item.id, false);
+        }
+    }
 }

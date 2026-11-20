@@ -1,3 +1,7 @@
+### Version 1.1.10
+- Fix Stunning Fist/Stunning Blows note not appearing on Flurry of Blows @plisitza
+- Better Workbench Autoroll detection - @Far2Casual
+
 ### Version 1.1.9
 - Fix automation support Retch
 
