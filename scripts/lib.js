@@ -29,19 +29,23 @@ function shouldIHandleThisMessage(roll, playerCondition = true, gmCondition = tr
 
 
 export function otherModulesAutoRoll(roll) {
-    if (!game.modules.get(XDY_PF2E_WORKBENCH)?.active) {
+    const wb = game.modules.get(XDY_PF2E_WORKBENCH);
+    if (!wb?.active) {
         if (game.modules.get(TARGET_HELPER)?.active) {
             return game.settings.get(TARGET_HELPER, "multipleTargetRollDamage") === "all";
         }
-        return false
+        return false;
     }
-    let autoRollDamageAllow = String(game.settings.get(XDY_PF2E_WORKBENCH, "autoRollDamageAllow"));
-    return autoRollDamageAllow
-        && shouldIHandleThisMessage(
-            roll,
-            ["all", "players"].includes(autoRollDamageAllow),
-            ["all", "gm"].includes(autoRollDamageAllow),
-        );
+
+    const allow = game.settings.get(XDY_PF2E_WORKBENCH, "autoRollDamageAllow");
+    if (!allow || allow === "none") return false;
+    if (!game.settings.get(XDY_PF2E_WORKBENCH, "autoRollDamageForStrike")) return false;
+
+    return shouldIHandleThisMessage(
+        roll,
+        ["all", "players"].includes(allow),
+        ["all", "gm"].includes(allow),
+    );
 }
 
 export function veryHardDCByLvl(lvl) {
