@@ -115,6 +115,8 @@ export async function flurryOfBlows(actor) {
         return;
     }
 
+    const map2 = map === 2 ? map : map + 1;
+
     // Stunning Fist / Stunning Blows put their reminder Note behind a toggleable RollOption on
     // the "damage" domain. Passing the option into the damage roll's context is not enough: the
     // Note's predicate is tested against the actor's own roll options, so the toggle has to be
